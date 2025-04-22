@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型管理 - 本地大模型防护系统</title>
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <script src="/static/admin/js/apple-ui.js" defer></script>
+    <!-- 保留旧样式以防万一，但不使用 -->
+    <link rel="stylesheet" href="css/admin.css" media="none">
+    <style>
+        /* 模型管理页面特定样式 */
+        .model-item {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid #eaeaea;
+        }
+
+        .model-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .model-info {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .model-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 0;
+        }
+
+        .model-details {
+            color: #7f8c8d;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .model-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .model-actions .button {
+            min-width: 60px;
+            text-align: center;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        .pull-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .pull-form {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .pull-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .pull-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 15px;
+            display: none;
+        }
+
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status.loading {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        /* 添加模型库卡片的悬停效果 */
+        .model-library-item:hover .model-name {
+            color: #3498db;
+        }
+
+        .model-library-item.installed:hover {
+            background-color: #e8f8f0;
+        }
+
+        /* 添加模型库卡片的点击效果 */
+        .model-library-item:active {
+            transform: scale(0.98);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .section-title {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #7f8c8d;
+            font-style: italic;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px dashed #ddd;
+        }
+
+        /* 模型库样式 */
+        .model-library-container {
+            margin-bottom: 20px;
+        }
+
+        .model-library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .model-library-item {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .model-library-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .model-library-item.installed {
+            border-color: #2ecc71;
+            background-color: #f0fff4;
+        }
+
+        .model-library-item.installed::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #2ecc71;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .model-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .model-description {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .model-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .model-tag {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background-color: #e3f2fd;
+            color: #1565c0;
+            transition: background-color 0.2s ease;
+        }
+
+        /* 标签颜色 */
+        .model-tag.tag-text {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .model-tag.tag-chat {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .model-tag.tag-code {
+            background-color: #ede7f6;
+            color: #4527a0;
+        }
+
+        .model-tag.tag-programming {
+            background-color: #fce4ec;
+            color: #c2185b;
+        }
+
+        .model-tag.tag-vision {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+
+        .model-tag.tag-multimodal {
+            background-color: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .model-tag.tag-small {
+            background-color: #e0f7fa;
+            color: #00838f;
+        }
+
+        .model-tag.tag-general {
+            background-color: #f1f8e9;
+            color: #558b2f;
+        }
+
+        .model-filter {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-button {
+            padding: 5px 10px;
+            border-radius: 15px;
+            border: 1px solid #ddd;
+            background-color: white;
+            color: #333;
+            /* 添加明确的文字颜色 */
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .filter-button.active {
+            background-color: #3498db;
+            color: white !important;
+            /* 确保文字颜色始终为白色 */
+            border-color: #3498db;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoaWVsZCI+PHBhdGggZD0iTTEyIDIycy04LTUtOC0xMlY1bDgtM2w4IDN2N2MwIDctOCAxMi04IDEyeiIvPjwvc3ZnPg==" alt="Logo">
+                    <h2>本地大模型防护系统</h2>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="sidebar-menu-text">监控中心</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="sidebar-menu-text">规则管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="model_rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-cogs"></i></span>
+                        <span class="sidebar-menu-text">规则配置</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="events.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="sidebar-menu-text">安全事件</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="monitor.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
+                        <span class="sidebar-menu-text">实时监控</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="models.html" class="sidebar-menu-link active">
+                        <span class="sidebar-menu-icon"><i class="fas fa-brain"></i></span>
+                        <span class="sidebar-menu-text">模型管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
+                        <span class="sidebar-menu-text">聊天演示</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center justify-content-center gap-sm">
+                    <span>暗色模式</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="mt-sm">版本 1.0.0</div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部导航栏 -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="navbar-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="navbar-title">本地大模型防护系统</h1>
+                </div>
+                <div class="navbar-right">
+                    <span id="current-time"></span>
+                </div>
+            </nav>
+
+            <!-- 页面标题 -->
+            <header class="page-header">
+                <h1 class="page-title">模型管理</h1>
+                <div class="page-actions">
+                    <button class="button" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i> 刷新列表
+                    </button>
+                </div>
+            </header>
+
+            <!-- 已安装模型列表 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-server"></i>
+                        已安装模型
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="models-container" id="models-container">
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 拉取新模型 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-cloud-download-alt"></i>
+                        拉取新模型
+                    </h2>
+                    <div class="card-actions">
+                        <button class="button" id="refresh-library-btn">
+                            <i class="fas fa-sync-alt"></i> 刷新模型库
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="model-library-container" id="model-library-container">
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>加载模型库中...</p>
+                        </div>
+                    </div>
+                    <div class="debug-info" id="debug-info"
+                        style="display: none; margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; white-space: pre-wrap;">
+                    </div>
+                    <div class="filters-container">
+                        <div class="filter-dropdown" style="flex-grow: 1;">
+                            <label for="model-name-input">模型名称</label>
+                            <input type="text" class="form-control" id="model-name-input"
+                                placeholder="输入模型名称，例如：llama3">
+                        </div>
+                        <div class="filter-actions" style="align-self: flex-end;">
+                            <button class="button primary" id="pull-button">拉取模型</button>
+                        </div>
+                    </div>
+                    <div class="status" id="status"></div>
+                </div>
+            </div>
+    </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modelsContainer = document.getElementById('models-container');
+            const modelLibraryContainer = document.getElementById('model-library-container');
+            const modelNameInput = document.getElementById('model-name-input');
+            const pullButton = document.getElementById('pull-button');
+            const refreshButton = document.getElementById('refresh-btn');
+            const refreshLibraryButton = document.getElementById('refresh-library-btn');
+            const statusDiv = document.getElementById('status');
+            const debugInfoDiv = document.getElementById('debug-info');
+
+            // 当前选中的模型类型过滤器
+            let currentFilter = 'all';
+
+            // 加载模型列表
+            async function loadModels() {
+                try {
+                    modelsContainer.innerHTML = `
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>加载中...</p>
+                        </div>
+                    `;
+
+                    const response = await fetch('/api/v1/ollama/models');
+                    if (!response.ok) {
+                        throw new Error('获取模型列表失败');
+                    }
+
+                    const data = await response.json();
+                    console.log('已安装模型数据:', data);
+                    modelsContainer.innerHTML = '';
+
+                    if (data.models && data.models.length > 0) {
+                        data.models.forEach(model => {
+                            const modelItem = document.createElement('div');
+                            modelItem.className = 'model-item';
+
+                            // 计算模型大小（转换为 MB 或 GB）
+                            let sizeText = '';
+                            if (model.size) {
+                                const sizeInMB = model.size / (1024 * 1024);
+                                if (sizeInMB > 1024) {
+                                    sizeText = `${(sizeInMB / 1024).toFixed(2)} GB`;
+                                } else {
+                                    sizeText = `${sizeInMB.toFixed(2)} MB`;
+                                }
+                            }
+
+                            // 格式化修改日期
+                            let dateText = '';
+                            if (model.modified_at) {
+                                const date = new Date(model.modified_at);
+                                dateText = date.toLocaleString();
+                            }
+
+                            // 获取模型详情
+                            let familyText = '';
+                            let quantizationText = '';
+                            if (model.details) {
+                                if (model.details.family) {
+                                    familyText = `家族: ${model.details.family}`;
+                                }
+                                if (model.details.quantization_level) {
+                                    quantizationText = `量化级别: ${model.details.quantization_level}`;
+                                }
+                            }
+
+                            modelItem.innerHTML = `
+                                <div class="model-header">
+                                    <div class="model-name">${model.model}</div>
+                                    <div class="model-actions">
+                                        <button class="button danger" data-model="${model.model}">
+                                            删除
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="model-info">
+                                    <div class="model-details">
+                                        大小: ${sizeText} | 修改时间: ${dateText}
+                                        ${familyText ? '<br>' + familyText : ''} ${quantizationText ? ' | ' + quantizationText : ''}
+                                    </div>
+                                </div>
+                            `;
+
+                            modelsContainer.appendChild(modelItem);
+                        });
+
+                        // 添加删除按钮事件监听器
+                        document.querySelectorAll('.model-actions .button').forEach(button => {
+                            button.addEventListener('click', async function () {
+                                const modelName = this.getAttribute('data-model');
+                                if (confirm(`确定要删除模型 ${modelName} 吗？`)) {
+                                    await deleteModel(modelName);
+                                }
+                            });
+                        });
+                    } else {
+                        modelsContainer.innerHTML = '<div class="empty-message">没有找到已安装的模型</div>';
+                    }
+
+                    // 加载完成后也更新模型库显示
+                    loadModelLibrary();
+                } catch (error) {
+                    console.error('加载模型列表失败:', error);
+                    modelsContainer.innerHTML = `<div class="alert danger">加载模型列表失败: ${error.message}</div>`;
+                }
+            }
+
+            // 加载模型库
+            async function loadModelLibrary() {
+                try {
+                    console.log('开始加载模型库...');
+                    modelLibraryContainer.innerHTML = `
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>加载模型库中...</p>
+                        </div>
+                    `;
+
+                    console.log('发送请求到 /api/v1/ollama/library');
+                    const response = await fetch('/api/v1/ollama/library');
+                    if (!response.ok) {
+                        throw new Error('获取模型库失败');
+                    }
+
+                    console.log('收到响应，解析JSON...');
+                    const data = await response.json();
+                    console.log('模型库数据:', data);
+                    if (data.models && data.models.length > 0) {
+                        console.log(`第一个模型: ${data.models[0].name}`);
+                    }
+
+                    // 创建过滤器
+                    console.log('创建模型标签过滤器...');
+                    const tags = new Set();
+                    data.models.forEach(model => {
+                        if (model.tags && Array.isArray(model.tags)) {
+                            model.tags.forEach(tag => tags.add(tag));
+                        }
+                    });
+                    console.log(`找到 ${tags.size} 个不同的标签`);
+
+                    // 构建过滤器 HTML
+                    console.log('构建过滤器 HTML...');
+                    let filterHTML = `
+                        <div class="filters-container">
+                            <div class="filter-actions">
+                                <button class="filter-button white active" data-filter="all">全部</button>
+                    `;
+
+                    tags.forEach(tag => {
+                        filterHTML += `<button class="filter-button white" data-filter="${tag}">${tag}</button>`;
+                    });
+
+                    filterHTML += `
+                            </div>
+                            <div class="search-filter">
+                                <label for="model-search">搜索模型</label>
+                                <div class="search-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <input type="text" id="model-search" placeholder="搜索模型...">
+                            </div>
+                        </div>
+                    `;
+                    console.log('过滤器 HTML 生成完成');
+
+                    // 构建模型库网格
+                    console.log('开始构建模型库网格...');
+                    let modelsHTML = `<div class="model-library-grid">`;
+
+                    if (data.models && data.models.length > 0) {
+                        console.log(`模型数量: ${data.models.length}`);
+                        data.models.forEach((model, index) => {
+                            console.log(`处理模型 ${index + 1}/${data.models.length}: ${model.name}`);
+                            const installedClass = model.installed ? 'installed' : '';
+
+                            // 构建标签 HTML
+                            let tagsHTML = '';
+                            if (model.tags && model.tags.length > 0) {
+                                tagsHTML = '<div class="model-tags">';
+                                model.tags.forEach(tag => {
+                                    tagsHTML += `<span class="model-tag tag-${tag}">${tag}</span>`;
+                                });
+                                tagsHTML += '</div>';
+                            }
+
+                            // 确保模型标签存在
+                            const modelTags = model.tags || [];
+
+                            const itemHTML = `
+                                <div class="model-library-item ${installedClass}" data-model="${model.name}" data-tags="${modelTags.join(' ')}">
+                                    <div class="model-name">${model.name}</div>
+                                    <div class="model-description">${model.description}</div>
+                                    ${tagsHTML}
+                                </div>
+                            `;
+                            modelsHTML += itemHTML;
+                        });
+                        console.log('模型库网格 HTML 生成完成');
+                    } else {
+                        console.log('没有找到模型数据');
+                        modelsHTML += `<div class="empty-message">没有找到可用的模型</div>`;
+                    }
+
+                    modelsHTML += `</div>`;
+
+                    // 更新容器
+                    console.log('更新容器...');
+                    console.log(`过滤器 HTML 长度: ${filterHTML.length}`);
+                    console.log(`模型库 HTML 长度: ${modelsHTML.length}`);
+
+                    try {
+                        modelLibraryContainer.innerHTML = filterHTML + modelsHTML;
+                        console.log('容器更新完成');
+                    } catch (error) {
+                        console.error(`更新容器时出错: ${error.message}`);
+                        return;
+                    }
+
+                    // 添加过滤器点击事件
+                    console.log('添加过滤器点击事件...');
+                    const filterButtons = document.querySelectorAll('.filter-button');
+                    console.log(`找到 ${filterButtons.length} 个过滤器按钮`);
+
+                    try {
+                        filterButtons.forEach(button => {
+                            button.addEventListener('click', function () {
+                                // 更新活动状态
+                                document.querySelectorAll('.filter-button').forEach(btn => {
+                                    btn.classList.remove('active');
+                                });
+                                this.classList.add('active');
+
+                                // 设置当前过滤器
+                                currentFilter = this.getAttribute('data-filter');
+                                console.log(`过滤器切换为: ${currentFilter}`);
+
+                                // 过滤模型
+                                filterModels();
+                            });
+                        });
+                        console.log('过滤器事件添加完成');
+                    } catch (error) {
+                        console.error(`添加过滤器事件时出错: ${error.message}`);
+                    }
+
+                    // 添加模型点击事件
+                    console.log('添加模型点击事件...');
+                    const modelItems = document.querySelectorAll('.model-library-item');
+                    console.log(`找到 ${modelItems.length} 个模型项`);
+
+                    try {
+                        modelItems.forEach(item => {
+                            item.addEventListener('click', function () {
+                                const modelName = this.getAttribute('data-model');
+                                console.log(`点击模型: ${modelName}`);
+                                if (!this.classList.contains('installed')) {
+                                    // 如果模型未安装，则拉取它
+                                    modelNameInput.value = modelName;
+                                    if (confirm(`是否要拉取模型 ${modelName}？`)) {
+                                        pullModel(modelName);
+                                    }
+                                } else {
+                                    // 如果模型已安装，显示消息
+                                    statusDiv.className = 'status info';
+                                    statusDiv.textContent = `模型 ${modelName} 已经安装`;
+                                }
+                            });
+                        });
+                        console.log('模型点击事件添加完成');
+                    } catch (error) {
+                        console.error(`添加模型点击事件时出错: ${error.message}`);
+                    }
+
+                    console.log('模型库加载完成');
+                } catch (error) {
+                    console.error('加载模型库失败:', error);
+                    modelLibraryContainer.innerHTML = `<div class="alert danger">加载模型库失败: ${error.message}</div>`;
+                }
+            }
+
+            // 过滤模型库中的模型
+            function filterModels() {
+                console.log(`执行模型过滤，当前过滤器: ${currentFilter}`);
+                const items = document.querySelectorAll('.model-library-item');
+                console.log(`要过滤的模型项数量: ${items.length}`);
+
+                let visibleCount = 0;
+
+                try {
+                    items.forEach(item => {
+                        if (currentFilter === 'all') {
+                            item.style.display = 'block';
+                            visibleCount++;
+                        } else {
+                            const tags = item.getAttribute('data-tags');
+                            if (tags && tags.split(' ').includes(currentFilter)) {
+                                item.style.display = 'block';
+                                visibleCount++;
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        }
+                    });
+                    console.log(`过滤后可见的模型数量: ${visibleCount}`);
+                } catch (error) {
+                    console.error(`过滤模型时出错: ${error.message}`);
+                }
+            }
+
+            // 删除模型
+            async function deleteModel(modelName) {
+                try {
+                    statusDiv.className = 'status loading';
+                    statusDiv.innerHTML = `<span class="loading-spinner"></span>正在删除模型 ${modelName}...`;
+
+                    const response = await fetch(`/api/v1/ollama/delete/${modelName}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || '删除模型失败');
+                    }
+
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = `模型 ${modelName} 已成功删除`;
+
+                    // 重新加载模型列表
+                    loadModels();
+                } catch (error) {
+                    console.error('删除模型失败:', error);
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = `删除模型失败: ${error.message}`;
+                }
+            }
+
+            // 拉取新模型
+            async function pullModel(modelName) {
+                try {
+                    statusDiv.className = 'status loading';
+                    statusDiv.innerHTML = `<span class="loading-spinner"></span>正在拉取模型 ${modelName}...这可能需要一些时间，请耐心等待`;
+
+                    const response = await fetch('/api/v1/ollama/pull', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ model: modelName })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || '拉取模型失败');
+                    }
+
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = `模型 ${modelName} 已成功拉取`;
+
+                    // 重新加载模型列表
+                    loadModels();
+                } catch (error) {
+                    console.error('拉取模型失败:', error);
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = `拉取模型失败: ${error.message}`;
+                }
+            }
+
+            // 拉取按钮点击事件
+            pullButton.addEventListener('click', function () {
+                const modelName = modelNameInput.value.trim();
+                if (modelName) {
+                    pullModel(modelName);
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '请输入模型名称';
+                }
+            });
+
+            // 刷新按钮点击事件
+            if (refreshButton) {
+                console.log('添加刷新按钮点击事件');
+                refreshButton.addEventListener('click', function () {
+                    console.log('点击刷新按钮，加载模型列表');
+                    loadModels();
+                    statusDiv.className = 'status';
+                    statusDiv.textContent = '';
+                });
+            } else {
+                console.log('未找到刷新按钮');
+            }
+
+            // 刷新模型库按钮点击事件
+            if (refreshLibraryButton) {
+                console.log('添加刷新模型库按钮点击事件');
+                refreshLibraryButton.addEventListener('click', function () {
+                    console.log('点击刷新模型库按钮，加载模型库');
+                    loadModelLibrary();
+                    statusDiv.className = 'status';
+                    statusDiv.textContent = '';
+                });
+            } else {
+                console.log('未找到刷新模型库按钮');
+            }
+
+            // 初始化时加载已安装的模型列表
+            async function initializeModels() {
+                try {
+                    // 先加载已安装的模型列表
+                    await loadModels();
+                    // 加载模型库
+                    await loadModelLibrary();
+                }
+                catch (error) {
+                    console.error('初始化模型列表失败:', error);
+                }
+            }
+
+            // 初始加载模型列表和模型库
+            initializeModels();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型安全规则配置 - 本地大模型防护系统</title>
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/apple-model-rules.css">
+    <script src="/static/admin/js/apple-ui.js" defer></script>
+    <!-- 保留旧样式以防万一，但不使用 -->
+    <link rel="stylesheet" href="css/admin.css" media="none">
+    <link rel="stylesheet" href="css/model_rules.css" media="none">
+</head>
+
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoaWVsZCI+PHBhdGggZD0iTTEyIDIycy04LTUtOC0xMlY1bDgtM2w4IDN2N2MwIDctOCAxMi04IDEyeiIvPjwvc3ZnPg==" alt="Logo">
+                    <h2>本地大模型防护系统</h2>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="sidebar-menu-text">监控中心</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="sidebar-menu-text">规则管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="model_rules.html" class="sidebar-menu-link active">
+                        <span class="sidebar-menu-icon"><i class="fas fa-cogs"></i></span>
+                        <span class="sidebar-menu-text">规则配置</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="events.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="sidebar-menu-text">安全事件</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="monitor.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
+                        <span class="sidebar-menu-text">实时监控</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="models.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-brain"></i></span>
+                        <span class="sidebar-menu-text">模型管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
+                        <span class="sidebar-menu-text">聊天演示</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center justify-content-center gap-sm">
+                    <span>暗色模式</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="mt-sm">版本 1.0.0</div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部导航栏 -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="navbar-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="navbar-title">本地大模型防护系统</h1>
+                </div>
+                <div class="navbar-right">
+                    <span id="current-time"></span>
+                </div>
+            </nav>
+
+            <!-- 页面标题 -->
+            <header class="page-header">
+                <h1 class="page-title">规则配置</h1>
+                <div class="page-actions">
+                    <button class="button" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i> 刷新数据
+                    </button>
+                    <button class="button primary" id="batch-apply-template-btn">
+                        <i class="fas fa-layer-group"></i> 批量应用模板
+                    </button>
+                </div>
+            </header>
+
+            <!-- 模型规则摘要列表 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-list-alt"></i>
+                        模型规则摘要
+                    </h2>
+                    <div class="card-actions">
+                        <div class="search-control">
+                            <input type="text" id="model-search" class="input-control" placeholder="搜索模型...">
+                            <button class="search-button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="data-table" id="model-rules-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"><input type="checkbox" id="select-all-models"></th>
+                                    <th style="width: 20%;">模型名称</th>
+                                    <th style="width: 15%;">应用模板</th>
+                                    <th style="width: 80px;" class="text-center">规则数量</th>
+                                    <th style="width: 80px;" class="text-center">已启用规则</th>
+                                    <th style="width: 80px;" class="text-center">安全评分</th>
+                                    <th style="width: 15%;">最后更新</th>
+                                    <th style="width: 120px;" class="text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="model-rules-body">
+                                <!-- 数据将通过 JavaScript 动态加载 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 规则集模板列表 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-layer-group"></i>
+                        规则集模板
+                    </h2>
+                    <div class="card-actions">
+                        <button class="button" id="create-template-btn">
+                            <i class="fas fa-plus"></i> 创建模板
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="data-table" id="templates-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%;">模板名称</th>
+                                    <th style="width: auto;">描述</th>
+                                    <th style="width: 80px;" class="text-center">规则数量</th>
+                                    <th style="width: 12%;">分类</th>
+                                    <th style="width: 15%;">创建时间</th>
+                                    <th style="width: 120px;" class="text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="templates-body">
+                                <!-- 数据将通过 JavaScript 动态加载 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 批量应用模板模态框 -->
+    <div class="modal-backdrop" id="batch-apply-template-modal">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <i class="fas fa-layer-group"></i>
+                        批量应用模板
+                    </h3>
+                    <button type="button" class="modal-close" onclick="hideModal('batch-apply-template-modal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="batch-apply-template-form">
+                        <div class="form-group">
+                            <label for="template-select" class="form-label">选择模板</label>
+                            <select class="select-control" id="template-select" required>
+                                <!-- 选项将通过 JavaScript 动态加载 -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">选择模型</label>
+                            <div class="model-selection-list" id="model-selection-list">
+                                <!-- 选项将通过 JavaScript 动态加载 -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="button secondary" id="cancel-batch-apply-btn">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button type="button" class="button primary" id="confirm-batch-apply-btn">
+                        <i class="fas fa-check"></i> 应用模板
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建模板模态框 -->
+    <div class="modal-backdrop" id="create-template-modal">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <i class="fas fa-plus-circle"></i>
+                        创建规则集模板
+                    </h3>
+                    <button type="button" class="modal-close" onclick="hideModal('create-template-modal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-template-form">
+                        <div class="form-group">
+                            <label for="template-name" class="form-label">模板名称</label>
+                            <input type="text" class="input-control" id="template-name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="template-description" class="form-label">模板描述</label>
+                            <textarea class="input-control" id="template-description" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="template-category" class="form-label">模板分类</label>
+                            <select class="select-control" id="template-category" required>
+                                <option value="security">安全</option>
+                                <option value="compliance">合规</option>
+                                <option value="research">研究</option>
+                                <option value="custom">自定义</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="template-source" class="form-label">创建方式</label>
+                            <select class="select-control" id="template-source" required>
+                                <option value="empty">空白模板</option>
+                                <option value="model">从现有模型配置创建</option>
+                                <option value="template">从现有模板复制</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="source-model-group" style="display: none;">
+                            <label for="source-model" class="form-label">选择源模型</label>
+                            <select class="select-control" id="source-model">
+                                <!-- 选项将通过 JavaScript 动态加载 -->
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="source-template-group" style="display: none;">
+                            <label for="source-template" class="form-label">选择源模板</label>
+                            <select class="select-control" id="source-template">
+                                <!-- 选项将通过 JavaScript 动态加载 -->
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="button secondary" id="cancel-create-template-btn">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button type="button" class="button primary" id="confirm-create-template-btn">
+                        <i class="fas fa-plus"></i> 创建模板
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模型规则配置模态框 -->
+    <div class="modal-backdrop large-modal" id="model-rules-config-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="model-rules-config-title">模型规则配置</h3>
+                <span class="modal-close" onclick="hideModal('model-rules-config-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="model-info-panel">
+                    <div class="model-info-item">
+                        <span class="label">模型:</span>
+                        <span class="value" id="config-model-name"></span>
+                    </div>
+                    <div class="model-info-item">
+                        <span class="label">当前模板:</span>
+                        <span class="value" id="config-template-name">无</span>
+                    </div>
+                    <div class="model-info-item">
+                        <span class="label">规则数量:</span>
+                        <span class="value" id="config-rules-count">0</span>
+                    </div>
+                    <div class="model-info-item">
+                        <span class="label">安全评分:</span>
+                        <span class="value" id="config-security-score">0</span>
+                    </div>
+                </div>
+
+                <div class="config-actions">
+                    <button class="button" id="apply-template-btn">应用模板</button>
+                    <button class="button" id="add-rules-btn">添加规则</button>
+                    <button class="button" id="batch-toggle-btn">批量启用/禁用</button>
+                    <button class="button" id="check-conflicts-btn">检查冲突</button>
+                </div>
+
+                <div class="filters-container">
+                    <div class="filter-dropdown">
+                        <label for="rules-type-filter">类型</label>
+                        <select id="rules-type-filter">
+                            <option value="">所有类型</option>
+                            <option value="prompt_injection">提示注入</option>
+                            <option value="jailbreak">越狱尝试</option>
+                            <option value="harmful_content">有害内容</option>
+                            <option value="sensitive_info">敏感信息</option>
+                            <option value="compliance_violation">合规违规</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-dropdown">
+                        <label for="rules-status-filter">状态</label>
+                        <select id="rules-status-filter">
+                            <option value="">所有状态</option>
+                            <option value="enabled">已启用</option>
+                            <option value="disabled">已禁用</option>
+                        </select>
+                    </div>
+
+                    <div class="search-filter">
+                        <label for="rules-search">搜索</label>
+                        <div class="search-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <input type="text" id="rules-search" placeholder="搜索规则...">
+                    </div>
+                </div>
+
+                <table class="data-table" id="model-config-rules-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="select-all-rules"></th>
+                            <th style="width: 100px;">规则ID</th>
+                            <th style="width: 20%;">名称</th>
+                            <th style="width: 12%;">类型</th>
+                            <th style="width: 10%;">严重程度</th>
+                            <th style="width: 80px;">优先级</th>
+                            <th style="width: 80px;">状态</th>
+                            <th style="width: 120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="model-config-rules-body">
+                        <!-- 数据将通过 JavaScript 动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="button secondary" id="close-config-btn"
+                    onclick="hideModal('model-rules-config-modal')">关闭</button>
+                <button type="button" class="button primary" id="save-config-btn">保存配置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 应用模板模态框 -->
+    <div class="modal-backdrop" id="apply-template-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>应用规则集模板</h3>
+                <span class="modal-close" onclick="hideModal('apply-template-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="apply-template-form">
+                    <div class="form-group">
+                        <label for="single-template-select">选择模板</label>
+                        <select class="form-control" id="single-template-select" required>
+                            <!-- 选项将通过 JavaScript 动态加载 -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="alert warning">
+                            <strong>警告:</strong> 应用模板将覆盖当前模型的所有规则配置。此操作无法撤销。
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="button secondary" id="cancel-apply-template-btn"
+                    onclick="hideModal('apply-template-modal')">取消</button>
+                <button type="button" class="button primary" id="confirm-apply-template-btn">应用模板</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加规则模态框 -->
+    <div class="modal-backdrop large-modal" id="add-rules-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加规则</h3>
+                <span class="modal-close" onclick="hideModal('add-rules-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="filters-container">
+                    <div class="filter-dropdown">
+                        <label for="available-rules-type-filter">类型</label>
+                        <select id="available-rules-type-filter">
+                            <option value="">所有类型</option>
+                            <option value="prompt_injection">提示注入</option>
+                            <option value="jailbreak">越狱尝试</option>
+                            <option value="harmful_content">有害内容</option>
+                            <option value="sensitive_info">敏感信息</option>
+                            <option value="compliance_violation">合规违规</option>
+                        </select>
+                    </div>
+
+                    <div class="search-filter">
+                        <label for="available-rules-search">搜索</label>
+                        <div class="search-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <input type="text" id="available-rules-search" placeholder="搜索规则...">
+                    </div>
+                </div>
+
+                <table class="data-table" id="available-rules-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="select-all-available-rules">
+                            </th>
+                            <th style="width: 100px;">规则ID</th>
+                            <th style="width: 15%;">名称</th>
+                            <th style="width: 12%;">类型</th>
+                            <th style="width: 10%;">严重程度</th>
+                            <th style="width: auto;">描述</th>
+                            <th style="width: 80px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="available-rules-body">
+                        <!-- 数据将通过 JavaScript 动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="button secondary" id="cancel-add-rules-btn"
+                    onclick="hideModal('add-rules-modal')">取消</button>
+                <button type="button" class="button primary" id="confirm-add-rules-btn">添加选中规则</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 规则冲突模态框 -->
+    <div class="modal-backdrop" id="conflicts-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>规则冲突检测</h3>
+                <span class="modal-close" onclick="hideModal('conflicts-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="conflicts-container">
+                    <!-- 冲突数据将通过 JavaScript 动态加载 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="button primary" id="close-conflicts-btn"
+                    onclick="hideModal('conflicts-modal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/admin/js/model_rules.js"></script>
+</body>
+
+</html>

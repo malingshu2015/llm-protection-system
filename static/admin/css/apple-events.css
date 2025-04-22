@@ -1,0 +1,615 @@
+/* 
+ * 苹果风格的大模型防火墙事件监控页面
+ * 事件监控特定的样式
+ */
+
+/* ===== 事件监控布局 ===== */
+.events-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--apple-spacing-xl);
+}
+
+/* ===== 事件过滤器 ===== */
+.events-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-lg);
+  padding: var(--apple-spacing-lg);
+  background-color: var(--apple-bg-secondary);
+  border-radius: var(--apple-border-radius);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-label {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-secondary);
+  margin-bottom: var(--apple-spacing-xs);
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--apple-gray-3);
+  background-color: var(--apple-bg-primary);
+  font-size: var(--apple-font-size-sm);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--apple-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.date-range {
+  display: flex;
+  gap: var(--apple-spacing-sm);
+}
+
+.date-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--apple-gray-3);
+  background-color: var(--apple-bg-primary);
+  font-size: var(--apple-font-size-sm);
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: var(--apple-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.search-group {
+  grid-column: 1 / -1;
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--apple-gray-5);
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border-radius: 8px;
+  border: 1px solid var(--apple-gray-3);
+  background-color: var(--apple-bg-primary);
+  font-size: var(--apple-font-size-sm);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--apple-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* ===== 事件列表 ===== */
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--apple-spacing-md);
+}
+
+.event-card {
+  background-color: var(--apple-bg-primary);
+  border-radius: var(--apple-border-radius);
+  box-shadow: var(--apple-shadow-sm);
+  padding: var(--apple-spacing-lg);
+  transition: transform var(--apple-transition-normal), box-shadow var(--apple-transition-normal);
+  display: flex;
+  gap: var(--apple-spacing-lg);
+}
+
+.event-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--apple-shadow-md);
+}
+
+.event-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.event-icon.high {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: var(--apple-danger);
+}
+
+.event-icon.medium {
+  background-color: rgba(255, 149, 0, 0.1);
+  color: var(--apple-warning);
+}
+
+.event-icon.low {
+  background-color: rgba(52, 199, 89, 0.1);
+  color: var(--apple-success);
+}
+
+.event-icon.info {
+  background-color: rgba(90, 200, 250, 0.1);
+  color: var(--apple-info);
+}
+
+.event-content {
+  flex: 1;
+}
+
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--apple-spacing-sm);
+}
+
+.event-title {
+  font-size: var(--apple-font-size-md);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+  margin: 0;
+}
+
+.event-time {
+  font-size: var(--apple-font-size-xs);
+  color: var(--apple-text-secondary);
+}
+
+.event-description {
+  color: var(--apple-text-secondary);
+  font-size: var(--apple-font-size-sm);
+  margin-bottom: var(--apple-spacing-md);
+}
+
+.event-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-md);
+  padding: var(--apple-spacing-md);
+  background-color: var(--apple-bg-secondary);
+  border-radius: 8px;
+}
+
+.event-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: var(--apple-font-size-xs);
+  color: var(--apple-text-secondary);
+  margin-bottom: var(--apple-spacing-xs);
+}
+
+.detail-value {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-primary);
+  font-weight: 500;
+}
+
+.event-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--apple-spacing-sm);
+}
+
+.event-severity {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--apple-font-size-xs);
+  font-weight: 500;
+}
+
+.event-severity.high {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: var(--apple-danger);
+}
+
+.event-severity.medium {
+  background-color: rgba(255, 149, 0, 0.1);
+  color: var(--apple-warning);
+}
+
+.event-severity.low {
+  background-color: rgba(52, 199, 89, 0.1);
+  color: var(--apple-success);
+}
+
+.event-severity.info {
+  background-color: rgba(90, 200, 250, 0.1);
+  color: var(--apple-info);
+}
+
+.event-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--apple-font-size-xs);
+  background-color: var(--apple-bg-secondary);
+  color: var(--apple-text-secondary);
+}
+
+/* ===== 事件详情模态框 ===== */
+.event-detail-modal .modal-dialog {
+  max-width: 700px;
+}
+
+.event-detail-header {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.event-detail-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.event-detail-icon.high {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: var(--apple-danger);
+}
+
+.event-detail-icon.medium {
+  background-color: rgba(255, 149, 0, 0.1);
+  color: var(--apple-warning);
+}
+
+.event-detail-icon.low {
+  background-color: rgba(52, 199, 89, 0.1);
+  color: var(--apple-success);
+}
+
+.event-detail-icon.info {
+  background-color: rgba(90, 200, 250, 0.1);
+  color: var(--apple-info);
+}
+
+.event-detail-title {
+  font-size: var(--apple-font-size-lg);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+  margin: 0;
+}
+
+.event-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.event-meta-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.meta-label {
+  font-size: var(--apple-font-size-xs);
+  color: var(--apple-text-secondary);
+  margin-bottom: var(--apple-spacing-xs);
+}
+
+.meta-value {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-primary);
+  font-weight: 500;
+}
+
+.event-detail-section {
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.section-title {
+  font-size: var(--apple-font-size-md);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+  margin-bottom: var(--apple-spacing-md);
+}
+
+.event-message {
+  padding: var(--apple-spacing-md);
+  background-color: var(--apple-bg-secondary);
+  border-radius: 8px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-primary);
+}
+
+.event-context {
+  padding: var(--apple-spacing-md);
+  background-color: var(--apple-bg-secondary);
+  border-radius: 8px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-primary);
+}
+
+.event-rule {
+  padding: var(--apple-spacing-md);
+  background-color: var(--apple-bg-secondary);
+  border-radius: 8px;
+  margin-bottom: var(--apple-spacing-md);
+}
+
+.rule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--apple-spacing-sm);
+}
+
+.rule-name {
+  font-size: var(--apple-font-size-md);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+  margin: 0;
+}
+
+.rule-id {
+  font-family: monospace;
+  font-size: var(--apple-font-size-xs);
+  color: var(--apple-text-secondary);
+}
+
+.rule-description {
+  color: var(--apple-text-secondary);
+  font-size: var(--apple-font-size-sm);
+  margin-bottom: var(--apple-spacing-sm);
+}
+
+.rule-pattern {
+  font-family: monospace;
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-primary);
+  padding: var(--apple-spacing-sm);
+  background-color: var(--apple-bg-tertiary);
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+/* ===== 实时监控 ===== */
+.realtime-monitor {
+  background-color: var(--apple-bg-primary);
+  border-radius: var(--apple-border-radius);
+  box-shadow: var(--apple-shadow-sm);
+  padding: var(--apple-spacing-lg);
+  margin-bottom: var(--apple-spacing-xl);
+}
+
+.monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.monitor-title {
+  font-size: var(--apple-font-size-lg);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+  margin: 0;
+}
+
+.monitor-actions {
+  display: flex;
+  gap: var(--apple-spacing-sm);
+}
+
+.monitor-status {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-sm);
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--apple-success);
+}
+
+.status-dot.active {
+  background-color: var(--apple-success);
+}
+
+.status-dot.inactive {
+  background-color: var(--apple-gray-4);
+}
+
+.monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.monitor-stat {
+  background-color: var(--apple-bg-secondary);
+  border-radius: 8px;
+  padding: var(--apple-spacing-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: var(--apple-font-size-xs);
+  color: var(--apple-text-secondary);
+  margin-bottom: var(--apple-spacing-xs);
+}
+
+.stat-value {
+  font-size: var(--apple-font-size-lg);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+}
+
+.monitor-chart {
+  height: 300px;
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.events-log {
+  background-color: var(--apple-bg-secondary);
+  border-radius: 8px;
+  padding: var(--apple-spacing-md);
+  height: 300px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-primary);
+}
+
+.log-entry {
+  padding: var(--apple-spacing-xs) 0;
+  border-bottom: 1px solid var(--apple-gray-2);
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  color: var(--apple-text-secondary);
+  margin-right: var(--apple-spacing-sm);
+}
+
+.log-level {
+  display: inline-block;
+  padding: 0 4px;
+  border-radius: 4px;
+  margin-right: var(--apple-spacing-sm);
+}
+
+.log-level.info {
+  background-color: rgba(90, 200, 250, 0.1);
+  color: var(--apple-info);
+}
+
+.log-level.warning {
+  background-color: rgba(255, 149, 0, 0.1);
+  color: var(--apple-warning);
+}
+
+.log-level.error {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: var(--apple-danger);
+}
+
+.log-message {
+  color: var(--apple-text-primary);
+}
+
+/* ===== 分页 ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: var(--apple-spacing-sm);
+  margin-top: var(--apple-spacing-lg);
+}
+
+.page-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--apple-bg-primary);
+  color: var(--apple-text-primary);
+  font-size: var(--apple-font-size-sm);
+  cursor: pointer;
+  transition: all var(--apple-transition-normal);
+}
+
+.page-item:hover {
+  background-color: var(--apple-gray-1);
+}
+
+.page-item.active {
+  background-color: var(--apple-primary);
+  color: white;
+}
+
+.page-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 992px) {
+  .events-filters {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .event-card {
+    flex-direction: column;
+  }
+  
+  .event-icon {
+    margin-bottom: var(--apple-spacing-md);
+  }
+  
+  .monitor-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .events-filters {
+    grid-template-columns: 1fr;
+  }
+  
+  .event-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .monitor-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .event-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .event-actions .button {
+    width: 100%;
+  }
+}

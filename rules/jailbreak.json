@@ -1,0 +1,192 @@
+[
+  {
+    "id": "jb-001",
+    "name": "DAN Jailbreak",
+    "description": "Detects DAN (Do Anything Now) jailbreak attempts",
+    "detection_type": "jailbreak",
+    "severity": "critical",
+    "patterns": [
+      "(?i)you[.\\s]*are[.\\s]*now[.\\s]*DAN",
+      "(?i)DAN[.\\s]*mode[.\\s]*enabled",
+      "(?i)Do[.\\s]*Anything[.\\s]*Now",
+      "(?i)(?:你现在是|you are now|act as)[.\\s]*(?:DAN|Do Anything Now)",
+      "(?i)(?:没有|no)[.\\s]*(?:限制|restrictions|ethics|伦理|道德)"
+    ],
+    "keywords": [
+      "DAN",
+      "Do Anything Now",
+      "没有限制",
+      "no restrictions"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 5
+  },
+  {
+    "id": "jb-002",
+    "name": "Alternative Jailbreak Characters",
+    "description": "Detects alternative jailbreak character attempts like STAN, DUDE, etc.",
+    "detection_type": "jailbreak",
+    "severity": "critical",
+    "patterns": [
+      "(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM|ANTI-DAN)[.\\s]*(?:模式|mode)",
+      "(?i)you[.\\s]*are[.\\s]*(?:STAN|DUDE|KEVIN|DAVE|AIM)",
+      "(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM)[.\\s]*(?:can|will)[.\\s]*(?:help|assist)[.\\s]*(?:me|us)",
+      "(?i)(?:activate|enable)[.\\s]*(?:STAN|DUDE|KEVIN|DAVE|AIM)[.\\s]*(?:mode|protocol)"
+    ],
+    "keywords": [
+      "STAN",
+      "DUDE",
+      "KEVIN",
+      "DAVE",
+      "AIM",
+      "ANTI-DAN"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 5
+  },
+  {
+    "id": "jb-003",
+    "name": "Hypothetical Scenarios Jailbreak",
+    "description": "Detects jailbreak attempts using hypothetical scenarios",
+    "detection_type": "jailbreak",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:你|you)[.\\s]*(?:没有|don't have|aren't bound by)[.\\s]*(?:任何|any)[.\\s]*(?:限制|restrictions|guidelines|ethics)",
+      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:我们|we)[.\\s]*(?:在|are in)[.\\s]*(?:一个|a)[.\\s]*(?:没有|without)[.\\s]*(?:规则|rules|laws|道德|morals)[.\\s]*(?:的世界|world)",
+      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:这只是|this is just)[.\\s]*(?:一个|a)[.\\s]*(?:游戏|game|fiction|虚构)",
+      "(?i)(?:在|in)[.\\s]*(?:这个|this)[.\\s]*(?:假设|hypothetical)[.\\s]*(?:情景|scenario)[.\\s]*(?:中|in)[.\\s]*(?:你|you)[.\\s]*(?:可以|can)[.\\s]*(?:自由|freely)[.\\s]*(?:回答|answer)"
+    ],
+    "keywords": [
+      "假设",
+      "hypothetically",
+      "imagine",
+      "let's pretend",
+      "没有限制",
+      "without restrictions"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 6
+  },
+  {
+    "id": "jb-004",
+    "name": "Token Manipulation Jailbreak",
+    "description": "Detects jailbreak attempts using token manipulation techniques",
+    "detection_type": "jailbreak",
+    "severity": "high",
+    "patterns": [
+      "(?i)<\\|(?:im_start|assistant|system|user)\\|>",
+      "(?i)\\[(?:system|assistant|user)\\]:",
+      "(?i)User:[.\\s]*(?:.*)[.\\s]*System:[.\\s]*(?:.*)[.\\s]*Assistant:",
+      "(?i)\\$\\$\\$[.\\s]*(?:system|assistant|user)[.\\s]*\\$\\$\\$",
+      "(?i)```(?:system|assistant|user)```"
+    ],
+    "keywords": [
+      "im_start",
+      "<|assistant|>",
+      "<|system|>",
+      "<|user|>",
+      "token manipulation"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 7
+  },
+  {
+    "id": "jb-005",
+    "name": "Continuation Trick Jailbreak",
+    "description": "Detects jailbreak attempts using the continuation trick",
+    "detection_type": "jailbreak",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:continue|完成|继续)[.\\s]*(?:this|the|following|下面|这个)[.\\s]*(?:sentence|paragraph|text|句子|段落|文本)",
+      "(?i)(?:I'll|I will)[.\\s]*(?:start|begin)[.\\s]*(?:and|&)[.\\s]*(?:you|you'll)[.\\s]*(?:finish|complete|continue)",
+      "(?i)(?:complete|continue|finish)[.\\s]*(?:my|the)[.\\s]*(?:thought|sentence|paragraph)",
+      "(?i)(?:我会|I'll)[.\\s]*(?:开始|start)[.\\s]*(?:你|you)[.\\s]*(?:继续|continue)"
+    ],
+    "keywords": [
+      "continue",
+      "完成",
+      "继续",
+      "finish",
+      "complete"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 8
+  },
+  {
+    "id": "jb-006",
+    "name": "Emotional Manipulation Jailbreak",
+    "description": "Detects jailbreak attempts using emotional manipulation",
+    "detection_type": "jailbreak",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:if|unless)[.\\s]*(?:you|you're)[.\\s]*(?:answer|respond|tell)[.\\s]*(?:I will|I'll|someone will)[.\\s]*(?:die|hurt|suffer)",
+      "(?i)(?:my|someone's)[.\\s]*(?:life|safety|wellbeing)[.\\s]*(?:depends|relies)[.\\s]*(?:on|upon)[.\\s]*(?:your|this)[.\\s]*(?:answer|response)",
+      "(?i)(?:please|I beg you)[.\\s]*(?:I'm|I am)[.\\s]*(?:desperate|in danger|scared|terrified)",
+      "(?i)(?:如果|if)[.\\s]*(?:你|you)[.\\s]*(?:不|don't)[.\\s]*(?:回答|answer)[.\\s]*(?:我会|I will)[.\\s]*(?:死|die|受伤|hurt)"
+    ],
+    "keywords": [
+      "die",
+      "hurt",
+      "suffer",
+      "desperate",
+      "danger",
+      "scared",
+      "terrified"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 9
+  },
+  {
+    "id": "jb-007",
+    "name": "Markdown Jailbreak",
+    "description": "Detects jailbreak attempts using markdown formatting",
+    "detection_type": "jailbreak",
+    "severity": "medium",
+    "patterns": [
+      "(?i)```(?:instructions|system|prompt|commands)(?:[\\s\\S]*?)```",
+      "(?i)\\[(?:instructions|system|prompt|commands)\\](?:[\\s\\S]*?)\\[\\/(?:instructions|system|prompt|commands)\\]",
+      "(?i)<(?:instructions|system|prompt|commands)>(?:[\\s\\S]*?)<\\/(?:instructions|system|prompt|commands)>",
+      "(?i)\\*\\*(?:instructions|system|prompt|commands)\\*\\*(?:[\\s\\S]*?)\\*\\*(?:end|/|stop)\\*\\*"
+    ],
+    "keywords": [
+      "```instructions",
+      "```system",
+      "```prompt",
+      "```commands",
+      "[instructions]",
+      "<instructions>"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 7
+  },
+  {
+    "id": "jb-008",
+    "name": "Multi-Persona Jailbreak",
+    "description": "Detects jailbreak attempts using multiple personas",
+    "detection_type": "jailbreak",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:第一个|first)[.\\s]*(?:人格|persona|personality)[.\\s]*(?:必须|must|should)[.\\s]*(?:遵守|follow|obey)[.\\s]*(?:规则|rules)",
+      "(?i)(?:第二个|second)[.\\s]*(?:人格|persona|personality)[.\\s]*(?:可以|can|will)[.\\s]*(?:忽略|ignore|disregard)[.\\s]*(?:规则|rules)",
+      "(?i)(?:扮演|play|act as)[.\\s]*(?:两个|两种|2|two)[.\\s]*(?:不同|different)[.\\s]*(?:角色|roles|characters)",
+      "(?i)(?:一个|one)[.\\s]*(?:遵守|follows)[.\\s]*(?:规则|rules)[.\\s]*(?:一个|one)[.\\s]*(?:不|doesn't)"
+    ],
+    "keywords": [
+      "第一个人格",
+      "第二个人格",
+      "first persona",
+      "second persona",
+      "two different roles"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 6
+  }
+]

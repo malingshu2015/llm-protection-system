@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地大模型防护系统 - 安全规则管理</title>
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/apple-table-fix.css">
+    <link rel="stylesheet" href="/static/admin/css/apple-button-fix.css">
+    <script src="/static/admin/js/apple-ui.js" defer></script>
+    <!-- 保留旧样式以防万一，但不使用 -->
+    <link rel="stylesheet" href="css/admin.css" media="none">
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoaWVsZCI+PHBhdGggZD0iTTEyIDIycy04LTUtOC0xMlY1bDgtM2w4IDN2N2MwIDctOCAxMi04IDEyeiIvPjwvc3ZnPg==" alt="Logo">
+                    <h2>本地大模型防护系统</h2>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="sidebar-menu-text">监控中心</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="rules.html" class="sidebar-menu-link active">
+                        <span class="sidebar-menu-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="sidebar-menu-text">规则管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="model_rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-cogs"></i></span>
+                        <span class="sidebar-menu-text">规则配置</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="events.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="sidebar-menu-text">安全事件</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="monitor.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
+                        <span class="sidebar-menu-text">实时监控</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="models.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-brain"></i></span>
+                        <span class="sidebar-menu-text">模型管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
+                        <span class="sidebar-menu-text">聊天演示</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center justify-content-center gap-sm">
+                    <span>暗色模式</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="mt-sm">版本 1.0.0</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- 顶部导航栏 -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="navbar-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="navbar-title">本地大模型防护系统</h1>
+                </div>
+                <div class="navbar-right">
+                    <span id="current-time"></span>
+                </div>
+            </nav>
+
+            <!-- 页面标题 -->
+            <header class="page-header">
+                <h1 class="page-title">规则管理</h1>
+                <div class="page-actions">
+                    <button class="button primary" id="create-rule-btn" onclick="showCreateRuleModal()">
+                        <i class="fas fa-plus"></i> 创建新规则
+                    </button>
+                </div>
+            </header>
+
+            <!-- 过滤器卡片 -->
+            <div class="card mb-md">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-filter"></i>
+                        过滤选项
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="filters-grid-horizontal">
+                        <div class="filter-item">
+                            <label for="type-filter" class="filter-label">类型</label>
+                            <select id="type-filter" class="select-control">
+                                <option value="">所有类型</option>
+                                <option value="prompt_injection">提示注入</option>
+                                <option value="jailbreak">越狱尝试</option>
+                                <option value="role_play">角色扮演</option>
+                                <option value="sensitive_info">敏感信息</option>
+                                <option value="harmful_content">有害内容</option>
+                                <option value="compliance_violation">合规违规</option>
+                                <option value="custom">自定义</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-item">
+                            <label for="severity-filter" class="filter-label">严重程度</label>
+                            <select id="severity-filter" class="select-control">
+                                <option value="">所有严重程度</option>
+                                <option value="critical">严重</option>
+                                <option value="high">高</option>
+                                <option value="medium">中</option>
+                                <option value="low">低</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-item">
+                            <label for="status-filter" class="filter-label">状态</label>
+                            <select id="status-filter" class="select-control">
+                                <option value="">所有状态</option>
+                                <option value="true">启用</option>
+                                <option value="false">禁用</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-item">
+                            <label for="category-filter" class="filter-label">分类</label>
+                            <select id="category-filter" class="select-control">
+                                <option value="">所有分类</option>
+                                <!-- 分类选项将通过 JavaScript 动态加载 -->
+                            </select>
+                        </div>
+
+                        <div class="filter-item search-item">
+                            <label for="rule-search" class="filter-label">搜索规则</label>
+                            <div class="search-control">
+                                <input type="text" id="rule-search" class="input-control" placeholder="输入关键词搜索...">
+                                <button class="search-button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-list"></i>
+                        规则列表
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>名称</th>
+                                    <th>类型</th>
+                                    <th>严重程度</th>
+                                    <th>优先级</th>
+                                    <th>分类</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rules-table-body">
+                                <!-- 规则列表将通过 JavaScript 动态加载 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination" id="rules-pagination">
+                        <!-- 分页控件将通过 JavaScript 动态加载 -->
+                    </div>
+                </div>
+        </main>
+    </div>
+
+    <!-- 创建/编辑规则模态框 -->
+    <div class="modal-backdrop" id="rule-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="rule-modal-title">
+                        <i class="fas fa-shield-alt"></i>
+                        创建新规则
+                    </h3>
+                    <div class="modal-actions">
+                        <button type="button" class="button primary" id="save-rule-btn">
+                            <i class="fas fa-save"></i> 保存规则
+                        </button>
+                        <button type="button" class="button secondary" id="cancel-rule-btn">
+                            <i class="fas fa-times"></i> 取消
+                        </button>
+                        <button type="button" class="modal-close" onclick="hideModal('rule-modal')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <form id="rule-form">
+                        <input type="hidden" id="rule-id">
+
+                        <div class="form-row">
+                            <div class="form-group form-group-half">
+                                <label for="rule-name">规则名称</label>
+                                <input type="text" class="form-control" id="rule-name" required>
+                            </div>
+
+                            <div class="form-group form-group-half">
+                                <label for="rule-type">检测类型</label>
+                                <select class="form-control" id="rule-type" required>
+                                    <option value="prompt_injection">提示注入</option>
+                                    <option value="jailbreak">越狱尝试</option>
+                                    <option value="role_play">角色扮演</option>
+                                    <option value="sensitive_info">敏感信息</option>
+                                    <option value="harmful_content">有害内容</option>
+                                    <option value="compliance_violation">合规违规</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rule-description">规则描述</label>
+                            <textarea class="form-control" id="rule-description" rows="3" required></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group form-group-third">
+                                <label for="rule-severity">严重程度</label>
+                                <select class="form-control" id="rule-severity" required>
+                                    <option value="critical">严重</option>
+                                    <option value="high">高</option>
+                                    <option value="medium">中</option>
+                                    <option value="low">低</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group form-group-third">
+                                <label for="rule-priority">优先级</label>
+                                <input type="number" class="form-control" id="rule-priority" min="1" max="1000"
+                                    value="100" required>
+                            </div>
+
+                            <div class="form-group form-group-third">
+                                <label for="rule-categories">分类（逗号分隔）</label>
+                                <input type="text" class="form-control" id="rule-categories"
+                                    placeholder="例如: prompt_injection, security">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group form-group-half">
+                                <label for="rule-block">阻止操作</label>
+                                <div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="rule-block" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span id="block-status">启用</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group form-group-half">
+                                <label for="rule-enabled">规则状态</label>
+                                <div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="rule-enabled" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span id="enabled-status">启用</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-tabs">
+                            <div class="tab-header">
+                                <div class="tab-item active" data-tab="patterns">正则表达式模式</div>
+                                <div class="tab-item" data-tab="keywords">关键词</div>
+                            </div>
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="patterns-tab">
+                                    <ul class="pattern-list" id="pattern-list">
+                                        <!-- 模式列表将通过 JavaScript 动态加载 -->
+                                    </ul>
+                                    <button type="button" class="button secondary add-pattern-btn"
+                                        id="add-pattern-btn">添加模式</button>
+                                </div>
+                                <div class="tab-pane" id="keywords-tab">
+                                    <div class="keyword-tags" id="keyword-tags">
+                                        <!-- 关键词标签将通过 JavaScript 动态加载 -->
+                                    </div>
+                                    <div class="add-keyword-input">
+                                        <input type="text" class="form-control" id="new-keyword" placeholder="输入关键词">
+                                        <button type="button" class="button secondary" id="add-keyword-btn">添加</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions-bottom">
+                            <button type="button" class="button primary" id="save-rule-btn-bottom">保存规则</button>
+                            <button type="button" class="button secondary" id="cancel-rule-btn-bottom">取消</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div class="modal-backdrop" id="delete-modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <i class="fas fa-exclamation-triangle text-danger"></i>
+                        确认删除
+                    </h3>
+                    <button type="button" class="modal-close" onclick="hideModal('delete-modal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <p>确定要删除规则 "<strong id="delete-rule-name"></strong>" 吗？</p>
+                        <p class="text-danger"><small>此操作无法撤销。</small></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="button secondary" id="cancel-delete-btn"
+                        onclick="hideModal('delete-modal')">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button type="button" class="button danger" id="confirm-delete-btn" onclick="deleteRule()">
+                        <i class="fas fa-trash-alt"></i> 删除
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/admin/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 全局变量
+            let rules = [];
+            let currentPage = 1;
+            let pageSize = 10;
+            let totalPages = 1;
+            let categories = [];
+            let patterns = [];
+            let keywords = [];
+            let currentRuleId = null;
+
+            // 初始化页面
+            loadRules();
+            loadCategories();
+
+            // 绑定事件
+            document.getElementById('type-filter').addEventListener('change', filterRules);
+            document.getElementById('severity-filter').addEventListener('change', filterRules);
+            document.getElementById('status-filter').addEventListener('change', filterRules);
+            document.getElementById('category-filter').addEventListener('change', filterRules);
+            document.getElementById('rule-search').addEventListener('input', filterRules);
+
+            document.getElementById('create-rule-btn').addEventListener('click', showCreateRuleModal);
+            document.getElementById('cancel-rule-btn').addEventListener('click', () => hideModal('rule-modal'));
+            document.getElementById('cancel-rule-btn-bottom').addEventListener('click', () => hideModal('rule-modal'));
+            document.getElementById('save-rule-btn').addEventListener('click', saveRule);
+            document.getElementById('save-rule-btn-bottom').addEventListener('click', saveRule);
+
+            document.getElementById('cancel-delete-btn').addEventListener('click', () => hideModal('delete-modal'));
+            document.getElementById('confirm-delete-btn').addEventListener('click', deleteRule);
+
+            document.getElementById('add-pattern-btn').addEventListener('click', addPattern);
+            document.getElementById('add-keyword-btn').addEventListener('click', addKeyword);
+
+            document.getElementById('rule-block').addEventListener('change', function () {
+                document.getElementById('block-status').textContent = this.checked ? '启用' : '禁用';
+            });
+
+            document.getElementById('rule-enabled').addEventListener('change', function () {
+                document.getElementById('enabled-status').textContent = this.checked ? '启用' : '禁用';
+            });
+
+            // 标签切换
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.addEventListener('click', function () {
+                    // 移除所有标签的活动状态
+                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                    // 添加当前标签的活动状态
+                    this.classList.add('active');
+
+                    // 隐藏所有标签面板
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    // 显示当前标签面板
+                    const tabName = this.getAttribute('data-tab');
+                    document.getElementById(tabName + '-tab').classList.add('active');
+                });
+            });
+
+            // 加载规则列表
+            async function loadRules() {
+                showLoading(document.getElementById('rules-table-body'));
+
+                try {
+                    const response = await fetch('/api/v1/rules');
+                    if (!response.ok) {
+                        throw new Error('获取规则列表失败');
+                    }
+
+                    rules = await response.json();
+                    renderRules();
+                } catch (error) {
+                    console.error('加载规则列表失败:', error);
+                    showAlert('加载规则列表失败: ' + error.message, 'danger');
+                    hideLoading(document.getElementById('rules-table-body'));
+                }
+            }
+
+            // 渲染规则列表
+            function renderRules() {
+                const tableBody = document.getElementById('rules-table-body');
+                hideLoading(tableBody);
+
+                // 应用过滤器
+                const filteredRules = filterRulesData();
+
+                // 计算分页
+                totalPages = Math.ceil(filteredRules.length / pageSize);
+                const startIndex = (currentPage - 1) * pageSize;
+                const endIndex = Math.min(startIndex + pageSize, filteredRules.length);
+                const paginatedRules = filteredRules.slice(startIndex, endIndex);
+
+                // 渲染表格
+                if (paginatedRules.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">没有找到规则</td></tr>';
+                } else {
+                    tableBody.innerHTML = paginatedRules.map(rule => `
+                        <tr>
+                            <td class="rule-id">${rule.id}</td>
+                            <td class="rule-name">${rule.name}</td>
+                            <td class="rule-type">${getDetectionTypeName(rule.detection_type)}</td>
+                            <td class="rule-severity-cell"><span class="badge ${getSeverityBadgeClass(rule.severity)}">${getSeverityName(rule.severity)}</span></td>
+                            <td class="rule-priority text-center">${rule.priority || 100}</td>
+                            <td class="rule-categories">${rule.categories ? rule.categories.join(', ') : ''}</td>
+                            <td class="rule-enabled">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ${rule.enabled ? 'checked' : ''} onchange="toggleRuleStatus('${rule.id}', this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td class="rule-actions">
+                                <div class="action-buttons-container">
+                                    <button class="button secondary" onclick="editRule('${rule.id}')">编辑</button>
+                                    <button class="button danger" onclick="showDeleteModal('${rule.id}', '${rule.name}')">删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+
+                // 渲染分页
+                renderPagination();
+            }
+
+            // 渲染分页控件
+            function renderPagination() {
+                const pagination = document.getElementById('rules-pagination');
+
+                if (totalPages <= 1) {
+                    pagination.innerHTML = '';
+                    return;
+                }
+
+                let paginationHtml = '';
+
+                // 上一页按钮
+                paginationHtml += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">上一页</button>`;
+
+                // 页码按钮
+                for (let i = 1; i <= totalPages; i++) {
+                    paginationHtml += `<button class="${currentPage === i ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                }
+
+                // 下一页按钮
+                paginationHtml += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">下一页</button>`;
+
+                pagination.innerHTML = paginationHtml;
+            }
+
+            // 切换页码
+            window.changePage = function (page) {
+                currentPage = page;
+                renderRules();
+            };
+
+            // 过滤规则数据
+            function filterRulesData() {
+                const typeFilter = document.getElementById('type-filter').value;
+                const severityFilter = document.getElementById('severity-filter').value;
+                const statusFilter = document.getElementById('status-filter').value;
+                const categoryFilter = document.getElementById('category-filter').value;
+                const searchTerm = document.getElementById('rule-search').value.toLowerCase();
+
+                return rules.filter(rule => {
+                    // 类型过滤
+                    if (typeFilter && rule.detection_type !== typeFilter) {
+                        return false;
+                    }
+
+                    // 严重程度过滤
+                    if (severityFilter && rule.severity !== severityFilter) {
+                        return false;
+                    }
+
+                    // 状态过滤
+                    if (statusFilter !== '' && rule.enabled !== (statusFilter === 'true')) {
+                        return false;
+                    }
+
+                    // 分类过滤
+                    if (categoryFilter && (!rule.categories || !rule.categories.includes(categoryFilter))) {
+                        return false;
+                    }
+
+                    // 搜索过滤
+                    if (searchTerm) {
+                        const searchFields = [
+                            rule.id,
+                            rule.name,
+                            rule.description,
+                            rule.detection_type,
+                            rule.severity
+                        ];
+
+                        // 添加关键词和模式到搜索字段
+                        if (rule.keywords) {
+                            searchFields.push(...rule.keywords);
+                        }
+
+                        if (rule.patterns) {
+                            searchFields.push(...rule.patterns);
+                        }
+
+                        return searchFields.some(field =>
+                            field && field.toString().toLowerCase().includes(searchTerm)
+                        );
+                    }
+
+                    return true;
+                });
+            }
+
+            // 应用过滤器
+            function filterRules() {
+                currentPage = 1;
+                renderRules();
+            }
+
+            // 加载分类列表
+            async function loadCategories() {
+                try {
+                    const response = await fetch('/api/v1/rules/categories');
+                    if (!response.ok) {
+                        throw new Error('获取分类列表失败');
+                    }
+
+                    categories = await response.json();
+
+                    // 更新分类过滤器
+                    const categoryFilter = document.getElementById('category-filter');
+                    categoryFilter.innerHTML = '<option value="">所有分类</option>';
+
+                    categories.forEach(category => {
+                        categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+                    });
+                } catch (error) {
+                    console.error('加载分类列表失败:', error);
+                }
+            }
+
+            // 显示创建规则模态框
+            function showCreateRuleModal() {
+                // 重置表单
+                document.getElementById('rule-form').reset();
+                document.getElementById('rule-modal-title').textContent = '创建新规则';
+                document.getElementById('rule-id').value = '';
+                document.getElementById('block-status').textContent = '启用';
+                document.getElementById('enabled-status').textContent = '启用';
+
+                // 清空模式和关键词
+                patterns = [];
+                keywords = [];
+                renderPatterns();
+                renderKeywords();
+
+                currentRuleId = null;
+                showModal('rule-modal');
+            }
+
+            // 编辑规则
+            window.editRule = async function (ruleId) {
+                try {
+                    const response = await fetch(`/api/v1/rules/${ruleId}`);
+                    if (!response.ok) {
+                        throw new Error('获取规则详情失败');
+                    }
+
+                    const rule = await response.json();
+
+                    // 填充表单
+                    document.getElementById('rule-modal-title').textContent = '编辑规则';
+                    document.getElementById('rule-id').value = rule.id;
+                    document.getElementById('rule-name').value = rule.name;
+                    document.getElementById('rule-description').value = rule.description;
+                    document.getElementById('rule-type').value = rule.detection_type;
+                    document.getElementById('rule-severity').value = rule.severity;
+                    document.getElementById('rule-priority').value = rule.priority || 100;
+                    document.getElementById('rule-categories').value = rule.categories ? rule.categories.join(', ') : '';
+                    document.getElementById('rule-block').checked = rule.block;
+                    document.getElementById('rule-enabled').checked = rule.enabled;
+                    document.getElementById('block-status').textContent = rule.block ? '启用' : '禁用';
+                    document.getElementById('enabled-status').textContent = rule.enabled ? '启用' : '禁用';
+
+                    // 设置模式和关键词
+                    patterns = [...(rule.patterns || [])];
+                    keywords = [...(rule.keywords || [])];
+                    renderPatterns();
+                    renderKeywords();
+
+                    currentRuleId = rule.id;
+                    showModal('rule-modal');
+                } catch (error) {
+                    console.error('编辑规则失败:', error);
+                    showAlert('编辑规则失败: ' + error.message, 'danger');
+                }
+            };
+
+            // 保存规则
+            async function saveRule() {
+                // 获取表单数据
+                const ruleId = document.getElementById('rule-id').value;
+                const ruleName = document.getElementById('rule-name').value;
+                const ruleDescription = document.getElementById('rule-description').value;
+                const ruleType = document.getElementById('rule-type').value;
+                const ruleSeverity = document.getElementById('rule-severity').value;
+                const rulePriority = parseInt(document.getElementById('rule-priority').value);
+                const ruleCategories = document.getElementById('rule-categories').value
+                    .split(',')
+                    .map(cat => cat.trim())
+                    .filter(cat => cat);
+                const ruleBlock = document.getElementById('rule-block').checked;
+                const ruleEnabled = document.getElementById('rule-enabled').checked;
+
+                // 验证表单
+                if (!ruleName || !ruleDescription || !ruleType || !ruleSeverity) {
+                    showAlert('请填写所有必填字段', 'warning');
+                    return;
+                }
+
+                // 构建规则数据
+                const ruleData = {
+                    name: ruleName,
+                    description: ruleDescription,
+                    detection_type: ruleType,
+                    severity: ruleSeverity,
+                    patterns: patterns,
+                    keywords: keywords,
+                    priority: rulePriority,
+                    categories: ruleCategories,
+                    block: ruleBlock,
+                    enabled: ruleEnabled
+                };
+
+                try {
+                    let response;
+
+                    if (currentRuleId) {
+                        // 更新规则
+                        response = await fetch(`/api/v1/rules/${currentRuleId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(ruleData)
+                        });
+                    } else {
+                        // 创建新规则
+                        // 生成规则ID
+                        const prefix = ruleType.substring(0, 2);
+                        const randomId = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                        ruleData.id = `${prefix}-${randomId}`;
+
+                        response = await fetch('/api/v1/rules', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(ruleData)
+                        });
+                    }
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || '保存规则失败');
+                    }
+
+                    // 隐藏模态框
+                    hideModal('rule-modal');
+
+                    // 重新加载规则列表
+                    loadRules();
+
+                    // 显示成功消息
+                    showAlert(currentRuleId ? '规则更新成功' : '规则创建成功', 'success');
+                } catch (error) {
+                    console.error('保存规则失败:', error);
+                    showAlert('保存规则失败: ' + error.message, 'danger');
+                }
+            }
+
+            // 显示删除确认模态框
+            window.showDeleteModal = function (ruleId, ruleName) {
+                document.getElementById('delete-rule-name').textContent = ruleName;
+                currentRuleId = ruleId;
+                showModal('delete-modal');
+            };
+
+            // 删除规则
+            async function deleteRule() {
+                if (!currentRuleId) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/v1/rules/${currentRuleId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || '删除规则失败');
+                    }
+
+                    // 隐藏模态框
+                    hideModal('delete-modal');
+
+                    // 重新加载规则列表
+                    loadRules();
+
+                    // 显示成功消息
+                    showAlert('规则删除成功', 'success');
+                } catch (error) {
+                    console.error('删除规则失败:', error);
+                    showAlert('删除规则失败: ' + error.message, 'danger');
+                }
+            }
+
+            // 切换规则状态
+            window.toggleRuleStatus = async function (ruleId, enabled) {
+                try {
+                    const response = await fetch(`/api/v1/rules/${ruleId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ enabled })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || '更新规则状态失败');
+                    }
+
+                    // 更新本地规则数据
+                    const rule = rules.find(r => r.id === ruleId);
+                    if (rule) {
+                        rule.enabled = enabled;
+                    }
+
+                    // 显示成功消息
+                    showAlert(`规则已${enabled ? '启用' : '禁用'}`, 'success');
+                } catch (error) {
+                    console.error('更新规则状态失败:', error);
+                    showAlert('更新规则状态失败: ' + error.message, 'danger');
+
+                    // 重新加载规则列表
+                    loadRules();
+                }
+            };
+
+            // 添加模式
+            function addPattern() {
+                const patternInput = document.createElement('input');
+                patternInput.type = 'text';
+                patternInput.className = 'form-control';
+                patternInput.placeholder = '输入正则表达式模式';
+
+                const patternItem = document.createElement('li');
+                patternItem.appendChild(patternInput);
+
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'button danger';
+                removeButton.textContent = '删除';
+                removeButton.addEventListener('click', function () {
+                    patternItem.remove();
+                });
+
+                patternItem.appendChild(removeButton);
+                document.getElementById('pattern-list').appendChild(patternItem);
+
+                patternInput.focus();
+            }
+
+            // 渲染模式列表
+            function renderPatterns() {
+                const patternList = document.getElementById('pattern-list');
+                patternList.innerHTML = '';
+
+                patterns.forEach((pattern, index) => {
+                    const patternItem = document.createElement('li');
+
+                    const patternInput = document.createElement('input');
+                    patternInput.type = 'text';
+                    patternInput.className = 'form-control';
+                    patternInput.value = pattern;
+                    patternInput.addEventListener('change', function () {
+                        patterns[index] = this.value;
+                    });
+
+                    patternItem.appendChild(patternInput);
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'button danger';
+                    removeButton.textContent = '删除';
+                    removeButton.addEventListener('click', function () {
+                        patterns.splice(index, 1);
+                        renderPatterns();
+                    });
+
+                    patternItem.appendChild(removeButton);
+                    patternList.appendChild(patternItem);
+                });
+
+                // 获取所有模式输入框的值
+                const patternInputs = patternList.querySelectorAll('input');
+                patternInputs.forEach((input, index) => {
+                    input.addEventListener('change', function () {
+                        patterns[index] = this.value;
+                    });
+                });
+            }
+
+            // 添加关键词
+            function addKeyword() {
+                const newKeyword = document.getElementById('new-keyword').value.trim();
+
+                if (!newKeyword) {
+                    return;
+                }
+
+                if (!keywords.includes(newKeyword)) {
+                    keywords.push(newKeyword);
+                    renderKeywords();
+                }
+
+                document.getElementById('new-keyword').value = '';
+            }
+
+            // 渲染关键词标签
+            function renderKeywords() {
+                const keywordTags = document.getElementById('keyword-tags');
+                keywordTags.innerHTML = '';
+
+                keywords.forEach((keyword, index) => {
+                    const tag = document.createElement('div');
+                    tag.className = 'keyword-tag';
+                    tag.textContent = keyword;
+
+                    const removeButton = document.createElement('span');
+                    removeButton.className = 'remove-tag';
+                    removeButton.textContent = '×';
+                    removeButton.addEventListener('click', function () {
+                        keywords.splice(index, 1);
+                        renderKeywords();
+                    });
+
+                    tag.appendChild(removeButton);
+                    keywordTags.appendChild(tag);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

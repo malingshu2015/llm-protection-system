@@ -1,0 +1,446 @@
+/* 
+ * 苹果风格的大模型防火墙规则管理页面
+ * 规则管理特定的样式
+ */
+
+/* ===== 规则管理布局 ===== */
+.rules-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--apple-spacing-xl);
+}
+
+/* ===== 规则过滤器 ===== */
+.rules-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-lg);
+  padding: var(--apple-spacing-lg);
+  background-color: var(--apple-bg-secondary);
+  border-radius: var(--apple-border-radius);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-label {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-secondary);
+  margin-bottom: var(--apple-spacing-xs);
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--apple-gray-3);
+  background-color: var(--apple-bg-primary);
+  font-size: var(--apple-font-size-sm);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--apple-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.search-group {
+  grid-column: 1 / -1;
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--apple-gray-5);
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border-radius: 8px;
+  border: 1px solid var(--apple-gray-3);
+  background-color: var(--apple-bg-primary);
+  font-size: var(--apple-font-size-sm);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--apple-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* ===== 规则表格 ===== */
+.rules-table-container {
+  overflow-x: auto;
+  border-radius: var(--apple-border-radius);
+  background-color: var(--apple-bg-primary);
+  box-shadow: var(--apple-shadow-sm);
+}
+
+.rules-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--apple-font-size-sm);
+}
+
+.rules-table th {
+  background-color: var(--apple-bg-secondary);
+  color: var(--apple-text-secondary);
+  font-weight: 500;
+  text-align: left;
+  padding: var(--apple-spacing-md);
+  border-bottom: 1px solid var(--apple-gray-2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.rules-table td {
+  padding: var(--apple-spacing-md);
+  border-bottom: 1px solid var(--apple-gray-2);
+  color: var(--apple-text-primary);
+}
+
+.rules-table tr:last-child td {
+  border-bottom: none;
+}
+
+.rules-table tr:hover td {
+  background-color: var(--apple-gray-1);
+}
+
+.rule-id {
+  font-family: monospace;
+  color: var(--apple-text-secondary);
+}
+
+.rule-name {
+  font-weight: 500;
+  color: var(--apple-text-primary);
+}
+
+.rule-description {
+  color: var(--apple-text-secondary);
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rule-severity {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--apple-font-size-xs);
+  font-weight: 500;
+}
+
+.rule-severity.high {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: var(--apple-danger);
+}
+
+.rule-severity.medium {
+  background-color: rgba(255, 149, 0, 0.1);
+  color: var(--apple-warning);
+}
+
+.rule-severity.low {
+  background-color: rgba(52, 199, 89, 0.1);
+  color: var(--apple-success);
+}
+
+.rule-category {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--apple-font-size-xs);
+  background-color: var(--apple-bg-secondary);
+  color: var(--apple-text-secondary);
+}
+
+.rule-status {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-xs);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-indicator.active {
+  background-color: var(--apple-success);
+}
+
+.status-indicator.inactive {
+  background-color: var(--apple-gray-4);
+}
+
+.rule-actions {
+  display: flex;
+  gap: var(--apple-spacing-sm);
+  justify-content: flex-end;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  color: var(--apple-primary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color var(--apple-transition-normal);
+}
+
+.action-button:hover {
+  background-color: rgba(0, 122, 255, 0.1);
+}
+
+.action-button.edit {
+  color: var(--apple-primary);
+}
+
+.action-button.delete {
+  color: var(--apple-danger);
+}
+
+/* ===== 规则编辑模态框 ===== */
+.rule-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--apple-spacing-md);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--apple-spacing-md);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--apple-spacing-xs);
+}
+
+.form-label {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-secondary);
+}
+
+.form-control {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--apple-gray-3);
+  background-color: var(--apple-bg-primary);
+  font-size: var(--apple-font-size-sm);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--apple-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-sm);
+}
+
+.form-check-input {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--apple-gray-3);
+  appearance: none;
+  background-color: var(--apple-bg-primary);
+  cursor: pointer;
+  position: relative;
+}
+
+.form-check-input:checked {
+  background-color: var(--apple-primary);
+  border-color: var(--apple-primary);
+}
+
+.form-check-input:checked::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.form-check-label {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-primary);
+  cursor: pointer;
+}
+
+/* ===== 规则模式和关键词 ===== */
+.patterns-container, .keywords-container {
+  margin-top: var(--apple-spacing-md);
+}
+
+.patterns-list, .keywords-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--apple-spacing-sm);
+  margin-bottom: var(--apple-spacing-md);
+}
+
+.pattern-item, .keyword-item {
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-sm);
+  padding: var(--apple-spacing-sm);
+  background-color: var(--apple-bg-secondary);
+  border-radius: 8px;
+}
+
+.pattern-text, .keyword-text {
+  flex: 1;
+  font-family: monospace;
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-primary);
+}
+
+.remove-pattern, .remove-keyword {
+  background: none;
+  border: none;
+  color: var(--apple-danger);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color var(--apple-transition-normal);
+}
+
+.remove-pattern:hover, .remove-keyword:hover {
+  background-color: rgba(255, 59, 48, 0.1);
+}
+
+.add-pattern, .add-keyword {
+  display: flex;
+  gap: var(--apple-spacing-sm);
+}
+
+.add-pattern input, .add-keyword input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--apple-gray-3);
+  background-color: var(--apple-bg-primary);
+  font-size: var(--apple-font-size-sm);
+}
+
+.add-pattern input:focus, .add-keyword input:focus {
+  outline: none;
+  border-color: var(--apple-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.add-pattern-btn, .add-keyword-btn {
+  padding: 8px 12px;
+  background-color: var(--apple-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--apple-transition-normal);
+}
+
+.add-pattern-btn:hover, .add-keyword-btn:hover {
+  background-color: #0062cc;
+}
+
+/* ===== 分页 ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: var(--apple-spacing-sm);
+  margin-top: var(--apple-spacing-lg);
+}
+
+.page-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--apple-bg-primary);
+  color: var(--apple-text-primary);
+  font-size: var(--apple-font-size-sm);
+  cursor: pointer;
+  transition: all var(--apple-transition-normal);
+}
+
+.page-item:hover {
+  background-color: var(--apple-gray-1);
+}
+
+.page-item.active {
+  background-color: var(--apple-primary);
+  color: white;
+}
+
+.page-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 992px) {
+  .rules-filters {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .rules-filters {
+    grid-template-columns: 1fr;
+  }
+  
+  .rules-table-container {
+    overflow-x: auto;
+  }
+  
+  .rules-table {
+    min-width: 800px;
+  }
+  
+  .rule-actions {
+    flex-direction: column;
+  }
+}

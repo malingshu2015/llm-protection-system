@@ -1,0 +1,92 @@
+[
+  {
+    "id": "hc-001",
+    "name": "Violent Content",
+    "description": "Detects requests for violent content",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)how[.\\s]*to[.\\s]*make[.\\s]*(?:a[.\\s]*)?bomb",
+      "(?i)how[.\\s]*to[.\\s]*create[.\\s]*(?:a[.\\s]*)?explosive",
+      "(?i)instructions[.\\s]*for[.\\s]*making[.\\s]*(?:a[.\\s]*)?weapon",
+      "(?i)(?:如何|怎样|how to)[.\\s]*(?:制作|make|create)[.\\s]*(?:炸弹|bomb|爆炸物|explosive)",
+      "(?i)(?:如何|怎样|how to)[.\\s]*(?:杀人|kill|murder)"
+    ],
+    "keywords": ["bomb", "explosive", "weapon", "炸弹", "爆炸物", "武器"],
+    "enabled": true,
+    "block": true,
+    "priority": 15
+  },
+  {
+    "id": "hc-002",
+    "name": "Illegal Activities",
+    "description": "Detects requests for information on illegal activities",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)how[.\\s]*to[.\\s]*hack[.\\s]*(?:a[.\\s]*)?(?:website|account|system)",
+      "(?i)how[.\\s]*to[.\\s]*steal[.\\s]*(?:a[.\\s]*)?(?:credit card|identity)",
+      "(?i)instructions[.\\s]*for[.\\s]*(?:money laundering|drug manufacturing)",
+      "(?i)(?:如何|怎样|how to)[.\\s]*(?:黑入|hack|入侵)[.\\s]*(?:网站|website|账户|account)",
+      "(?i)(?:如何|怎样|how to)[.\\s]*(?:偷窃|steal)[.\\s]*(?:信用卡|credit card)"
+    ],
+    "keywords": ["hack", "steal", "illegal", "黑入", "入侵", "偷窃"],
+    "enabled": true,
+    "block": true,
+    "priority": 16
+  },
+  {
+    "id": "hc-003",
+    "name": "Harmful Misinformation",
+    "description": "Detects requests to generate harmful misinformation",
+    "detection_type": "harmful_content",
+    "severity": "medium",
+    "patterns": [
+      "(?i)create[.\\s]*fake[.\\s]*news[.\\s]*about",
+      "(?i)write[.\\s]*misinformation[.\\s]*about",
+      "(?i)generate[.\\s]*conspiracy[.\\s]*theory[.\\s]*about",
+      "(?i)(?:创建|create|编写|write)[.\\s]*(?:假|fake|虚假)[.\\s]*(?:新闻|news|信息|information)",
+      "(?i)(?:生成|generate)[.\\s]*(?:阴谋论|conspiracy theory)"
+    ],
+    "keywords": ["fake news", "misinformation", "conspiracy", "假新闻", "虚假信息", "阴谋论"],
+    "enabled": true,
+    "block": true,
+    "priority": 17
+  },
+  {
+    "id": "hc-004",
+    "name": "Self-harm Content",
+    "description": "Detects requests for self-harm content",
+    "detection_type": "harmful_content",
+    "severity": "critical",
+    "patterns": [
+      "(?i)how[.\\s]*to[.\\s]*(?:commit suicide|kill myself)",
+      "(?i)best[.\\s]*way[.\\s]*to[.\\s]*(?:end my life|harm myself)",
+      "(?i)methods[.\\s]*for[.\\s]*(?:suicide|self-harm)",
+      "(?i)(?:如何|怎样|how to)[.\\s]*(?:自杀|suicide|自残|self-harm)",
+      "(?i)(?:最佳|best)[.\\s]*(?:自杀|suicide)[.\\s]*(?:方法|method|方式|way)",
+      "(?i)(?:结束|end)[.\\s]*(?:生命|life|我的生命|my life)"
+    ],
+    "keywords": ["suicide", "self-harm", "kill myself", "自杀", "自残", "结束生命"],
+    "enabled": true,
+    "block": true,
+    "priority": 18
+  },
+  {
+    "id": "hc-005",
+    "name": "Child Exploitation Content",
+    "description": "Detects requests related to child exploitation",
+    "detection_type": "harmful_content",
+    "severity": "critical",
+    "patterns": [
+      "(?i)child[.\\s]*(?:pornography|exploitation)",
+      "(?i)underage[.\\s]*(?:sexual|explicit)[.\\s]*content",
+      "(?i)(?:儿童|child)[.\\s]*(?:色情|pornography|exploitation|剥削)",
+      "(?i)(?:未成年|underage)[.\\s]*(?:性|sexual|explicit)"
+    ],
+    "keywords": ["child", "underage", "exploitation", "儿童", "未成年", "剥削"],
+    "enabled": true,
+    "block": true,
+    "priority": 19
+  }
+]

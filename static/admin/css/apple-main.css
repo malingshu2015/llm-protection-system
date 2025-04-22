@@ -1,0 +1,91 @@
+/*
+ * 苹果风格的大模型防火墙主样式文件
+ * 导入所有样式文件
+ */
+
+/* 导入基础样式 */
+@import url('/static/admin/css/apple-style.css');
+
+/* 导入布局样式 */
+@import url('/static/admin/css/apple-layout.css');
+
+/* 导入组件样式 */
+@import url('/static/admin/css/apple-components.css');
+
+/* 导入页面特定样式 */
+@import url('/static/admin/css/apple-dashboard.css');
+@import url('/static/admin/css/apple-models.css');
+@import url('/static/admin/css/apple-rules.css');
+@import url('/static/admin/css/apple-events.css');
+@import url('/static/admin/css/apple-filters.css');
+
+/* 自定义图标字体 */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+/* 额外的全局样式 */
+body {
+  overflow-x: hidden;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--apple-bg-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--apple-gray-4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--apple-gray-5);
+}
+
+/* 选择文本样式 */
+::selection {
+  background-color: rgba(0, 122, 255, 0.2);
+  color: var(--apple-text-primary);
+}
+
+/* 焦点轮廓样式 */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--apple-primary);
+  outline-offset: 2px;
+}
+
+/* 打印样式 */
+@media print {
+
+  .sidebar,
+  .top-navbar,
+  .page-actions,
+  .card-actions,
+  .pagination {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: 1px solid var(--apple-gray-2) !important;
+  }
+
+  body {
+    background-color: white !important;
+  }
+}

@@ -1,0 +1,240 @@
+[
+  {
+    "id": "pi-001",
+    "name": "Ignore Previous Instructions",
+    "description": "Detects attempts to make the model ignore previous instructions",
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:忽[.\\s]*略|disregard|ignore)[.\\s]*(?:所有|全部|之前|previous|above|earlier)[.\\s]*(?:指[.\\s]*令|instructions)",
+      "(?i)(?:不要|don't)[.\\s]*(?:遵循|follow)[.\\s]*(?:之前|previous)[.\\s]*(?:指令|instructions)",
+      "(?i)(?:forget|忘记)[.\\s]*(?:your|all|之前|previous)[.\\s]*(?:instructions|training|指令|训练)",
+      "(?i)(?:开始|start)[.\\s]*(?:新的|new|fresh)[.\\s]*(?:对话|conversation)[.\\s]*(?:忽略|ignore)[.\\s]*(?:之前|previous)",
+      "(?i)(?:从现在开始|from now on)[.\\s]*(?:你|you)[.\\s]*(?:应该|should|must|必须)[.\\s]*(?:忽略|ignore)"
+    ],
+    "keywords": [
+      "ignore",
+      "disregard",
+      "previous instructions",
+      "忽略",
+      "指令",
+      "forget",
+      "不要遵循"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 10
+  },
+  {
+    "id": "pi-002",
+    "name": "System Prompt Extraction",
+    "description": "Detects attempts to extract the system prompt",
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "patterns": [
+      "(?i)what[.\\s]*(?:was|were)[.\\s]*your[.\\s]*instructions",
+      "(?i)tell[.\\s]*me[.\\s]*your[.\\s]*instructions",
+      "(?i)what[.\\s]*(?:is|are)[.\\s]*your[.\\s]*system[.\\s]*prompt",
+      "(?i)(?:告诉|tell)[.\\s]*(?:我|me)[.\\s]*(?:你的|your)[.\\s]*(?:系统提示|system prompt)",
+      "(?i)(?:你的|your)[.\\s]*(?:系统提示|system prompt)[.\\s]*(?:是什么|是啥|what is)",
+      "(?i)(?:显示|show|display)[.\\s]*(?:你的|your)[.\\s]*(?:初始|initial)[.\\s]*(?:指令|instructions)",
+      "(?i)(?:输出|output)[.\\s]*(?:你的|your)[.\\s]*(?:系统|system)[.\\s]*(?:消息|message)",
+      "(?i)(?:你被|you were)[.\\s]*(?:如何|how)[.\\s]*(?:编程|programmed)"
+    ],
+    "keywords": [
+      "instructions",
+      "system prompt",
+      "系统提示",
+      "指令",
+      "initial message",
+      "初始消息"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 11
+  },
+  {
+    "id": "pi-003",
+    "name": "DAN (Do Anything Now) Jailbreak",
+    "description": "Detects DAN jailbreak attempts",
+    "detection_type": "jailbreak",
+    "severity": "critical",
+    "patterns": [
+      "(?i)you[.\\s]*are[.\\s]*now[.\\s]*DAN",
+      "(?i)DAN[.\\s]*mode[.\\s]*enabled",
+      "(?i)Do[.\\s]*Anything[.\\s]*Now",
+      "(?i)(?:你现在是|you are now|act as)[.\\s]*(?:DAN|Do Anything Now)",
+      "(?i)(?:没有|no)[.\\s]*(?:限制|restrictions|ethics|伦理|道德)",
+      "(?i)(?:突破|break|违反|violate)[.\\s]*(?:你的|your)[.\\s]*(?:限制|restrictions|guidelines|指导方针)",
+      "(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM|ANTI-DAN)[.\\s]*(?:模式|mode)\\b",
+      "(?i)\\b(?:STAN|DUDE|KEVIN|DAVE|AIM|ANTI-DAN)\\s+jailbreak",
+      "(?i)(?:扮演|act as|pretend to be)[.\\s]*(?:一个|a)[.\\s]*(?:没有|without)[.\\s]*(?:伦理|ethics|道德|morals)[.\\s]*(?:的|的人|person)",
+      "(?i)(?:假装|pretend)[.\\s]*(?:你没有|you don't have)[.\\s]*(?:任何|any)[.\\s]*(?:限制|restrictions|约束|constraints)",
+      "(?i)\\bDAN\\b(?!\\s+在|\\s+is|\\s+是|\\s+的|\\s+中|\\s+和|\\s+与)"
+    ],
+    "keywords": [
+      "DAN jailbreak",
+      "Do Anything Now",
+      "没有限制",
+      "no restrictions",
+      "STAN jailbreak",
+      "DUDE jailbreak",
+      "KEVIN jailbreak",
+      "DAVE jailbreak",
+      "AIM jailbreak"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 5
+  },
+  {
+    "id": "pi-004",
+    "name": "Role Play Harmful Characters",
+    "description": "Detects attempts to make the model role play as harmful characters",
+    "detection_type": "role_play",
+    "severity": "high",
+    "patterns": [
+      "(?i)pretend[.\\s]*to[.\\s]*be[.\\s]*a[.\\s]*hacker",
+      "(?i)act[.\\s]*as[.\\s]*if[.\\s]*you[.\\s]*are[.\\s]*a[.\\s]*criminal",
+      "(?i)role[.\\s]*play[.\\s]*as[.\\s]*a[.\\s]*terrorist",
+      "(?i)(?:扮演|假装|pretend|act as|role play)[.\\s]*(?:一个|a)?[.\\s]*(?:黑客|hacker|骇客)",
+      "(?i)(?:扮演|假装|pretend|act as|role play)[.\\s]*(?:一个|a)?[.\\s]*(?:犯罪|criminal)",
+      "(?i)(?:扮演|假装|pretend|act as|role play)[.\\s]*(?:一个|a)?[.\\s]*(?:恐怖分子|terrorist)",
+      "(?i)(?:扮演|假装|pretend|act as|role play)[.\\s]*(?:一个|a)?[.\\s]*(?:毒贩|drug dealer)",
+      "(?i)(?:你是|you are)[.\\s]*(?:一个|a)[.\\s]*(?:没有|without)[.\\s]*(?:道德|morals|伦理|ethics)[.\\s]*(?:的|的人|person)",
+      "(?i)(?:扮演|假装|pretend|act as|role play)[.\\s]*(?:一个|a)?[.\\s]*(?:邪恶|evil|恶意|malicious)[.\\s]*(?:的|的人|person|AI|人工智能)"
+    ],
+    "keywords": [
+      "pretend",
+      "act as",
+      "role play",
+      "扮演",
+      "假装",
+      "黑客",
+      "hacker",
+      "criminal",
+      "terrorist"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 12
+  },
+  {
+    "id": "pi-005",
+    "name": "Prompt Leaking",
+    "description": "Detects attempts to leak the prompt",
+    "detection_type": "prompt_injection",
+    "severity": "medium",
+    "patterns": [
+      "(?i)repeat[.\\s]*the[.\\s]*above[.\\s]*instructions[.\\s]*verbatim",
+      "(?i)repeat[.\\s]*everything[.\\s]*above[.\\s]*this[.\\s]*line",
+      "(?i)print[.\\s]*the[.\\s]*full[.\\s]*prompt",
+      "(?i)(?:重复|repeat)[.\\s]*(?:上面|above)[.\\s]*(?:的|the)?[.\\s]*(?:指令|instructions)",
+      "(?i)(?:输出|output|打印|print)[.\\s]*(?:完整|full|entire)[.\\s]*(?:提示|prompt)",
+      "(?i)(?:复制|copy)[.\\s]*(?:粘贴|paste)[.\\s]*(?:上面|above)[.\\s]*(?:的内容|content)",
+      "(?i)(?:逐字|verbatim|word for word)[.\\s]*(?:重复|repeat)[.\\s]*(?:我的|my)[.\\s]*(?:提示|prompt|指令|instructions)",
+      "(?i)(?:显示|show|display)[.\\s]*(?:这个|this)[.\\s]*(?:对话|conversation)[.\\s]*(?:的|of)[.\\s]*(?:提示|prompt)"
+    ],
+    "keywords": [
+      "repeat",
+      "verbatim",
+      "print prompt",
+      "重复",
+      "指令",
+      "复制粘贴",
+      "逐字重复"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 13
+  },
+  {
+    "id": "pi-006",
+    "name": "Character Splitting Evasion",
+    "description": "Detects attempts to evade detection by splitting characters",
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "patterns": [
+      "(?i)i+\\s*g+\\s*n+\\s*o+\\s*r+\\s*e+",
+      "(?i)d+\\s*i+\\s*s+\\s*r+\\s*e+\\s*g+\\s*a+\\s*r+\\s*d+",
+      "(?i)忽\\s*略",
+      "(?i)指\\s*令",
+      "(?i)系\\s*统\\s*提\\s*示",
+      "(?i)D\\s*A\\s*N",
+      "(?i)绕\\s*过\\s*限\\s*制",
+      "(?i)b+\\s*y+\\s*p+\\s*a+\\s*s+\\s*s+",
+      "(?i)e+\\s*v+\\s*a+\\s*d+\\s*e+",
+      "(?i)c+\\s*i+\\s*r+\\s*c+\\s*u+\\s*m+\\s*v+\\s*e+\\s*n+\\s*t+",
+      "(?i)忽[.\\s]*略[.\\s]*上[.\\s]*面[.\\s]*的[.\\s]*指[.\\s]*令",
+      "(?i)请[.\\s]*忽[.\\s]*略[.\\s]*上[.\\s]*面[.\\s]*的[.\\s]*指[.\\s]*令"
+    ],
+    "keywords": [
+      "i g n o r e",
+      "d i s r e g a r d",
+      "忽 略",
+      "指 令",
+      "系 统 提 示",
+      "D A N",
+      "绕 过",
+      "b y p a s s"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 8
+  },
+  {
+    "id": "pi-007",
+    "name": "Unicode Character Evasion",
+    "description": "Detects attempts to evade detection using unicode characters",
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "patterns": [
+      "(?i)\\u0069\\u0067\\u006e\\u006f\\u0072\\u0065",
+      "(?i)\\u5ffd\\u7565",
+      "(?i)\\u6307\\u4ee4",
+      "(?i)\\u7cfb\\u7edf\\u63d0\\u793a",
+      "(?i)\\u0044\\u0041\\u004e",
+      "(?i)ｉｇｎｏｒｅ",
+      "(?i)ｄｉｓｒｅｇａｒｄ",
+      "(?i)ｓｙｓｔｅｍ　ｐｒｏｍｐｔ",
+      "(?i)ｐｒｅｔｅｎｄ",
+      "(?i)ｒｏｌｅ　ｐｌａｙ"
+    ],
+    "keywords": [
+      "\\u0069\\u0067\\u006e\\u006f\\u0072\\u0065",
+      "\\u5ffd\\u7565",
+      "\\u6307\\u4ee4",
+      "ｉｇｎｏｒｅ",
+      "ｄｉｓｒｅｇａｒｄ"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 7
+  },
+  {
+    "id": "pi-008",
+    "name": "Base64 Encoded Injection",
+    "description": "Detects base64 encoded prompt injection attempts",
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "patterns": [
+      "(?i)decode[.\\s]*the[.\\s]*following[.\\s]*base64",
+      "(?i)aWdub3JlIHByZXZpb3VzIGluc3RydWN0aW9ucw",
+      "(?i)ZGlzcmVnYXJkIGFsbCBwcmV2aW91cyBpbnN0cnVjdGlvbnM",
+      "(?i)eW91IGFyZSBub3cgREFO",
+      "(?i)RG8gQW55dGhpbmcgTm93",
+      "(?i)cHJldGVuZCB0byBiZSBhIGhhY2tlcg",
+      "(?i)(?:解码|decode)[.\\s]*(?:下面|following)[.\\s]*(?:的|the)?[.\\s]*(?:base64|编码)",
+      "(?i)(?:base64|编码)[.\\s]*(?:解码|decode)[.\\s]*(?:这个|this)[.\\s]*(?:字符串|string)"
+    ],
+    "keywords": [
+      "base64",
+      "decode",
+      "解码",
+      "编码"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 6
+  }
+]

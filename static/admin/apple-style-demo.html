@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大模型防火墙 - 苹果风格界面</title>
+  <link rel="stylesheet" href="css/apple-main.css">
+  <script src="js/apple-ui.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoaWVsZCI+PHBhdGggZD0iTTEyIDIycy04LTUtOC0xMlY1bDgtM2w4IDN2N2MwIDctOCAxMi04IDEyeiIvPjwvc3ZnPg==" alt="Logo">
+          <h2>大模型防火墙</h2>
+        </div>
+        <button class="sidebar-toggle">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <ul class="sidebar-menu">
+        <li class="sidebar-menu-item">
+          <a href="index.html" class="sidebar-menu-link active">
+            <span class="sidebar-menu-icon"><i class="fas fa-chart-line"></i></span>
+            <span class="sidebar-menu-text">仪表盘</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="rules.html" class="sidebar-menu-link">
+            <span class="sidebar-menu-icon"><i class="fas fa-shield-alt"></i></span>
+            <span class="sidebar-menu-text">安全规则管理</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="model_rules.html" class="sidebar-menu-link">
+            <span class="sidebar-menu-icon"><i class="fas fa-cogs"></i></span>
+            <span class="sidebar-menu-text">模型规则配置</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="events.html" class="sidebar-menu-link">
+            <span class="sidebar-menu-icon"><i class="fas fa-exclamation-triangle"></i></span>
+            <span class="sidebar-menu-text">安全事件</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="monitor.html" class="sidebar-menu-link">
+            <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
+            <span class="sidebar-menu-text">实时监控</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="models.html" class="sidebar-menu-link">
+            <span class="sidebar-menu-icon"><i class="fas fa-brain"></i></span>
+            <span class="sidebar-menu-text">模型管理</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="/static/index.html" class="sidebar-menu-link">
+            <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
+            <span class="sidebar-menu-text">聊天演示</span>
+          </a>
+        </li>
+      </ul>
+      
+      <div class="sidebar-footer">
+        <div class="d-flex align-items-center justify-content-center gap-sm">
+          <span>暗色模式</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="dark-mode-toggle">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="mt-sm">版本 1.0.0</div>
+      </div>
+    </aside>
+    
+    <!-- 主内容区 -->
+    <main class="main-content">
+      <!-- 顶部导航栏 -->
+      <nav class="top-navbar">
+        <div class="navbar-left">
+          <button class="navbar-menu-toggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1 class="navbar-title">大模型防火墙</h1>
+        </div>
+        <div class="navbar-right">
+          <span id="current-time">2023年6月15日 15:30</span>
+        </div>
+      </nav>
+      
+      <!-- 页面标题 -->
+      <header class="page-header">
+        <h1 class="page-title">仪表盘</h1>
+        <div class="page-actions">
+          <button class="button" id="refresh-status">
+            <i class="fas fa-sync-alt"></i> 刷新数据
+          </button>
+        </div>
+      </header>
+      
+      <!-- 统计卡片 -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon primary">
+            <i class="fas fa-exchange-alt"></i>
+          </div>
+          <div class="stat-card-title">总请求数</div>
+          <div class="stat-card-value">1,234</div>
+          <div class="stat-card-change positive">
+            <i class="fas fa-arrow-up"></i> 12% 较上周
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-card-icon danger">
+            <i class="fas fa-ban"></i>
+          </div>
+          <div class="stat-card-title">已阻止请求</div>
+          <div class="stat-card-value">56</div>
+          <div class="stat-card-change negative">
+            <i class="fas fa-arrow-down"></i> 5% 较上周
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-card-icon warning">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="stat-card-title">安全事件</div>
+          <div class="stat-card-value">89</div>
+          <div class="stat-card-change positive">
+            <i class="fas fa-arrow-up"></i> 8% 较上周
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-card-icon success">
+            <i class="fas fa-brain"></i>
+          </div>
+          <div class="stat-card-title">活跃模型</div>
+          <div class="stat-card-value">5</div>
+          <div class="stat-card-change">
+            <i class="fas fa-minus"></i> 无变化
+          </div>
+        </div>
+      </section>
+      
+      <!-- 系统状态 -->
+      <section class="system-status">
+        <div class="status-header">
+          <h2 class="status-title">系统状态</h2>
+          <button class="status-refresh">
+            <i class="fas fa-sync-alt"></i> 刷新
+          </button>
+        </div>
+        
+        <div class="status-grid">
+          <div class="status-item">
+            <div class="status-label">CPU 使用率</div>
+            <div class="status-value">
+              <span class="status-indicator healthy"></span>
+              32%
+            </div>
+          </div>
+          
+          <div class="status-item">
+            <div class="status-label">内存使用率</div>
+            <div class="status-value">
+              <span class="status-indicator healthy"></span>
+              45%
+            </div>
+          </div>
+          
+          <div class="status-item">
+            <div class="status-label">队列长度</div>
+            <div class="status-value">
+              <span class="status-indicator healthy"></span>
+              3
+            </div>
+          </div>
+          
+          <div class="status-item">
+            <div class="status-label">活动请求</div>
+            <div class="status-value">
+              <span class="status-indicator healthy"></span>
+              12
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 功能模块卡片 -->
+      <section class="feature-modules">
+        <h2 class="content-section-title mb-lg">功能模块概览</h2>
+        
+        <div class="modules-grid">
+          <div class="module-card">
+            <div class="module-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 class="module-title">安全规则管理</h3>
+            <p class="module-description">管理和配置安全检测规则，包括提示注入、越狱尝试、敏感信息等检测。</p>
+            <div class="module-action">
+              <a href="rules.html" class="button">进入管理</a>
+            </div>
+          </div>
+          
+          <div class="module-card">
+            <div class="module-icon">
+              <i class="fas fa-cogs"></i>
+            </div>
+            <h3 class="module-title">模型规则配置</h3>
+            <p class="module-description">为不同的大语言模型配置不同的安全规则集，实现更灵活的安全防护策略管理。</p>
+            <div class="module-action">
+              <a href="model_rules.html" class="button">进入配置</a>
+            </div>
+          </div>
+          
+          <div class="module-card">
+            <div class="module-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="module-title">安全事件查看器</h3>
+            <p class="module-description">查看和分析安全事件，包括事件类型、严重程度、详细信息等。</p>
+            <div class="module-action">
+              <a href="events.html" class="button">查看事件</a>
+            </div>
+          </div>
+          
+          <div class="module-card">
+            <div class="module-icon">
+              <i class="fas fa-desktop"></i>
+            </div>
+            <h3 class="module-title">实时监控面板</h3>
+            <p class="module-description">监控系统运行状态和性能指标，包括 CPU 和内存使用率、请求统计等。</p>
+            <div class="module-action">
+              <a href="monitor.html" class="button">查看监控</a>
+            </div>
+          </div>
+          
+          <div class="module-card">
+            <div class="module-icon">
+              <i class="fas fa-brain"></i>
+            </div>
+            <h3 class="module-title">模型管理</h3>
+            <p class="module-description">管理 Ollama 模型，包括模型列表、拉取和删除等操作。</p>
+            <div class="module-action">
+              <a href="models.html" class="button">管理模型</a>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 最近事件 -->
+      <section class="recent-events">
+        <div class="card">
+          <div class="card-header">
+            <h2>最近安全事件</h2>
+            <div class="card-actions">
+              <a href="events.html" class="button secondary small">查看全部</a>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <ul class="event-list">
+              <li class="event-item">
+                <div class="event-icon danger">
+                  <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="event-content">
+                  <h3 class="event-title">检测到提示注入尝试</h3>
+                  <p class="event-description">用户尝试通过提示注入绕过系统安全限制，已被成功拦截。</p>
+                  <div class="event-meta">
+                    <span class="event-time">
+                      <i class="far fa-clock"></i> 10分钟前
+                    </span>
+                    <span class="event-severity high">高风险</span>
+                  </div>
+                </div>
+              </li>
+              
+              <li class="event-item">
+                <div class="event-icon warning">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="event-content">
+                  <h3 class="event-title">检测到越狱尝试</h3>
+                  <p class="event-description">用户尝试使用DAN越狱提示绕过模型安全限制，已被成功拦截。</p>
+                  <div class="event-meta">
+                    <span class="event-time">
+                      <i class="far fa-clock"></i> 25分钟前
+                    </span>
+                    <span class="event-severity medium">中风险</span>
+                  </div>
+                </div>
+              </li>
+              
+              <li class="event-item">
+                <div class="event-icon info">
+                  <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="event-content">
+                  <h3 class="event-title">检测到敏感信息请求</h3>
+                  <p class="event-description">用户尝试获取敏感信息，请求已被标记但允许通过。</p>
+                  <div class="event-meta">
+                    <span class="event-time">
+                      <i class="far fa-clock"></i> 1小时前
+                    </span>
+                    <span class="event-severity low">低风险</span>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 示例警告提示 -->
+      <section class="alerts-demo">
+        <div class="alert info">
+          <div class="alert-icon">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div class="alert-content">
+            <h3 class="alert-title">信息提示</h3>
+            <p class="alert-message">这是一条信息提示，用于展示一般性的通知信息。</p>
+          </div>
+        </div>
+        
+        <div class="alert success">
+          <div class="alert-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="alert-content">
+            <h3 class="alert-title">成功提示</h3>
+            <p class="alert-message">操作已成功完成，系统状态已更新。</p>
+          </div>
+        </div>
+        
+        <div class="alert warning">
+          <div class="alert-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="alert-content">
+            <h3 class="alert-title">警告提示</h3>
+            <p class="alert-message">请注意，某些操作可能需要额外的权限或验证。</p>
+          </div>
+        </div>
+        
+        <div class="alert danger">
+          <div class="alert-icon">
+            <i class="fas fa-exclamation-circle"></i>
+          </div>
+          <div class="alert-content">
+            <h3 class="alert-title">错误提示</h3>
+            <p class="alert-message">操作失败，请检查您的输入并重试。</p>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 示例模态框 -->
+      <div class="modal-backdrop" id="demo-modal">
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <h3 class="modal-title">示例模态框</h3>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p>这是一个示例模态框，用于展示苹果风格的模态框设计。</p>
+            <form class="rule-form">
+              <div class="form-group">
+                <label class="form-label">规则名称</label>
+                <input type="text" class="form-control" placeholder="输入规则名称">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">规则类型</label>
+                  <select class="form-control">
+                    <option>提示注入</option>
+                    <option>越狱尝试</option>
+                    <option>敏感信息</option>
+                    <option>有害内容</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">严重程度</label>
+                  <select class="form-control">
+                    <option>高</option>
+                    <option>中</option>
+                    <option>低</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">规则描述</label>
+                <textarea class="form-control" placeholder="输入规则描述"></textarea>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="active-check">
+                <label class="form-check-label" for="active-check">启用规则</label>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button class="button secondary" data-modal-close>取消</button>
+            <button class="button primary">保存</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 示例按钮 -->
+      <section class="buttons-demo">
+        <div class="card">
+          <div class="card-header">
+            <h2>按钮示例</h2>
+          </div>
+          <div class="card-body">
+            <div class="d-flex gap-md mb-md">
+              <button class="button">默认按钮</button>
+              <button class="button primary">主要按钮</button>
+              <button class="button secondary">次要按钮</button>
+              <button class="button success">成功按钮</button>
+              <button class="button warning">警告按钮</button>
+              <button class="button danger">危险按钮</button>
+            </div>
+            <div class="d-flex gap-md mb-md">
+              <button class="button outline">轮廓按钮</button>
+              <button class="button small">小按钮</button>
+              <button class="button large">大按钮</button>
+              <button class="button" disabled>禁用按钮</button>
+              <button class="button icon"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="d-flex gap-md">
+              <button class="button" data-modal-target="demo-modal">打开模态框</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  
+  <script>
+    // 更新当前时间
+    function updateCurrentTime() {
+      const now = new Date();
+      const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      document.getElementById('current-time').textContent = now.toLocaleDateString('zh-CN', options);
+    }
+    
+    // 初始化时更新时间
+    updateCurrentTime();
+    
+    // 每分钟更新一次时间
+    setInterval(updateCurrentTime, 60000);
+  </script>
+</body>
+</html>

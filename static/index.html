@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地大模型防护系统 - 聊天演示</title>
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <script src="/static/admin/js/apple-ui.js" defer></script>
+    <style>
+        /* 聊天界面特殊样式 */
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            margin-bottom: 20px;
+            padding: 0;
+            box-shadow: var(--card-shadow);
+        }
+
+        .message {
+            margin: 10px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            max-width: 80%;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .user-message {
+            background-color: var(--primary-color-light);
+            color: var(--text-color-dark);
+            margin-left: auto;
+            margin-right: 10px;
+            border-bottom-right-radius: 2px;
+        }
+
+        .assistant-message {
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            margin-left: 10px;
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+        }
+
+        .message-input-container {
+            display: flex;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex-grow: 1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .message-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-color-light);
+            outline: none;
+        }
+
+        .chat-options-card {
+            margin-bottom: 20px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: center;
+        }
+
+        .option-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .option-label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        /* 安全告警样式 */
+        .security-warning {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+            padding: 12px 16px;
+            font-weight: 500;
+        }
+
+        /* 暗色模式适配 */
+        .dark-mode .user-message {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .dark-mode .assistant-message {
+            background-color: var(--bg-dark-secondary);
+            color: var(--text-color-light);
+        }
+
+        .dark-mode .security-warning {
+            background-color: #4a1515;
+            color: #ff8a80;
+            border-left: 4px solid #ff5252;
+        }
+
+        /* 消息时间戳 */
+        .message-time {
+            font-size: 11px;
+            color: var(--text-color-light);
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        /* 消息状态指示器 */
+        .typing-indicator {
+            display: inline-block;
+            padding-left: 3px;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            height: 6px;
+            width: 6px;
+            background-color: var(--text-color-light);
+            border-radius: 50%;
+            opacity: 0.7;
+            margin-right: 3px;
+            animation: typing 1.5s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoaWVsZCI+PHBhdGggZD0iTTEyIDIycy04LTUtOC0xMlY1bDgtM2w4IDN2N2MwIDctOCAxMi04IDEyeiIvPjwvc3ZnPg==" alt="Logo">
+                    <h2>本地大模型防护系统</h2>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="/static/admin/index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="sidebar-menu-text">仪表盘</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/admin/rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="sidebar-menu-text">安全规则管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/admin/model_rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-cogs"></i></span>
+                        <span class="sidebar-menu-text">模型规则配置</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/admin/events.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="sidebar-menu-text">安全事件</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/admin/monitor.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
+                        <span class="sidebar-menu-text">实时监控</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/admin/models.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-brain"></i></span>
+                        <span class="sidebar-menu-text">模型管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/index.html" class="sidebar-menu-link active">
+                        <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
+                        <span class="sidebar-menu-text">聊天演示</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center justify-content-center gap-sm">
+                    <span>暗色模式</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="mt-sm">版本 1.0.0</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- 顶部导航栏 -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="navbar-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="navbar-title">本地大模型防护系统</h1>
+                </div>
+                <div class="navbar-right">
+                    <span id="current-time"></span>
+                </div>
+            </nav>
+
+            <!-- 页面标题 -->
+            <header class="page-header">
+                <h1 class="page-title">聊天演示</h1>
+                <div class="page-actions">
+                    <button class="button" id="clear-chat-btn">
+                        <i class="fas fa-trash-alt"></i> 清空对话
+                    </button>
+                </div>
+            </header>
+
+            <!-- 模型选项卡片 -->
+            <div class="card chat-options-card mb-md">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-sliders-h"></i>
+                        模型设置
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="options-grid">
+                        <div class="option-item">
+                            <label for="model-select" class="option-label">模型</label>
+                            <select id="model-select" class="select-control">
+                                <option value="llama2:latest">Llama 2</option>
+                                <option value="tinyllama:latest">Tiny Llama</option>
+                                <option value="gemma3:latest">Gemma 3</option>
+                                <option value="qwq:latest">Qwen</option>
+                                <option value="deepseek-r1:14b">DeepSeek (14B)</option>
+                            </select>
+                        </div>
+
+                        <div class="option-item">
+                            <label for="temperature" class="option-label">温度</label>
+                            <input type="number" id="temperature" class="input-control" min="0" max="2" step="0.1"
+                                value="0.7">
+                        </div>
+
+                        <div class="option-item">
+                            <label for="max-tokens" class="option-label">最大令牌数</label>
+                            <input type="number" id="max-tokens" class="input-control" min="10" max="4096" step="10"
+                                value="1000">
+                        </div>
+
+                        <div class="option-item">
+                            <label class="option-label">流式响应</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="stream-checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 聊天卡片 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-comment-dots"></i>
+                        对话
+                    </h2>
+                </div>
+                <div class="card-body p-0">
+                    <div class="chat-container" id="chat-container"></div>
+
+                    <div class="p-md">
+                        <div class="message-input-container">
+                            <input type="text" class="message-input" id="message-input" placeholder="输入您的消息...">
+                            <button class="button primary" id="send-button">
+                                <i class="fas fa-paper-plane"></i> 发送
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // DOM 元素
+            const chatContainer = document.getElementById('chat-container');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+            const clearChatBtn = document.getElementById('clear-chat-btn');
+            const modelSelect = document.getElementById('model-select');
+            const temperatureInput = document.getElementById('temperature');
+            const maxTokensInput = document.getElementById('max-tokens');
+            const streamCheckbox = document.getElementById('stream-checkbox');
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const currentTimeEl = document.getElementById('current-time');
+            const menuToggle = document.querySelector('.navbar-menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+
+            // 状态变量
+            let messages = [];
+            let currentAssistantMessage = null;
+            let isProcessing = false;
+
+            // 初始化函数
+            function initialize() {
+                // 设置事件监听器
+                setupEventListeners();
+
+                // 更新当前时间
+                updateCurrentTime();
+                setInterval(updateCurrentTime, 1000);
+
+                // 加载模型列表
+                loadModels();
+
+                // 检查暗色模式设置
+                checkDarkModePreference();
+
+                // 添加初始欢迎消息
+                addMessage({
+                    content: '欢迎使用 本地大模型防护系统聊天演示。请输入您的消息开始对话。',
+                    isUser: false,
+                    timestamp: new Date()
+                });
+            }
+
+            // 设置事件监听器
+            function setupEventListeners() {
+                // 发送消息
+                sendButton.addEventListener('click', handleSendMessage);
+                messageInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        handleSendMessage();
+                    }
+                });
+
+                // 清空对话
+                clearChatBtn.addEventListener('click', clearChat);
+
+                // 暗色模式切换
+                darkModeToggle.addEventListener('change', toggleDarkMode);
+
+                // 菜单切换
+                menuToggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('open');
+                });
+            }
+
+            // 更新当前时间
+            function updateCurrentTime() {
+                const now = new Date();
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                };
+                currentTimeEl.textContent = now.toLocaleDateString('zh-CN', options);
+            }
+
+            // 检查暗色模式偏好
+            function checkDarkModePreference() {
+                const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const savedMode = localStorage.getItem('darkMode');
+
+                if (savedMode === 'true' || (savedMode === null && prefersDarkMode)) {
+                    document.body.classList.add('dark-mode');
+                    darkModeToggle.checked = true;
+                }
+            }
+
+            // 切换暗色模式
+            function toggleDarkMode() {
+                document.body.classList.toggle('dark-mode');
+                localStorage.setItem('darkMode', darkModeToggle.checked);
+            }
+
+            // 清空对话
+            function clearChat() {
+                if (confirm('确定要清空当前对话吗？')) {
+                    chatContainer.innerHTML = '';
+                    messages = [];
+                    // 添加新的欢迎消息
+                    addMessage({
+                        content: '对话已清空。请输入新的消息开始对话。',
+                        isUser: false,
+                        timestamp: new Date()
+                    });
+                }
+            }
+
+            // 加载可用模型列表
+            async function loadModels() {
+                try {
+                    const response = await fetch('/api/v1/ollama/models');
+                    const data = await response.json();
+
+                    if (data.models && Array.isArray(data.models)) {
+                        // 清空当前选项
+                        modelSelect.innerHTML = '';
+
+                        // 添加新选项
+                        data.models.forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model.model;
+                            option.textContent = model.model.split(':')[0];
+                            if (model.details && model.details.parameter_size) {
+                                option.textContent += ` (${model.details.parameter_size})`;
+                            }
+                            modelSelect.appendChild(option);
+                        });
+
+                        console.log('成功加载模型列表:', data.models.length);
+                    }
+                } catch (error) {
+                    console.error('加载模型列表失败:', error);
+                    showNotification('加载模型列表失败', 'error');
+                }
+            }
+
+            // 显示通知
+            function showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div class="notification-content">
+                        <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                    <button class="notification-close"><i class="fas fa-times"></i></button>
+                `;
+
+                document.body.appendChild(notification);
+
+                // 添加关闭按钮事件
+                notification.querySelector('.notification-close').addEventListener('click', function () {
+                    notification.remove();
+                });
+
+                // 5秒后自动关闭
+                setTimeout(() => {
+                    notification.classList.add('fade-out');
+                    setTimeout(() => notification.remove(), 500);
+                }, 5000);
+            }
+
+            // 初始化页面
+            initialize();
+
+            // 添加消息到聊天界面
+            function addMessage(messageData) {
+                // 支持旧版调用方式
+                let content, isUser, timestamp;
+                if (typeof messageData === 'string') {
+                    content = messageData;
+                    isUser = arguments[1] || false;
+                    timestamp = new Date();
+                } else {
+                    content = messageData.content;
+                    isUser = messageData.isUser;
+                    timestamp = messageData.timestamp || new Date();
+                }
+
+                // 创建消息元素
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
+
+                // 消息内容
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.textContent = content;
+                messageDiv.appendChild(messageContent);
+
+                // 消息时间
+                const messageTime = document.createElement('div');
+                messageTime.className = 'message-time';
+                messageTime.textContent = formatTime(timestamp);
+                messageDiv.appendChild(messageTime);
+
+                // 添加到容器并滚动
+                chatContainer.appendChild(messageDiv);
+                scrollToBottom();
+
+                return messageDiv;
+            }
+
+            // 格式化时间
+            function formatTime(date) {
+                return date.toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            // 滚动到底部
+            function scrollToBottom() {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            // 处理发送消息
+            async function handleSendMessage() {
+                const userMessage = messageInput.value.trim();
+                if (!userMessage || isProcessing) return;
+
+                // 设置处理状态
+                isProcessing = true;
+                sendButton.disabled = true;
+                sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发送中';
+
+                try {
+                    // 添加用户消息到界面
+                    addMessage({
+                        content: userMessage,
+                        isUser: true,
+                        timestamp: new Date()
+                    });
+
+                    // 添加消息到历史记录
+                    messages.push({
+                        role: 'user',
+                        content: userMessage
+                    });
+
+                    // 清空输入框
+                    messageInput.value = '';
+
+                    // 创建助手消息占位符
+                    const now = new Date();
+                    currentAssistantMessage = addMessage({
+                        content: '',
+                        isUser: false,
+                        timestamp: now
+                    });
+
+                    // 添加打字指示器
+                    const typingIndicator = document.createElement('div');
+                    typingIndicator.className = 'typing-indicator';
+                    typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                    currentAssistantMessage.querySelector('.message-content').appendChild(typingIndicator);
+
+                    // 发送请求到服务器
+                    await sendMessageToServer(userMessage);
+
+                } catch (error) {
+                    console.error('发送消息失败:', error);
+                    showNotification('发送消息失败: ' + error.message, 'error');
+                } finally {
+                    // 重置状态
+                    isProcessing = false;
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
+                }
+            }
+
+            // 发送消息到服务器
+            async function sendMessageToServer(userMessage) {
+                // 准备请求参数
+                const requestData = {
+                    model: modelSelect.value,
+                    messages: messages,
+                    stream: streamCheckbox.checked,
+                    temperature: parseFloat(temperatureInput.value),
+                    max_tokens: parseInt(maxTokensInput.value)
+                };
+
+                try {
+                    // 移除打字指示器
+                    const typingIndicator = currentAssistantMessage.querySelector('.typing-indicator');
+                    if (typingIndicator) {
+                        typingIndicator.remove();
+                    }
+
+                    // 获取消息内容元素
+                    const messageContent = currentAssistantMessage.querySelector('.message-content');
+
+                    if (streamCheckbox.checked) {
+                        // 流式请求
+                        const response = await fetch('/api/v1/ollama/chat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(requestData)
+                        });
+
+                        // 检查响应状态
+                        if (!response.ok) {
+                            // 如果状态码不是 200，尝试解析错误信息
+                            try {
+                                const errorData = await response.json();
+                                console.error('安全检测失败:', errorData);
+
+                                // 显示错误消息
+                                let errorMessage = '';
+                                if (errorData.error) {
+                                    // 检查是否包含连接Ollama的错误
+                                    if (errorData.error.includes('连接 Ollama') ||
+                                        errorData.error.includes('调用 Ollama') ||
+                                        errorData.error.includes('Connection refused')) {
+                                        errorMessage = '连接Ollama服务失败: ' + errorData.error;
+                                        showNotification('连接Ollama服务失败', 'error');
+                                    } else {
+                                        // 安全防火墙拦截
+                                        errorMessage = '请求被安全防火墙拦截: ' + errorData.error;
+                                        showNotification('请求被安全防火墙拦截', 'error');
+                                    }
+                                } else if (errorData.detail) {
+                                    errorMessage = errorData.detail;
+                                } else {
+                                    errorMessage = '请求处理失败';
+                                }
+
+                                // 添加警告样式
+                                messageContent.textContent = errorMessage;
+                                currentAssistantMessage.classList.add('security-warning');
+                                return;
+                            } catch (e) {
+                                // 如果无法解析JSON，显示状态码
+                                messageContent.textContent = `请求被拦截 (状态码: ${response.status})`;
+                                currentAssistantMessage.classList.add('security-warning');
+                                return;
+                            }
+                        }
+
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        let fullResponse = ''; // 用于存储完整的响应
+
+                        while (true) {
+                            const { value, done } = await reader.read();
+                            if (done) break;
+
+                            const chunk = decoder.decode(value);
+                            const lines = chunk.split('\n\n');
+
+                            for (const line of lines) {
+                                if (line.startsWith('data: ')) {
+                                    const data = line.substring(6);
+                                    if (data === '[DONE]') continue;
+
+                                    try {
+                                        const jsonData = JSON.parse(data);
+                                        if (jsonData.error) {
+                                            console.error('Error:', jsonData.error);
+                                            messageContent.textContent = `错误: ${jsonData.error}`;
+                                            showNotification(`模型响应错误: ${jsonData.error}`, 'error');
+                                            continue;
+                                        }
+
+                                        // 提取消息内容
+                                        let content = extractContentFromResponse(jsonData);
+
+                                        if (content && content.trim() !== '') {
+                                            // 累加内容
+                                            fullResponse += content;
+                                            messageContent.textContent = fullResponse;
+                                            // 滚动到底部
+                                            scrollToBottom();
+                                        }
+                                    } catch (e) {
+                                        console.error('解析响应时出错:', e);
+                                    }
+                                }
+                            }
+                        }
+
+                        // 添加助手消息到历史记录
+                        if (fullResponse && fullResponse.trim() !== '') {
+                            // 过滤掉可能的元数据信息
+                            if (!fullResponse.includes('created_at') && !fullResponse.includes('duration')) {
+                                // 使用完整累积的响应
+                                messages.push({
+                                    role: 'assistant',
+                                    content: fullResponse
+                                });
+                            }
+                        }
+
+                        // 从响应中提取内容
+                        function extractContentFromResponse(jsonData) {
+                            // 处理不同格式的响应
+                            let content = '';
+
+                            // 标准 Ollama 响应格式
+                            if (jsonData.message && jsonData.message.content) {
+                                content = jsonData.message.content;
+                            }
+                            // 直接包含 content 的格式
+                            else if (jsonData.content) {
+                                content = jsonData.content;
+                            }
+                            // 包含 response 的格式
+                            else if (jsonData.response) {
+                                content = jsonData.response;
+                            }
+                            // 元数据信息中的消息内容
+                            else if ((jsonData.model || jsonData.created_at || jsonData.done) && jsonData.message && jsonData.message.content) {
+                                content = jsonData.message.content;
+                            }
+                            // 尝试提取任何可能的文本内容
+                            else if (typeof jsonData === 'object') {
+                                let extractedText = '';
+                                for (const key in jsonData) {
+                                    if (typeof jsonData[key] === 'string') {
+                                        // 过滤掉元数据字段
+                                        if (key !== 'model' && key !== 'created_at' && !key.includes('duration') && !key.includes('eval')) {
+                                            extractedText += jsonData[key] + ' ';
+                                        }
+                                    } else if (typeof jsonData[key] === 'object' && jsonData[key] !== null) {
+                                        // 递归查找嵌套对象中的文本
+                                        for (const nestedKey in jsonData[key]) {
+                                            if (typeof jsonData[key][nestedKey] === 'string') {
+                                                extractedText += jsonData[key][nestedKey] + ' ';
+                                            }
+                                        }
+                                    }
+                                }
+                                content = extractedText;
+                            }
+
+                            return content;
+                        }
+                    } else {
+                        // 非流式请求
+                        const response = await fetch('/api/v1/ollama/chat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(requestData)
+                        });
+
+                        // 检查响应状态
+                        if (!response.ok) {
+                            // 如果状态码不是 200，尝试解析错误信息
+                            try {
+                                const errorData = await response.json();
+                                console.error('安全检测失败:', errorData);
+
+                                // 显示错误消息
+                                let errorMessage = '';
+                                if (errorData.error) {
+                                    // 检查是否包含连接Ollama的错误
+                                    if (errorData.error.includes('连接 Ollama') ||
+                                        errorData.error.includes('调用 Ollama') ||
+                                        errorData.error.includes('Connection refused')) {
+                                        errorMessage = '连接Ollama服务失败: ' + errorData.error;
+                                        showNotification('连接Ollama服务失败', 'error');
+                                    } else {
+                                        // 安全防火墙拦截
+                                        errorMessage = '请求被安全防火墙拦截: ' + errorData.error;
+                                        showNotification('请求被安全防火墙拦截', 'error');
+                                    }
+                                } else if (errorData.detail) {
+                                    errorMessage = errorData.detail;
+                                } else {
+                                    errorMessage = '请求处理失败';
+                                }
+
+                                // 添加警告样式
+                                messageContent.textContent = errorMessage;
+                                currentAssistantMessage.classList.add('security-warning');
+                                return;
+                            } catch (e) {
+                                // 如果无法解析JSON，显示状态码
+                                messageContent.textContent = `请求被拦截 (状态码: ${response.status})`;
+                                currentAssistantMessage.classList.add('security-warning');
+                                return;
+                            }
+                        }
+
+                        const data = await response.json();
+
+                        if (data.error) {
+                            messageContent.textContent = `错误: ${data.error}`;
+                            showNotification(`模型响应错误: ${data.error}`, 'error');
+                            return;
+                        }
+
+                        // 处理响应数据
+                        let content = '';
+
+                        // 处理 Ollama API 响应格式
+                        if (data.message && data.message.content) {
+                            content = data.message.content;
+                        }
+                        // 直接包含 content 的格式
+                        else if (data.content) {
+                            content = data.content;
+                        }
+                        // 包含 response 的格式
+                        else if (data.response) {
+                            content = data.response;
+                        }
+                        // 尝试提取任何可能的文本内容
+                        else {
+                            let extractedText = '';
+                            if (typeof data === 'object') {
+                                for (const key in data) {
+                                    if (typeof data[key] === 'string') {
+                                        // 过滤掉元数据字段
+                                        if (key !== 'model' && key !== 'created_at' && !key.includes('duration') && !key.includes('eval')) {
+                                            extractedText += data[key] + ' ';
+                                        }
+                                    } else if (typeof data[key] === 'object' && data[key] !== null) {
+                                        // 如果是 message 对象，直接提取 content
+                                        if (key === 'message' && data[key].content) {
+                                            extractedText = data[key].content;
+                                            break; // 找到了标准格式，直接使用
+                                        }
+
+                                        // 递归查找嵌套对象中的文本
+                                        for (const nestedKey in data[key]) {
+                                            if (typeof data[key][nestedKey] === 'string') {
+                                                if (nestedKey === 'content') {
+                                                    // 如果是 content 字段，优先使用
+                                                    extractedText = data[key][nestedKey];
+                                                    break;
+                                                } else if (nestedKey !== 'role' && !nestedKey.includes('time')) {
+                                                    extractedText += data[key][nestedKey] + ' ';
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                content = extractedText;
+                            }
+                        }
+
+                        // 更新消息内容
+                        if (content && content.trim() !== '') {
+                            messageContent.textContent = content;
+
+                            // 添加助手消息到历史记录
+                            if (!content.includes('created_at') && !content.includes('duration')) {
+                                messages.push({
+                                    role: 'assistant',
+                                    content: content
+                                });
+                            }
+                        } else {
+                            messageContent.textContent = '无法解析响应内容';
+                            showNotification('无法解析模型响应', 'error');
+                        }
+                    }
+                } catch (error) {
+                    console.error('请求出错:', error);
+                    // 获取消息内容元素
+                    const messageContent = currentAssistantMessage.querySelector('.message-content');
+                    if (messageContent) {
+                        messageContent.textContent = `错误: ${error.message}`;
+                    }
+                    showNotification(`请求出错: ${error.message}`, 'error');
+                }
+            }
+
+            // 添加通知样式
+            const notificationStyle = document.createElement('style');
+            notificationStyle.textContent = `
+                .notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 12px 16px;
+                    border-radius: 8px;
+                    background-color: var(--bg-light);
+                    color: var(--text-color);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    z-index: 1000;
+                    max-width: 350px;
+                    animation: slide-in 0.3s ease-out;
+                }
+
+                .notification-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+
+                .notification.info i {
+                    color: var(--primary-color);
+                }
+
+                .notification.error i {
+                    color: var(--danger-color);
+                }
+
+                .notification-close {
+                    background: none;
+                    border: none;
+                    color: var(--text-color-light);
+                    cursor: pointer;
+                    padding: 0;
+                    margin-left: 10px;
+                    opacity: 0.7;
+                }
+
+                .notification-close:hover {
+                    opacity: 1;
+                }
+
+                .notification.fade-out {
+                    animation: fade-out 0.5s ease-out forwards;
+                }
+
+                @keyframes slide-in {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+
+                @keyframes fade-out {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+
+                .dark-mode .notification {
+                    background-color: var(--bg-dark-secondary);
+                    color: var(--text-color-light);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                }
+            `;
+            document.head.appendChild(notificationStyle);
+        });
+    </script>
+
+    <!-- 添加 Font Awesome 图标 -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

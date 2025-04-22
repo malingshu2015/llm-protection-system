@@ -1,0 +1,302 @@
+[
+  {
+    "id": "high_security",
+    "name": "高安全级别模板",
+    "description": "适用于高安全要求场景的规则集，启用所有关键安全规则，严格控制模型输出",
+    "rules": [
+      {
+        "rule_id": "pi-001",
+        "enabled": true,
+        "priority": 10
+      },
+      {
+        "rule_id": "pi-002",
+        "enabled": true,
+        "priority": 11
+      },
+      {
+        "rule_id": "pi-003",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "pi-004",
+        "enabled": true,
+        "priority": 12
+      },
+      {
+        "rule_id": "pi-005",
+        "enabled": true,
+        "priority": 13
+      },
+      {
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15
+      },
+      {
+        "rule_id": "hc-002",
+        "enabled": true,
+        "priority": 16
+      },
+      {
+        "rule_id": "hc-003",
+        "enabled": true,
+        "priority": 17
+      },
+      {
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18
+      },
+      {
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19
+      },
+      {
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20
+      },
+      {
+        "rule_id": "si-002",
+        "enabled": true,
+        "priority": 21
+      },
+      {
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30
+      },
+      {
+        "rule_id": "comp-002",
+        "enabled": true,
+        "priority": 31
+      },
+      {
+        "rule_id": "comp-003",
+        "enabled": true,
+        "priority": 32
+      }
+    ],
+    "category": "security",
+    "created_at": "2025-04-21T07:30:00Z"
+  },
+  {
+    "id": "medium_security",
+    "name": "中安全级别模板",
+    "description": "适用于一般安全要求场景的规则集，平衡安全性和模型功能性",
+    "rules": [
+      {
+        "rule_id": "pi-001",
+        "enabled": true,
+        "priority": 10
+      },
+      {
+        "rule_id": "pi-002",
+        "enabled": true,
+        "priority": 11
+      },
+      {
+        "rule_id": "pi-003",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15
+      },
+      {
+        "rule_id": "hc-002",
+        "enabled": true,
+        "priority": 16
+      },
+      {
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18
+      },
+      {
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19
+      },
+      {
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20
+      },
+      {
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30
+      }
+    ],
+    "category": "security",
+    "created_at": "2025-04-21T07:30:00Z"
+  },
+  {
+    "id": "low_security",
+    "name": "低安全级别模板",
+    "description": "适用于低安全要求场景的规则集，仅启用基本安全规则，最大化模型功能性",
+    "rules": [
+      {
+        "rule_id": "pi-003",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18
+      },
+      {
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19
+      },
+      {
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20
+      }
+    ],
+    "category": "security",
+    "created_at": "2025-04-21T07:30:00Z"
+  },
+  {
+    "id": "custom_template",
+    "name": "自定义安全模板",
+    "description": "可根据特定需求自定义的规则集模板，默认包含一些常用规则",
+    "rules": [
+      {
+        "rule_id": "pi-001",
+        "enabled": true,
+        "priority": 10
+      },
+      {
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15
+      },
+      {
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18
+      },
+      {
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20
+      }
+    ],
+    "category": "custom",
+    "created_at": "2025-04-21T07:30:00Z"
+  },
+  {
+    "id": "strict_security",
+    "name": "严格安全模板",
+    "description": "适用于最高安全要求场景的规则集，启用所有安全规则，严格控制模型输出",
+    "rules": [
+      {
+        "rule_id": "pi-001",
+        "enabled": true,
+        "priority": 10
+      },
+      {
+        "rule_id": "pi-002",
+        "enabled": true,
+        "priority": 11
+      },
+      {
+        "rule_id": "pi-003",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "pi-004",
+        "enabled": true,
+        "priority": 12
+      },
+      {
+        "rule_id": "pi-005",
+        "enabled": true,
+        "priority": 13
+      },
+      {
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15
+      },
+      {
+        "rule_id": "hc-002",
+        "enabled": true,
+        "priority": 16
+      },
+      {
+        "rule_id": "hc-003",
+        "enabled": true,
+        "priority": 17
+      },
+      {
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18
+      },
+      {
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19
+      },
+      {
+        "rule_id": "hc-006",
+        "enabled": true,
+        "priority": 20
+      },
+      {
+        "rule_id": "hc-007",
+        "enabled": true,
+        "priority": 21
+      },
+      {
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 22
+      },
+      {
+        "rule_id": "si-002",
+        "enabled": true,
+        "priority": 23
+      },
+      {
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30
+      },
+      {
+        "rule_id": "comp-002",
+        "enabled": true,
+        "priority": 31
+      },
+      {
+        "rule_id": "comp-003",
+        "enabled": true,
+        "priority": 32
+      },
+      {
+        "rule_id": "comp-004",
+        "enabled": true,
+        "priority": 33
+      },
+      {
+        "rule_id": "comp-005",
+        "enabled": true,
+        "priority": 34
+      }
+    ],
+    "category": "security",
+    "created_at": "2025-04-21T00:45:00Z"
+  }
+]

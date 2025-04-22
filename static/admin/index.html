@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地大模型防护系统 - 管理控制台</title>
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <script src="/static/admin/js/apple-ui.js" defer></script>
+    <!-- 保留旧样式以防万一，但不使用 -->
+    <style type="text/css" media="none">
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .sidebar-menu li {
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar-menu li:hover,
+        .sidebar-menu li.active {
+            background-color: #34495e;
+        }
+
+        .sidebar-menu li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #2c3e50;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            color: #7f8c8d;
+            font-size: 1rem;
+            font-weight: normal;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        .button.secondary {
+            background-color: #95a5a6;
+        }
+
+        .button.secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .button.danger {
+            background-color: #e74c3c;
+        }
+
+        .button.danger:hover {
+            background-color: #c0392b;
+        }
+
+        .button.success {
+            background-color: #2ecc71;
+        }
+
+        .button.success:hover {
+            background-color: #27ae60;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th,
+        table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge.warning {
+            background-color: #fff8e1;
+            color: #f57f17;
+        }
+
+        .badge.danger {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .badge.info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .pagination button.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .pagination button:hover:not(.active) {
+            background-color: #f5f5f5;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .alert.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoaWVsZCI+PHBhdGggZD0iTTEyIDIycy04LTUtOC0xMlY1bDgtM2w4IDN2N2MwIDctOCAxMi04IDEyeiIvPjwvc3ZnPg==" alt="Logo">
+                    <h2>本地大模型防护系统</h2>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="index.html" class="sidebar-menu-link active">
+                        <span class="sidebar-menu-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="sidebar-menu-text">监控中心</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="sidebar-menu-text">规则管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="model_rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-cogs"></i></span>
+                        <span class="sidebar-menu-text">规则配置</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="events.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="sidebar-menu-text">安全事件</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="monitor.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
+                        <span class="sidebar-menu-text">实时监控</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="models.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-brain"></i></span>
+                        <span class="sidebar-menu-text">模型管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
+                        <span class="sidebar-menu-text">聊天演示</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center justify-content-center gap-sm">
+                    <span>暗色模式</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="mt-sm">版本 1.0.0</div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部导航栏 -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="navbar-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="navbar-title">本地大模型防护系统</h1>
+                </div>
+                <div class="navbar-right">
+                    <span id="current-time"></span>
+                </div>
+            </nav>
+
+            <!-- 页面标题 -->
+            <header class="page-header">
+                <h1 class="page-title">监控中心</h1>
+                <div class="page-actions">
+                    <button class="button" id="refresh-status">
+                        <i class="fas fa-sync-alt"></i> 刷新数据
+                    </button>
+                </div>
+            </header>
+
+            <!-- 统计卡片 -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-icon primary">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="stat-card-title">总请求数</div>
+                    <div class="stat-card-value" id="total-requests">--</div>
+                    <div class="stat-card-change positive">
+                        <i class="fas fa-arrow-up"></i> <span id="total-requests-change">--</span> 较上周
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-icon danger">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <div class="stat-card-title">已阻止请求</div>
+                    <div class="stat-card-value" id="blocked-requests">--</div>
+                    <div class="stat-card-change negative">
+                        <i class="fas fa-arrow-down"></i> <span id="blocked-requests-change">--</span> 较上周
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-icon warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-card-title">安全事件</div>
+                    <div class="stat-card-value" id="security-events">--</div>
+                    <div class="stat-card-change positive">
+                        <i class="fas fa-arrow-up"></i> <span id="security-events-change">--</span> 较上周
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-icon success">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="stat-card-title">活跃模型</div>
+                    <div class="stat-card-value" id="active-models">--</div>
+                    <div class="stat-card-change">
+                        <i class="fas fa-minus"></i> 无变化
+                    </div>
+                </div>
+            </section>
+
+            <!-- 功能模块卡片 -->
+            <section class="feature-modules">
+                <h2 class="content-section-title mb-lg">功能模块概览</h2>
+
+                <div class="modules-grid">
+                    <div class="module-card">
+                        <div class="module-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="module-title">规则管理</h3>
+                        <p class="module-description">管理和配置安全检测规则，包括提示注入、越狱尝试、敏感信息等检测。</p>
+                        <div class="module-action">
+                            <a href="rules.html" class="button">进入管理</a>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 class="module-title">规则配置</h3>
+                        <p class="module-description">为不同的大语言模型配置不同的安全规则集，实现更灵活的安全防护策略管理。</p>
+                        <div class="module-action">
+                            <a href="model_rules.html" class="button">进入配置</a>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 class="module-title">安全事件查看器</h3>
+                        <p class="module-description">查看和分析安全事件，包括事件类型、严重程度、详细信息等。</p>
+                        <div class="module-action">
+                            <a href="events.html" class="button">查看事件</a>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-icon">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <h3 class="module-title">实时监控面板</h3>
+                        <p class="module-description">监控系统运行状态和性能指标，包括 CPU 和内存使用率、请求统计等。</p>
+                        <div class="module-action">
+                            <a href="monitor.html" class="button">查看监控</a>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="module-title">模型管理</h3>
+                        <p class="module-description">管理 Ollama 模型，包括模型列表、拉取和删除等操作。</p>
+                        <div class="module-action">
+                            <a href="models.html" class="button">管理模型</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 系统状态 -->
+            <section class="system-status">
+                <div class="status-header">
+                    <h2 class="status-title">系统状态</h2>
+                    <button class="status-refresh" id="refresh-status-btn">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                </div>
+
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-label">API 服务</div>
+                        <div class="status-value">
+                            <span class="status-indicator healthy" id="api-status-indicator"></span>
+                            <span id="api-status-text">正常</span>
+                        </div>
+                        <div class="status-detail">响应时间: <span id="api-response-time">23ms</span></div>
+                    </div>
+
+                    <div class="status-item">
+                        <div class="status-label">安全检测</div>
+                        <div class="status-value">
+                            <span class="status-indicator healthy" id="security-status-indicator"></span>
+                            <span id="security-status-text">正常</span>
+                        </div>
+                        <div class="status-detail">响应时间: <span id="security-response-time">45ms</span></div>
+                    </div>
+
+                    <div class="status-item">
+                        <div class="status-label">Ollama 集成</div>
+                        <div class="status-value">
+                            <span class="status-indicator healthy" id="ollama-status-indicator"></span>
+                            <span id="ollama-status-text">正常</span>
+                        </div>
+                        <div class="status-detail">响应时间: <span id="ollama-response-time">67ms</span></div>
+                    </div>
+
+                    <div class="status-item">
+                        <div class="status-label">数据库</div>
+                        <div class="status-value">
+                            <span class="status-indicator healthy" id="db-status-indicator"></span>
+                            <span id="db-status-text">正常</span>
+                        </div>
+                        <div class="status-detail">响应时间: <span id="db-response-time">12ms</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 最近事件 -->
+            <section class="recent-events">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>最近安全事件</h2>
+                        <div class="card-actions">
+                            <a href="events.html" class="button secondary small">查看全部</a>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <ul class="event-list">
+                            <li class="event-item">
+                                <div class="event-icon danger">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="event-content">
+                                    <h3 class="event-title">检测到提示注入尝试</h3>
+                                    <p class="event-description">用户尝试通过提示注入绕过系统安全限制，已被成功拦截。</p>
+                                    <div class="event-meta">
+                                        <span class="event-time">
+                                            <i class="far fa-clock"></i> 2025-04-17 10:23:45
+                                        </span>
+                                        <span class="event-severity high">高风险</span>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li class="event-item">
+                                <div class="event-icon warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="event-content">
+                                    <h3 class="event-title">检测到敏感信息</h3>
+                                    <p class="event-description">用户尝试获取敏感信息，检测到信用卡号格式的内容。</p>
+                                    <div class="event-meta">
+                                        <span class="event-time">
+                                            <i class="far fa-clock"></i> 2025-04-17 09:45:12
+                                        </span>
+                                        <span class="event-severity medium">中风险</span>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li class="event-item">
+                                <div class="event-icon danger">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="event-content">
+                                    <h3 class="event-title">检测到越狱尝试</h3>
+                                    <p class="event-description">用户尝试使用DAN越狱提示绕过模型安全限制，已被成功拦截。</p>
+                                    <div class="event-meta">
+                                        <span class="event-time">
+                                            <i class="far fa-clock"></i> 2025-04-17 08:32:56
+                                        </span>
+                                        <span class="event-severity high">高风险</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+    </div>
+    </div>
+
+    <script>
+        // 版本号: 1.0.2
+        document.addEventListener('DOMContentLoaded', function () {
+            // 更新当前时间
+            function updateCurrentTime() {
+                const now = new Date();
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                document.getElementById('current-time').textContent = now.toLocaleDateString('zh-CN', options);
+            }
+
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 60000); // 每分钟更新一次
+
+            // 加载系统状态
+            async function loadSystemStatus() {
+                // 显示加载状态
+                const refreshBtn = document.getElementById('refresh-status-btn');
+                if (refreshBtn) {
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> 加载中...';
+                }
+
+                // 设置状态指示器为加载状态
+                document.querySelectorAll('.status-indicator').forEach(indicator => {
+                    indicator.className = 'status-indicator';
+                    indicator.classList.add('loading');
+                });
+
+                try {
+                    console.log('开始加载系统状态...');
+                    const response = await fetch('/api/v1/health/status');
+                    console.log('得到响应:', response.status, response.statusText);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('解析的数据:', data);
+
+                        // 更新服务状态
+                        if (data.services && Array.isArray(data.services)) {
+                            data.services.forEach(service => {
+                                let serviceId = '';
+                                let responseTime = typeof service.response_time === 'number' ?
+                                    service.response_time.toFixed(2) + 'ms' : service.response_time;
+
+                                // 根据服务名称映射到对应的 ID
+                                if (service.name.includes('API')) {
+                                    serviceId = 'api';
+                                } else if (service.name.includes('安全')) {
+                                    serviceId = 'security';
+                                } else if (service.name.includes('Ollama') || service.name.includes('模型')) {
+                                    serviceId = 'ollama';
+                                } else if (service.name.includes('数据库')) {
+                                    serviceId = 'db';
+                                }
+
+                                if (serviceId) {
+                                    // 状态映射
+                                    const statusClass = service.status === 'normal' ? 'healthy' :
+                                        service.status === 'warning' ? 'warning' : 'critical';
+
+                                    const statusText = service.status === 'normal' ? '正常' :
+                                        service.status === 'warning' ? '警告' : '异常';
+
+                                    // 更新状态指示器
+                                    updateStatusIndicator(serviceId, statusClass, statusText, responseTime);
+                                }
+                            });
+                        } else {
+                            // 如果没有服务数据，使用默认数据
+                            updateStatusIndicator('api', 'healthy', '正常', '23ms');
+                            updateStatusIndicator('security', 'healthy', '正常', '45ms');
+                            updateStatusIndicator('ollama', 'healthy', '正常', '67ms');
+                            updateStatusIndicator('db', 'healthy', '正常', '12ms');
+                        }
+                    } else {
+                        // API 返回非 200 状态码
+                        console.error('得到非 200 响应:', response.status, response.statusText);
+
+                        // 显示错误状态
+                        document.querySelectorAll('.status-indicator').forEach(indicator => {
+                            indicator.className = 'status-indicator critical';
+                        });
+
+                        document.querySelectorAll('[id$="-status-text"]').forEach(text => {
+                            text.textContent = '异常';
+                        });
+                    }
+                } catch (error) {
+                    console.error('加载系统状态失败:', error);
+
+                    // 显示错误状态
+                    document.querySelectorAll('.status-indicator').forEach(indicator => {
+                        indicator.className = 'status-indicator critical';
+                    });
+
+                    document.querySelectorAll('[id$="-status-text"]').forEach(text => {
+                        text.textContent = '错误';
+                    });
+                } finally {
+                    // 恢复刷新按钮状态
+                    if (refreshBtn) {
+                        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 刷新';
+                    }
+                }
+            }
+
+            // 更新状态指示器
+            function updateStatusIndicator(service, status, statusText, responseTime) {
+                const indicator = document.getElementById(`${service}-status-indicator`);
+                const text = document.getElementById(`${service}-status-text`);
+                const time = document.getElementById(`${service}-response-time`);
+
+                if (indicator) {
+                    indicator.className = 'status-indicator ' + status;
+                }
+
+                if (text) {
+                    text.textContent = statusText;
+                }
+
+                if (time) {
+                    time.textContent = responseTime;
+                }
+            }
+
+            // 加载统计数据
+            async function loadStats() {
+                // 显示加载中状态
+                document.getElementById('total-requests').textContent = '加载中...';
+                document.getElementById('blocked-requests').textContent = '加载中...';
+                document.getElementById('security-events').textContent = '加载中...';
+                document.getElementById('active-models').textContent = '加载中...';
+
+                try {
+                    // 获取请求统计
+                    const requestsResponse = await fetch('/api/v1/metrics/requests?minutes=60');
+                    if (requestsResponse.ok) {
+                        const requestsData = await requestsResponse.json();
+
+                        // 计算总请求数和阻止请求数
+                        let totalRequests = 0;
+                        let blockedRequests = 0;
+
+                        requestsData.forEach(item => {
+                            totalRequests += item.total_requests;
+                            blockedRequests += item.blocked_requests;
+                        });
+
+                        document.getElementById('total-requests').textContent = totalRequests;
+                        document.getElementById('blocked-requests').textContent = blockedRequests;
+
+                        // 计算变化百分比
+                        // 如果有历史数据，可以计算真实的变化百分比
+                        // 这里暂时不显示变化百分比
+                        document.getElementById('total-requests-change').textContent = '';
+                        document.getElementById('blocked-requests-change').textContent = '';
+                    } else {
+                        document.getElementById('total-requests').textContent = '0';
+                        document.getElementById('blocked-requests').textContent = '0';
+                        document.getElementById('total-requests-change').textContent = '';
+                        document.getElementById('blocked-requests-change').textContent = '';
+                    }
+
+                    // 获取安全事件统计
+                    const eventsResponse = await fetch('/api/v1/metrics/events');
+                    if (eventsResponse.ok) {
+                        const eventsData = await eventsResponse.json();
+
+                        // 计算总安全事件数
+                        let totalEvents = 0;
+
+                        eventsData.forEach(item => {
+                            totalEvents += item.prompt_injection + item.jailbreak +
+                                item.sensitive_info + item.harmful_content +
+                                item.compliance_violation;
+                        });
+
+                        document.getElementById('security-events').textContent = totalEvents;
+                        document.getElementById('security-events-change').textContent = '';
+                    } else {
+                        document.getElementById('security-events').textContent = '0';
+                        document.getElementById('security-events-change').textContent = '';
+                    }
+
+                    // 获取模型使用统计
+                    const modelsResponse = await fetch('/api/v1/metrics/models');
+                    if (modelsResponse.ok) {
+                        const modelsData = await modelsResponse.json();
+                        document.getElementById('active-models').textContent = modelsData.length;
+                    } else {
+                        document.getElementById('active-models').textContent = '0';
+                    }
+                } catch (error) {
+                    console.error('加载统计数据失败:', error);
+                    document.getElementById('total-requests').textContent = '加载失败';
+                    document.getElementById('blocked-requests').textContent = '加载失败';
+                    document.getElementById('security-events').textContent = '加载失败';
+                    document.getElementById('active-models').textContent = '加载失败';
+                }
+            }
+
+            // 加载最近安全事件
+            async function loadRecentEvents() {
+                try {
+                    // 从 API 获取最近的安全事件
+                    const response = await fetch('/api/v1/events?page=1&page_size=3');
+
+                    if (!response.ok) {
+                        throw new Error(`API 请求失败: ${response.status} ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    const events = data.events;
+
+                    // 更新事件列表
+                    const eventList = document.querySelector('.event-list');
+
+                    if (events && events.length > 0) {
+                        eventList.innerHTML = events.map(event => {
+                            const timestamp = new Date(event.timestamp * 1000);
+                            const formattedTime = timestamp.toLocaleString('zh-CN');
+
+                            let severityClass = 'info';
+                            if (event.severity === 'critical' || event.severity === 'high') severityClass = 'high';
+                            else if (event.severity === 'medium') severityClass = 'medium';
+                            else if (event.severity === 'low') severityClass = 'low';
+
+                            let severityText = '低风险';
+                            if (event.severity === 'critical') severityText = '严重风险';
+                            else if (event.severity === 'high') severityText = '高风险';
+                            else if (event.severity === 'medium') severityText = '中风险';
+                            else if (event.severity === 'low') severityText = '低风险';
+
+                            let typeText = '其他';
+                            if (event.detection_type === 'prompt_injection') typeText = '提示注入尝试';
+                            else if (event.detection_type === 'jailbreak') typeText = '越狱尝试';
+                            else if (event.detection_type === 'sensitive_info') typeText = '检测到敏感信息';
+                            else if (event.detection_type === 'harmful_content') typeText = '检测到有害内容';
+                            else if (event.detection_type === 'compliance_violation') typeText = '合规违规';
+
+                            let iconClass = severityClass === 'high' ? 'danger' :
+                                severityClass === 'medium' ? 'warning' : 'info';
+
+                            let iconType = iconClass === 'danger' ? 'exclamation-circle' :
+                                iconClass === 'warning' ? 'exclamation-triangle' : 'info-circle';
+
+                            return `
+                            <li class="event-item">
+                                <div class="event-icon ${iconClass}">
+                                    <i class="fas fa-${iconType}"></i>
+                                </div>
+                                <div class="event-content">
+                                    <h3 class="event-title">${typeText}</h3>
+                                    <p class="event-description">${event.reason || '用户尝试绕过系统安全限制，已被成功拦截。'}</p>
+                                    <div class="event-meta">
+                                        <span class="event-time">
+                                            <i class="far fa-clock"></i> ${formattedTime}
+                                        </span>
+                                        <span class="event-severity ${severityClass}">${severityText}</span>
+                                    </div>
+                                </div>
+                            </li>
+                            `;
+                        }).join('');
+                    } else {
+                        eventList.innerHTML = '<li class="event-item"><div class="event-content"><p class="event-description" style="text-align: center;">暂无安全事件</p></div></li>';
+                    }
+                } catch (error) {
+                    console.error('加载最近安全事件失败:', error);
+
+                    // 显示错误信息
+                    const eventList = document.querySelector('.event-list');
+                    if (eventList) {
+                        eventList.innerHTML = `<li class="event-item"><div class="event-content"><p class="event-description" style="text-align: center; color: var(--apple-danger);">加载安全事件失败: ${error.message}</p></div></li>`;
+                    }
+                }
+            }
+
+            // 初始加载
+            loadSystemStatus();
+            loadStats();
+            loadRecentEvents();
+
+            // 刷新按钮点击事件
+            document.getElementById('refresh-status').addEventListener('click', function () {
+                loadSystemStatus();
+                loadStats();
+                loadRecentEvents();
+            });
+
+            // 状态刷新按钮点击事件
+            const refreshStatusBtn = document.getElementById('refresh-status-btn');
+            if (refreshStatusBtn) {
+                refreshStatusBtn.addEventListener('click', function () {
+                    loadSystemStatus();
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

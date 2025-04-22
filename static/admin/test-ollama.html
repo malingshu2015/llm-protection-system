@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama API 测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ollama API 测试</h1>
+    
+    <div>
+        <button id="get-models">获取已安装模型</button>
+        <button id="get-library">获取模型库</button>
+    </div>
+    
+    <h2>响应结果：</h2>
+    <pre id="result">点击上方按钮测试API...</pre>
+    
+    <script>
+        document.getElementById('get-models').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/api/v1/ollama/models');
+                const data = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = '错误: ' + error.message;
+            }
+        });
+        
+        document.getElementById('get-library').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/api/v1/ollama/library');
+                const data = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = '错误: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>

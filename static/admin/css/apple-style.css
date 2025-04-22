@@ -1,0 +1,560 @@
+/*
+ * 苹果风格的大模型防火墙界面样式
+ * 基于苹果设计语言的UI重构
+ */
+
+/* ===== 基础样式 ===== */
+:root {
+  /* 主色调 */
+  --apple-primary: #007AFF;
+  /* 苹果蓝 */
+  --apple-secondary: #5AC8FA;
+  /* 浅蓝色 */
+  --apple-success: #34C759;
+  /* 绿色 */
+  --apple-warning: #FF9500;
+  /* 橙色 */
+  --apple-danger: #FF3B30;
+  /* 红色 */
+  --apple-info: #5AC8FA;
+  /* 信息蓝 */
+
+  /* 中性色调 */
+  --apple-gray-1: #F2F2F7;
+  /* 最浅灰色 - 背景 */
+  --apple-gray-2: #E5E5EA;
+  /* 浅灰色 - 分割线 */
+  --apple-gray-3: #D1D1D6;
+  /* 灰色 - 禁用状态 */
+  --apple-gray-4: #C7C7CC;
+  /* 中灰色 */
+  --apple-gray-5: #8E8E93;
+  /* 深灰色 - 次要文本 */
+  --apple-gray-6: #636366;
+  /* 更深灰色 */
+  --apple-gray-7: #48484A;
+  /* 非常深的灰色 */
+  --apple-gray-8: #3A3A3C;
+  /* 几乎黑色的灰色 */
+
+  /* 文本颜色 */
+  --apple-text-primary: #000000;
+  /* 主要文本 */
+  --apple-text-secondary: #8E8E93;
+  /* 次要文本 */
+  --apple-text-tertiary: #C7C7CC;
+  /* 第三级文本 */
+
+  /* 背景颜色 */
+  --apple-bg-primary: #FFFFFF;
+  /* 主背景 */
+  --apple-bg-secondary: #F2F2F7;
+  /* 次要背景 */
+  --apple-bg-tertiary: #E5E5EA;
+  /* 第三级背景 */
+
+  /* 边框和阴影 */
+  --apple-border-radius: 10px;
+  /* 标准圆角 */
+  --apple-border-color: #E5E5EA;
+  /* 边框颜色 */
+  --apple-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --apple-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+  --apple-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.05);
+
+  /* 间距 */
+  --apple-spacing-xs: 4px;
+  --apple-spacing-sm: 8px;
+  --apple-spacing-md: 16px;
+  --apple-spacing-lg: 24px;
+  --apple-spacing-xl: 32px;
+  --apple-spacing-xxl: 48px;
+
+  /* 字体 */
+  --apple-font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --apple-font-size-xs: 12px;
+  --apple-font-size-sm: 14px;
+  --apple-font-size-md: 16px;
+  --apple-font-size-lg: 20px;
+  --apple-font-size-xl: 24px;
+  --apple-font-size-xxl: 32px;
+
+  /* 过渡效果 */
+  --apple-transition-fast: 0.1s ease;
+  --apple-transition-normal: 0.2s ease;
+  --apple-transition-slow: 0.3s ease;
+}
+
+/* ===== 全局重置 ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--apple-font-family);
+  font-size: var(--apple-font-size-md);
+  line-height: 1.5;
+  color: var(--apple-text-primary);
+  background-color: var(--apple-bg-secondary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== 排版 ===== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: var(--apple-spacing-md);
+  color: var(--apple-text-primary);
+}
+
+h1 {
+  font-size: var(--apple-font-size-xxl);
+  font-weight: 700;
+}
+
+h2 {
+  font-size: var(--apple-font-size-xl);
+}
+
+h3 {
+  font-size: var(--apple-font-size-lg);
+}
+
+h4 {
+  font-size: var(--apple-font-size-md);
+  font-weight: 600;
+}
+
+p {
+  margin-bottom: var(--apple-spacing-md);
+}
+
+a {
+  color: var(--apple-primary);
+  text-decoration: none;
+  transition: color var(--apple-transition-normal);
+}
+
+a:hover {
+  color: var(--apple-secondary);
+}
+
+/* ===== 布局容器 ===== */
+.container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--apple-bg-secondary);
+}
+
+.main-content {
+  flex: 1;
+  padding: var(--apple-spacing-xl);
+  max-width: 1440px;
+  margin: 0 auto;
+  background-color: var(--apple-bg-primary);
+  border-radius: var(--apple-border-radius);
+  box-shadow: var(--apple-shadow-sm);
+  margin-left: 280px;
+  /* 侧边栏宽度 */
+  min-height: 100vh;
+  transition: margin-left var(--apple-transition-normal);
+}
+
+/* ===== 按钮 ===== */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: var(--apple-font-size-md);
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--apple-transition-normal);
+  border: none;
+  background-color: var(--apple-primary);
+  color: white;
+  box-shadow: var(--apple-shadow-sm);
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--apple-shadow-md);
+  opacity: 0.9;
+}
+
+.button:active {
+  transform: translateY(0);
+  box-shadow: var(--apple-shadow-sm);
+  opacity: 0.8;
+}
+
+.button.secondary {
+  background-color: var(--apple-bg-tertiary);
+  color: var(--apple-text-primary);
+}
+
+.button.success {
+  background-color: var(--apple-success);
+}
+
+.button.warning {
+  background-color: var(--apple-warning);
+}
+
+.button.danger {
+  background-color: var(--apple-danger);
+}
+
+.button.info {
+  background-color: var(--apple-info);
+}
+
+.button.outline {
+  background-color: transparent;
+  border: 1px solid var(--apple-primary);
+  color: var(--apple-primary);
+}
+
+.button.outline:hover {
+  background-color: var(--apple-primary);
+  color: white;
+}
+
+.button.small {
+  padding: 6px 12px;
+  font-size: var(--apple-font-size-sm);
+}
+
+.button.large {
+  padding: 12px 24px;
+  font-size: var(--apple-font-size-lg);
+}
+
+.button.icon {
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ===== 卡片 ===== */
+.card {
+  background-color: var(--apple-bg-primary);
+  border-radius: var(--apple-border-radius);
+  box-shadow: var(--apple-shadow-sm);
+  padding: var(--apple-spacing-lg);
+  margin-bottom: var(--apple-spacing-lg);
+  transition: box-shadow var(--apple-transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--apple-shadow-md);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--apple-spacing-lg);
+  padding-bottom: var(--apple-spacing-md);
+  border-bottom: 1px solid var(--apple-gray-2);
+}
+
+.card-header h2 {
+  margin-bottom: 0;
+}
+
+.card-body {
+  padding: var(--apple-spacing-sm) 0;
+}
+
+.card-footer {
+  margin-top: var(--apple-spacing-lg);
+  padding-top: var(--apple-spacing-md);
+  border-top: 1px solid var(--apple-gray-2);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--apple-spacing-md);
+}
+
+/* ===== 表单元素 ===== */
+.form-group {
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--apple-spacing-sm);
+  font-weight: 500;
+  color: var(--apple-text-primary);
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: var(--apple-font-size-md);
+  line-height: 1.5;
+  color: var(--apple-text-primary);
+  background-color: var(--apple-bg-primary);
+  border: 1px solid var(--apple-gray-3);
+  border-radius: 8px;
+  transition: border-color var(--apple-transition-normal), box-shadow var(--apple-transition-normal);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--apple-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.form-control::placeholder {
+  color: var(--apple-gray-5);
+}
+
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--apple-spacing-sm);
+}
+
+.form-check-input {
+  margin-right: var(--apple-spacing-sm);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--apple-spacing-md);
+  margin-top: var(--apple-spacing-lg);
+}
+
+/* ===== 辅助类 ===== */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-muted {
+  color: var(--apple-text-secondary);
+}
+
+.d-flex {
+  display: flex;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.gap-sm {
+  gap: var(--apple-spacing-sm);
+}
+
+.gap-md {
+  gap: var(--apple-spacing-md);
+}
+
+.gap-lg {
+  gap: var(--apple-spacing-lg);
+}
+
+.mb-sm {
+  margin-bottom: var(--apple-spacing-sm);
+}
+
+.mb-md {
+  margin-bottom: var(--apple-spacing-md);
+}
+
+.mb-lg {
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.mt-sm {
+  margin-top: var(--apple-spacing-sm);
+}
+
+.mt-md {
+  margin-top: var(--apple-spacing-md);
+}
+
+.mt-lg {
+  margin-top: var(--apple-spacing-lg);
+}
+
+/* ===== 暗色模式 ===== */
+body.dark-mode {
+  /* 暗色模式下的文本颜色 */
+  --apple-text-primary: #FFFFFF;
+  --apple-text-secondary: #AEAEB2;
+  --apple-text-tertiary: #8E8E93;
+
+  /* 暗色模式下的背景颜色 */
+  --apple-bg-primary: #1C1C1E;
+  --apple-bg-secondary: #2C2C2E;
+  --apple-bg-tertiary: #3A3A3C;
+
+  /* 暗色模式下的边框颜色 */
+  --apple-border-color: #3A3A3C;
+
+  /* 暗色模式下的阴影 */
+  --apple-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --apple-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
+  --apple-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.2);
+
+  /* 暗色模式下的中性色调 */
+  --apple-gray-1: #3A3A3C;
+  --apple-gray-2: #48484A;
+  --apple-gray-3: #636366;
+  --apple-gray-4: #8E8E93;
+  --apple-gray-5: #AEAEB2;
+  --apple-gray-6: #C7C7CC;
+  --apple-gray-7: #D1D1D6;
+  --apple-gray-8: #E5E5EA;
+
+  /* 暗色模式下的背景颜色 */
+  background-color: var(--apple-bg-secondary);
+  color: var(--apple-text-primary);
+}
+
+/* 暗色模式下的卡片样式 */
+body.dark-mode .card,
+body.dark-mode .stat-card,
+body.dark-mode .model-item,
+body.dark-mode .event-card {
+  background-color: var(--apple-bg-primary);
+  border-color: var(--apple-border-color);
+}
+
+/* 暗色模式下的表单元素 */
+body.dark-mode .form-control {
+  background-color: var(--apple-bg-tertiary);
+  border-color: var(--apple-gray-3);
+  color: var(--apple-text-primary);
+}
+
+/* 暗色模式下的按钮 */
+body.dark-mode .button.secondary {
+  background-color: var(--apple-bg-tertiary);
+  color: var(--apple-text-primary);
+}
+
+/* 暗色模式下的边框 */
+body.dark-mode .card-header,
+body.dark-mode .card-footer {
+  border-color: var(--apple-gray-3);
+}
+
+/* 暗色模式下的选择框 */
+body.dark-mode select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23AEAEB2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+/* 暗色模式下的主内容区域 */
+body.dark-mode .main-content {
+  background-color: var(--apple-bg-primary);
+}
+
+/* 暗色模式下的表格 */
+body.dark-mode .data-table th,
+body.dark-mode .data-table td {
+  border-color: var(--apple-gray-3);
+}
+
+body.dark-mode .data-table tbody tr:hover {
+  background-color: var(--apple-bg-tertiary);
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 992px) {
+  .main-content {
+    margin-left: 0;
+    padding: var(--apple-spacing-lg);
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-header .actions {
+    margin-top: var(--apple-spacing-md);
+    width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-content {
+    padding: var(--apple-spacing-md);
+  }
+
+  .card {
+    padding: var(--apple-spacing-md);
+  }
+}
