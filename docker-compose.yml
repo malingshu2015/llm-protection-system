@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  llm-protection:
+    build: .
+    image: llm-protection-system:1.0.0
+    container_name: llm-protection-system
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./rules:/app/rules
+    environment:
+      - LOG_LEVEL=INFO
+      - DEBUG=false
+      - WEB_PORT=8080
+      - WEB_HOST=0.0.0.0
+    restart: unless-stopped
+    networks:
+      - llm-network
+
+networks:
+  llm-network:
+    driver: bridge

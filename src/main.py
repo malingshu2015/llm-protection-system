@@ -3,13 +3,20 @@
 import asyncio
 import signal
 import sys
-from typing import Dict, Set
+from typing import Set
 
 import os
 import uvicorn
 from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+# from fastapi.responses import RedirectResponse  # 未使用，已注释
+
+# Get version from VERSION file
+VERSION_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "VERSION")
+VERSION = "1.0.0"  # Default version
+if os.path.exists(VERSION_FILE):
+    with open(VERSION_FILE, "r") as f:
+        VERSION = f.read().strip()
 
 from src.config import settings
 from src.logger import logger
@@ -24,8 +31,8 @@ from src.web.events_api import router as events_router
 app = FastAPI(
     title=settings.app_name,
     description="A protection system for local large language models",
-    version="0.1.0",
-    debug=True,
+    version=VERSION,
+    debug=settings.debug,
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json"
@@ -112,7 +119,7 @@ app.add_event_handler("shutdown", shutdown_event)
 
 def handle_signals() -> None:
     """Set up signal handlers."""
-    def signal_handler(sig, frame):
+    def signal_handler(sig, frame):  # frame 参数是 signal 模块要求的
         logger.info(f"Received signal {sig}, shutting down")
         sys.exit(0)
 

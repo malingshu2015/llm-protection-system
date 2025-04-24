@@ -110,3 +110,18 @@ venv.bak/
 logs/
 *.log
 .DS_Store
+data/
+test_results_*.json
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Virtual Environment
+.python-version
+
+# Local configuration
+.env.local
+.env.development
+.env.test
+.env.production

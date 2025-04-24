@@ -1,0 +1,13 @@
+include LICENSE
+include README.md
+include VERSION
+include CHANGELOG.md
+include requirements.txt
+recursive-include static *
+recursive-include rules *
+recursive-include docs *.md
+recursive-exclude * __pycache__
+recursive-exclude * *.py[cod]
+recursive-exclude * *.so
+recursive-exclude * .DS_Store
+recursive-exclude * Thumbs.db

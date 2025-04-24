@@ -1,7 +1,7 @@
 """Configuration module for the LLM Security Firewall."""
 
 import os
-from typing import Dict, List, Optional, Union
+from typing import Dict, Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -113,7 +113,7 @@ class WebConfig(BaseSettings):
 
     host: str = Field(default="0.0.0.0")
     port: int = Field(default=8080)
-    secret_key: str = Field(default="change_me_in_production")
+    secret_key: str = Field(default_factory=lambda: os.urandom(24).hex())
     token_expire_minutes: int = Field(default=60)
 
     model_config = {
@@ -127,7 +127,7 @@ class Settings(BaseSettings):
 
     app_name: str = Field(default="本地大模型防护系统")
     environment: str = Field(default="production")
-    debug: bool = Field(default=True)
+    debug: bool = Field(default=False)
     data_dir: str = Field(default="data")
 
     # Module configurations
