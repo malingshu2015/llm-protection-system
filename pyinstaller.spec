@@ -7,7 +7,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 block_cipher = None
 
 # 获取项目根目录
-project_root = os.path.abspath(os.path.dirname(__file__))
+project_root = os.path.abspath(os.path.dirname(os.path.realpath("__file__")))
 
 # 收集所有需要的数据文件
 datas = [

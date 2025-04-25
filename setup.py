@@ -28,7 +28,8 @@ setup(
     author="Your Name",
     author_email="your.email@example.com",
     url="https://github.com/yourusername/llm-protection-system",
-    packages=find_packages(),
+    packages=find_packages(include=['src', 'src.*']),
+    package_dir={'': '.'},
     include_package_data=True,
     package_data={
         "": ["static/**/*", "rules/**/*"],
@@ -39,6 +40,7 @@ setup(
             "llm-protection=src.main:main",
         ],
     },
+    py_modules=["src"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
