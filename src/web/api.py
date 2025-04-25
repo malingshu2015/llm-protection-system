@@ -60,6 +60,19 @@ class OllamaJSONEncoder(JSONEncoder):
         return super().default(obj)
 
 
+# 缓存字典，用于存储流式响应的结果
+# 键是请求的哈希值，值是响应内容
+_response_cache = {}
+
+# 缓存过期时间（秒）
+_CACHE_EXPIRY = 300  # 5分钟
+
+# 缓存最大条目
+_MAX_CACHE_ENTRIES = 100
+
+# 批处理大小
+_BATCH_SIZE = 10
+
 async def stream_ollama_response(model: str, messages: List[Dict], options: Dict) -> AsyncIterator[str]:
     """流式返回 Ollama 响应。
 
@@ -71,6 +84,35 @@ async def stream_ollama_response(model: str, messages: List[Dict], options: Dict
     Yields:
         流式响应的每一部分。
     """
+    global _response_cache
+
+    # 清理过期缓存
+    current_time = time.time()
+    expired_keys = [k for k, v in _response_cache.items() if current_time - v['timestamp'] > _CACHE_EXPIRY]
+    for k in expired_keys:
+        del _response_cache[k]
+
+    # 如果缓存过大，删除最早的条目
+    if len(_response_cache) > _MAX_CACHE_ENTRIES:
+        oldest_key = min(_response_cache.keys(), key=lambda k: _response_cache[k]['timestamp'])
+        del _response_cache[oldest_key]
+
+    # 生成请求的哈希值作为缓存键
+    cache_key = hash(f"{model}_{str(messages)}_{str(options)}")
+
+    # 检查缓存
+    if cache_key in _response_cache:
+        logger.info(f"使用缓存的流式响应: {model}")
+        for chunk in _response_cache[cache_key]['chunks']:
+            yield chunk
+        return
+
+    # 初始化缓存条目
+    _response_cache[cache_key] = {
+        'timestamp': time.time(),
+        'chunks': []
+    }
+
     try:
         logger.info(f"开始流式调用 Ollama 模型: {model}")
 
@@ -103,6 +145,10 @@ async def stream_ollama_response(model: str, messages: List[Dict], options: Dict
                 stdout=PIPE, stderr=PIPE
             )
 
+            # 初始化缓冲区和计数器
+            buffer = []
+            count = 0
+
             # 读取流式输出
             async for line in proc.stdout:
                 line = line.decode('utf-8').strip()
@@ -111,20 +157,52 @@ async def stream_ollama_response(model: str, messages: List[Dict], options: Dict
                         # 尝试解析JSON，确保是有效的JSON对象
                         json.loads(line)
                         # 将每一行格式化为SSE格式
-                        yield f"data: {line}\n\n"
+                        formatted_line = f"data: {line}\n\n"
+                        buffer.append(formatted_line)
+                        count += 1
+
+                        # 当缓冲区达到批处理大小或者是最后一个响应时，发送批量数据
+                        if count >= _BATCH_SIZE or '"done":true' in line:
+                            # 将批量数据添加到缓存
+                            _response_cache[cache_key]['chunks'].extend(buffer)
+
+                            # 发送批量数据
+                            for chunk in buffer:
+                                yield chunk
+
+                            # 重置缓冲区和计数器
+                            buffer = []
+                            count = 0
                     except json.JSONDecodeError as e:
-                        logger.warning(f"解析流式响应行失败: {e}, 行内容: {line[:100]}")
+                        # 仅在调试模式下记录详细日志
+                        if settings.DEBUG:
+                            logger.debug(f"解析流式响应行失败: {e}, 行内容: {line[:100]}")
                         # 忽略无效的JSON行
+
+            # 如果缓冲区中还有数据，发送剩余数据
+            if buffer:
+                # 将批量数据添加到缓存
+                _response_cache[cache_key]['chunks'].extend(buffer)
+
+                # 发送批量数据
+                for chunk in buffer:
+                    yield chunk
 
             # 等待进程结束
             await proc.wait()
 
             # 发送结束信号
-            yield "data: [DONE]\n\n"
+            done_signal = "data: [DONE]\n\n"
+            _response_cache[cache_key]['chunks'].append(done_signal)
+            yield done_signal
             return
 
         except Exception as e:
-            logger.exception(f"使用curl调用Ollama流式 API时出错: {e}")
+            # 仅在调试模式下记录详细日志
+            if settings.DEBUG:
+                logger.exception(f"使用curl调用Ollama流式 API时出错: {e}")
+            else:
+                logger.warning(f"使用curl调用Ollama流式 API时出错: {str(e)[:100]}")
 
             # 如果Ollama模块可用，尝试使用Python客户端
             if OLLAMA_AVAILABLE:
@@ -147,19 +225,51 @@ async def stream_ollama_response(model: str, messages: List[Dict], options: Dict
                         timeout=120
                     )
 
+                    # 初始化缓冲区和计数器
+                    buffer = []
+                    count = 0
+
                     # 处理流式响应
                     for chunk in stream:
                         try:
                             # 使用自定义 JSON 编码器将对象转换为 JSON 字符串
                             chunk_json = json.dumps(chunk, cls=OllamaJSONEncoder)
-                            # 返回服务器发送的事件格式
-                            yield f"data: {chunk_json}\n\n"
+                            # 将每一行格式化为SSE格式
+                            formatted_chunk = f"data: {chunk_json}\n\n"
+                            buffer.append(formatted_chunk)
+                            count += 1
+
+                            # 当缓冲区达到批处理大小或者是最后一个响应时，发送批量数据
+                            if count >= _BATCH_SIZE or chunk.get('done', False):
+                                # 将批量数据添加到缓存
+                                _response_cache[cache_key]['chunks'].extend(buffer)
+
+                                # 发送批量数据
+                                for chunk_data in buffer:
+                                    yield chunk_data
+
+                                # 重置缓冲区和计数器
+                                buffer = []
+                                count = 0
                         except Exception as chunk_error:
-                            logger.warning(f"处理流式响应块失败: {chunk_error}, 块内容: {str(chunk)[:100]}")
+                            # 仅在调试模式下记录详细日志
+                            if settings.DEBUG:
+                                logger.warning(f"处理流式响应块失败: {chunk_error}, 块内容: {str(chunk)[:100]}")
                             # 忽略处理失败的块
 
+                    # 如果缓冲区中还有数据，发送剩余数据
+                    if buffer:
+                        # 将批量数据添加到缓存
+                        _response_cache[cache_key]['chunks'].extend(buffer)
+
+                        # 发送批量数据
+                        for chunk_data in buffer:
+                            yield chunk_data
+
                     # 发送结束信号
-                    yield "data: [DONE]\n\n"
+                    done_signal = "data: [DONE]\n\n"
+                    _response_cache[cache_key]['chunks'].append(done_signal)
+                    yield done_signal
                     return
 
                 except asyncio.TimeoutError:
@@ -390,34 +500,42 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
                     capture_output=True, text=True, check=True
                 )
 
+                # 生成请求的哈希值作为缓存键
+                cache_key = hash(f"{request.model}_{str(messages)}_{str(options)}")
+
+                # 检查缓存
+                if cache_key in _response_cache and 'full_response' in _response_cache[cache_key]:
+                    logger.info(f"使用缓存的非流式响应: {request.model}")
+                    return _response_cache[cache_key]['full_response']
+
                 # 处理流式响应
                 if result.stdout:
                     # 将响应拆分为多行，每行是一个JSON对象
                     response_lines = result.stdout.strip().split('\n')
 
-                    # 如果有多行，取最后一行（完整的响应）
+                    # 如果有多行，处理响应
                     if response_lines:
-                        # 找到最后一个done=true的响应
-                        final_response = None
-                        for line in reversed(response_lines):
+                        # 使用列表收集内容片段，然后使用join合并，提高性能
+                        content_parts = []
+
+                        # 使用单次遍历而不是多次遍历，提高性能
+                        has_done = False
+                        for line in response_lines:
                             try:
                                 parsed = json.loads(line)
                                 if parsed.get('done', False):
-                                    final_response = parsed
-                                    break
+                                    has_done = True
+                                if 'message' in parsed and 'content' in parsed['message']:
+                                    content_parts.append(parsed['message']['content'])
                             except json.JSONDecodeError:
+                                # 仅在调试模式下记录详细日志
+                                if settings.DEBUG:
+                                    logger.debug(f"解析响应行失败: {line[:100]}")
                                 continue
 
-                        if final_response:
-                            # 提取完整的消息内容
-                            full_content = ""
-                            for line in response_lines:
-                                try:
-                                    parsed = json.loads(line)
-                                    if 'message' in parsed and 'content' in parsed['message']:
-                                        full_content += parsed['message']['content']
-                                except json.JSONDecodeError:
-                                    continue
+                        if has_done or content_parts:  # 如果有done标记或者有内容，则认为有效
+                            # 使用join合并字符串，比+运算符更高效
+                            full_content = ''.join(content_parts)
 
                             # 创建最终响应
                             response_data = {
@@ -428,11 +546,16 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
                                 }
                             }
 
+                            # 将响应存入缓存
+                            if cache_key not in _response_cache:
+                                _response_cache[cache_key] = {'timestamp': time.time()}
+                            _response_cache[cache_key]['full_response'] = response_data
+
                             logger.info(f"Ollama 响应成功处理")
                             return response_data
                         else:
-                            logger.warning("未找到完整的Ollama响应")
-                            raise Exception("未找到完整的Ollama响应")
+                            logger.warning("未找到有效的Ollama响应内容")
+                            raise Exception("未找到有效的Ollama响应内容")
                     else:
                         logger.warning("Ollama响应为空")
                         raise Exception("Ollama响应为空")
@@ -451,6 +574,14 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
             except Exception as e:
                 logger.warning(f"使用curl调用Ollama API时发生未知错误: {e}")
 
+                # 生成请求的哈希值作为缓存键
+                cache_key = hash(f"{request.model}_{str(messages)}_{str(options)}")
+
+                # 检查缓存
+                if cache_key in _response_cache and 'full_response' in _response_cache[cache_key]:
+                    logger.info(f"使用缓存的非流式响应: {request.model}")
+                    return _response_cache[cache_key]['full_response']
+
                 # 如果Ollama模块可用，尝试使用Python客户端
                 if OLLAMA_AVAILABLE:
                     logger.info("尝试使用Ollama Python客户端...")
@@ -466,11 +597,14 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
                             options=options
                         )
 
-                        # 收集所有流式响应并合并
-                        full_content = ""
+                        # 使用字符串连接而不是多次字符串连接，提高性能
+                        content_parts = []
                         for chunk in stream_response:
                             if 'message' in chunk and 'content' in chunk['message']:
-                                full_content += chunk['message']['content']
+                                content_parts.append(chunk['message']['content'])
+
+                        # 使用join合并字符串，比+运算符更高效
+                        full_content = ''.join(content_parts)
 
                         # 创建最终响应
                         response_data = {
@@ -481,11 +615,20 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
                             }
                         }
 
+                        # 将响应存入缓存
+                        if cache_key not in _response_cache:
+                            _response_cache[cache_key] = {'timestamp': time.time()}
+                        _response_cache[cache_key]['full_response'] = response_data
+
                         logger.info(f"Ollama Python客户端响应成功处理")
                         return response_data
                     except Exception as client_error:
-                        logger.warning(f"Ollama Python客户端处理失败: {client_error}")
-                        raise Exception(f"Ollama Python客户端处理失败: {client_error}")
+                        # 仅在调试模式下记录详细日志
+                        if settings.DEBUG:
+                            logger.warning(f"Ollama Python客户端处理失败: {client_error}")
+                        else:
+                            logger.warning(f"Ollama Python客户端处理失败: {str(client_error)[:100]}")
+                        raise Exception(f"Ollama Python客户端处理失败: {str(client_error)[:100]}")
                 else:
                     raise Exception(f"无法连接到Ollama服务: {e}")
     except Exception as e:
