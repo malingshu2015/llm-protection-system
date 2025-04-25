@@ -1,0 +1,27 @@
+{
+  "timestamp": "20250425_155117",
+  "version": "1.0.0",
+  "platform": "Darwin",
+  "verifications": {
+    "python": {
+      "success": false,
+      "message": "\u672a\u627e\u5230Python wheel\u5305"
+    },
+    "macos": {
+      "success": true,
+      "message": "macOS\u5305\u9a8c\u8bc1\u6210\u529f"
+    },
+    "windows": {
+      "success": false,
+      "message": "\u975eWindows\u5e73\u53f0\uff0c\u8df3\u8fc7Windows\u5305\u9a8c\u8bc1"
+    },
+    "linux": {
+      "success": false,
+      "message": "\u975eLinux\u5e73\u53f0\uff0c\u8df3\u8fc7Linux\u5305\u9a8c\u8bc1"
+    },
+    "docker": {
+      "success": false,
+      "message": "\u672a\u627e\u5230Docker\u955c\u50cf"
+    }
+  }
+}

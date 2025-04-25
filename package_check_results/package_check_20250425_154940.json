@@ -1,0 +1,43 @@
+{
+  "timestamp": "20250425_154940",
+  "version": "1.0.0",
+  "platform": "Darwin",
+  "packages": {
+    "python": [
+      {
+        "file_name": "llm-protection-system-1.0.0-macos-arm64-20250425.tar.gz",
+        "file_path": "/Users/robinxie/Documents/augment-projects/LLM-firewall/llm-protection-system-1.0.0-macos-arm64-20250425.tar.gz",
+        "file_size": 13463903,
+        "file_hash": "9f5150c3afaec1e63d241de2fcf02fb7a59972d52e18b5e9f60f8a662dc67e1d",
+        "status": "\u901a\u8fc7"
+      }
+    ],
+    "macos": [
+      {
+        "file_name": "\u672c\u5730\u5927\u6a21\u578b\u9632\u62a4\u7cfb\u7edf-1.0.0.dmg",
+        "file_path": "/Users/robinxie/Documents/augment-projects/LLM-firewall/\u672c\u5730\u5927\u6a21\u578b\u9632\u62a4\u7cfb\u7edf-1.0.0.dmg",
+        "file_size": 15061055,
+        "file_hash": "f4f4d2d96824d91b6086fe650d8a237b70ff00d1744841fc8efc294bc73a8b6a",
+        "status": "\u901a\u8fc7"
+      },
+      {
+        "file_name": "\u672c\u5730\u5927\u6a21\u578b\u9632\u62a4\u7cfb\u7edf.app",
+        "file_path": "/Users/robinxie/Documents/augment-projects/LLM-firewall/dist/\u672c\u5730\u5927\u6a21\u578b\u9632\u62a4\u7cfb\u7edf.app",
+        "file_size": 96,
+        "file_hash": "\u76ee\u5f55\uff0c\u65e0\u6cd5\u8ba1\u7b97\u54c8\u5e0c\u503c",
+        "status": "\u6587\u4ef6\u5927\u5c0f\u5f02\u5e38"
+      }
+    ],
+    "windows": [],
+    "linux": [
+      {
+        "file_name": "llm-protection-system-1.0.0-macos-arm64-20250425.tar.gz",
+        "file_path": "/Users/robinxie/Documents/augment-projects/LLM-firewall/llm-protection-system-1.0.0-macos-arm64-20250425.tar.gz",
+        "file_size": 13463903,
+        "file_hash": "9f5150c3afaec1e63d241de2fcf02fb7a59972d52e18b5e9f60f8a662dc67e1d",
+        "status": "\u901a\u8fc7"
+      }
+    ],
+    "docker": []
+  }
+}

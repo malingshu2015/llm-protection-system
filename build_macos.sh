@@ -48,53 +48,53 @@ rm -rf build dist
 
 # 构建应用程序
 echo -e "${YELLOW}开始构建 macOS 应用程序...${NC}"
-pyinstaller pyinstaller.spec --clean
+pyinstaller macos.spec --clean
 
 # 检查构建结果
 if [ -d "dist/本地大模型防护系统.app" ]; then
     echo -e "${GREEN}应用程序构建成功!${NC}"
-    
+
     # 创建分发包
     echo -e "${YELLOW}创建分发包...${NC}"
     TIMESTAMP=$(date +"%Y%m%d")
     DIST_NAME="llm-protection-system-${VERSION}-macos-$(uname -m)-${TIMESTAMP}"
     DIST_DIR="${PROJECT_ROOT}/${DIST_NAME}"
-    
+
     # 创建分发目录
     mkdir -p "${DIST_DIR}"
-    
+
     # 复制应用程序
     cp -R "dist/本地大模型防护系统.app" "${DIST_DIR}/"
-    
+
     # 创建启动脚本
     cat > "${DIST_DIR}/start.sh" << EOF
 #!/bin/bash
 open "本地大模型防护系统.app"
 EOF
     chmod +x "${DIST_DIR}/start.sh"
-    
+
     # 复制文档
     cp README.md "${DIST_DIR}/"
     if [ -f "LICENSE" ]; then
         cp LICENSE "${DIST_DIR}/"
     fi
-    
+
     # 创建文档目录
     mkdir -p "${DIST_DIR}/docs"
-    
+
     # 复制文档文件
     for doc_file in docs/*.md; do
         if [ -f "$doc_file" ]; then
             cp "$doc_file" "${DIST_DIR}/docs/"
         fi
     done
-    
+
     # 创建压缩包
     tar -czf "${DIST_NAME}.tar.gz" -C "${PROJECT_ROOT}" "${DIST_NAME}"
-    
+
     # 删除临时目录
     rm -rf "${DIST_DIR}"
-    
+
     echo -e "${GREEN}分发包已创建: ${DIST_NAME}.tar.gz${NC}"
 else
     echo -e "${RED}构建失败!${NC}"

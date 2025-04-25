@@ -1,0 +1,37 @@
+{
+  "timestamp": "20250425_155315",
+  "version": "1.0.0",
+  "platform": "Darwin",
+  "docs_checks": {
+    "python": {
+      "success": false,
+      "message": "\u672a\u627e\u5230Python wheel\u5305",
+      "found_docs": []
+    },
+    "macos": {
+      "success": true,
+      "message": "macOS\u5305\u5305\u542b\u6240\u6709\u5fc5\u8981\u7684\u6587\u6863",
+      "found_docs": [
+        "README.md",
+        "LICENSE",
+        "docs/pyinstaller_build_guide.md",
+        "docs/release_plan_tracker.md"
+      ]
+    },
+    "windows": {
+      "success": false,
+      "message": "\u975eWindows\u5e73\u53f0\uff0c\u8df3\u8fc7Windows\u5305\u6587\u6863\u68c0\u67e5",
+      "found_docs": []
+    },
+    "linux": {
+      "success": false,
+      "message": "\u975eLinux\u5e73\u53f0\uff0c\u8df3\u8fc7Linux\u5305\u6587\u6863\u68c0\u67e5",
+      "found_docs": []
+    },
+    "docker": {
+      "success": false,
+      "message": "\u672a\u627e\u5230Docker\u955c\u50cf",
+      "found_docs": []
+    }
+  }
+}
