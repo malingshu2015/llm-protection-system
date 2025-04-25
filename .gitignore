@@ -26,7 +26,8 @@ wheels/
 
 # PyInstaller
 *.manifest
-*.spec
+# 允许项目的PyInstaller配置文件
+# *.spec
 
 # Installer logs
 pip-log.txt
