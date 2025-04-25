@@ -43,7 +43,7 @@ pip install llm-protection-system
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/llm-protection-system.git
+git clone https://github.com/malingshu2015/llm-protection-system.git
 cd llm-protection-system
 
 # 创建虚拟环境
