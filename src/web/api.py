@@ -107,8 +107,14 @@ async def stream_ollama_response(model: str, messages: List[Dict], options: Dict
             async for line in proc.stdout:
                 line = line.decode('utf-8').strip()
                 if line:
-                    # 将每一行格式化为SSE格式
-                    yield f"data: {line}\n\n"
+                    try:
+                        # 尝试解析JSON，确保是有效的JSON对象
+                        json.loads(line)
+                        # 将每一行格式化为SSE格式
+                        yield f"data: {line}\n\n"
+                    except json.JSONDecodeError as e:
+                        logger.warning(f"解析流式响应行失败: {e}, 行内容: {line[:100]}")
+                        # 忽略无效的JSON行
 
             # 等待进程结束
             await proc.wait()
@@ -143,10 +149,14 @@ async def stream_ollama_response(model: str, messages: List[Dict], options: Dict
 
                     # 处理流式响应
                     for chunk in stream:
-                        # 使用自定义 JSON 编码器将对象转换为 JSON 字符串
-                        chunk_json = json.dumps(chunk, cls=OllamaJSONEncoder)
-                        # 返回服务器发送的事件格式
-                        yield f"data: {chunk_json}\n\n"
+                        try:
+                            # 使用自定义 JSON 编码器将对象转换为 JSON 字符串
+                            chunk_json = json.dumps(chunk, cls=OllamaJSONEncoder)
+                            # 返回服务器发送的事件格式
+                            yield f"data: {chunk_json}\n\n"
+                        except Exception as chunk_error:
+                            logger.warning(f"处理流式响应块失败: {chunk_error}, 块内容: {str(chunk)[:100]}")
+                            # 忽略处理失败的块
 
                     # 发送结束信号
                     yield "data: [DONE]\n\n"
@@ -372,19 +382,60 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
                 # 将请求数据转换为JSON字符串
                 request_json = json.dumps(request_data)
 
-                # 执行curl命令
+                # 执行curl命令，使用流式模式获取响应，然后手动处理
                 result = subprocess.run(
-                    ['curl', '-s', '-X', 'POST', 'http://localhost:11434/api/chat',
+                    ['curl', '-s', '-N', '-X', 'POST', 'http://localhost:11434/api/chat',
                      '-H', 'Content-Type: application/json',
                      '-d', request_json],
                     capture_output=True, text=True, check=True
                 )
 
-                # 解析JSON响应
+                # 处理流式响应
                 if result.stdout:
-                    response_data = json.loads(result.stdout)
-                    logger.info(f"Ollama 响应成功")
-                    return response_data
+                    # 将响应拆分为多行，每行是一个JSON对象
+                    response_lines = result.stdout.strip().split('\n')
+
+                    # 如果有多行，取最后一行（完整的响应）
+                    if response_lines:
+                        # 找到最后一个done=true的响应
+                        final_response = None
+                        for line in reversed(response_lines):
+                            try:
+                                parsed = json.loads(line)
+                                if parsed.get('done', False):
+                                    final_response = parsed
+                                    break
+                            except json.JSONDecodeError:
+                                continue
+
+                        if final_response:
+                            # 提取完整的消息内容
+                            full_content = ""
+                            for line in response_lines:
+                                try:
+                                    parsed = json.loads(line)
+                                    if 'message' in parsed and 'content' in parsed['message']:
+                                        full_content += parsed['message']['content']
+                                except json.JSONDecodeError:
+                                    continue
+
+                            # 创建最终响应
+                            response_data = {
+                                "model": request.model,
+                                "message": {
+                                    "role": "assistant",
+                                    "content": full_content
+                                }
+                            }
+
+                            logger.info(f"Ollama 响应成功处理")
+                            return response_data
+                        else:
+                            logger.warning("未找到完整的Ollama响应")
+                            raise Exception("未找到完整的Ollama响应")
+                    else:
+                        logger.warning("Ollama响应为空")
+                        raise Exception("Ollama响应为空")
                 else:
                     logger.warning("Ollama响应为空")
                     raise Exception("Ollama响应为空")
@@ -394,7 +445,7 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
                 raise Exception(f"调用Ollama API失败: {e.stderr}")
 
             except json.JSONDecodeError as e:
-                logger.warning(f"解析Ollama响应JSON失败: {e}, 原始响应: {result.stdout if 'result' in locals() else 'N/A'}")
+                logger.warning(f"解析Ollama响应JSON失败: {e}, 原始响应: {result.stdout[:200] if 'result' in locals() else 'N/A'}")
                 raise Exception(f"解析Ollama响应失败: {e}")
 
             except Exception as e:
@@ -403,17 +454,38 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
                 # 如果Ollama模块可用，尝试使用Python客户端
                 if OLLAMA_AVAILABLE:
                     logger.info("尝试使用Ollama Python客户端...")
-                    # 创建一个新的客户端实例，设置更长的超时时间
-                    client = ollama.Client(host='http://localhost:11434', timeout=60)
-                    response = client.chat(
-                        model=request.model,
-                        messages=messages,
-                        stream=False,
-                        options=options
-                    )
+                    try:
+                        # 创建一个新的客户端实例，设置更长的超时时间
+                        client = ollama.Client(host='http://localhost:11434', timeout=60)
 
-                    logger.info(f"Ollama Python客户端响应成功")
-                    return response
+                        # 使用流式模式获取响应，然后手动处理
+                        stream_response = client.chat(
+                            model=request.model,
+                            messages=messages,
+                            stream=True,  # 使用流式模式
+                            options=options
+                        )
+
+                        # 收集所有流式响应并合并
+                        full_content = ""
+                        for chunk in stream_response:
+                            if 'message' in chunk and 'content' in chunk['message']:
+                                full_content += chunk['message']['content']
+
+                        # 创建最终响应
+                        response_data = {
+                            "model": request.model,
+                            "message": {
+                                "role": "assistant",
+                                "content": full_content
+                            }
+                        }
+
+                        logger.info(f"Ollama Python客户端响应成功处理")
+                        return response_data
+                    except Exception as client_error:
+                        logger.warning(f"Ollama Python客户端处理失败: {client_error}")
+                        raise Exception(f"Ollama Python客户端处理失败: {client_error}")
                 else:
                     raise Exception(f"无法连接到Ollama服务: {e}")
     except Exception as e:
