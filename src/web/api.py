@@ -174,9 +174,8 @@ async def stream_ollama_response(model: str, messages: List[Dict], options: Dict
                             buffer = []
                             count = 0
                     except json.JSONDecodeError as e:
-                        # 仅在调试模式下记录详细日志
-                        if settings.DEBUG:
-                            logger.debug(f"解析流式响应行失败: {e}, 行内容: {line[:100]}")
+                        # 使用警告级别记录日志，避免使用settings.DEBUG
+                        logger.warning(f"解析流式响应行失败: {e}, 行内容: {line[:100]}")
                         # 忽略无效的JSON行
 
             # 如果缓冲区中还有数据，发送剩余数据
@@ -198,11 +197,8 @@ async def stream_ollama_response(model: str, messages: List[Dict], options: Dict
             return
 
         except Exception as e:
-            # 仅在调试模式下记录详细日志
-            if settings.DEBUG:
-                logger.exception(f"使用curl调用Ollama流式 API时出错: {e}")
-            else:
-                logger.warning(f"使用curl调用Ollama流式 API时出错: {str(e)[:100]}")
+            # 使用警告级别记录日志，避免使用settings.DEBUG
+            logger.warning(f"使用curl调用Ollama流式 API时出错: {str(e)[:100]}")
 
             # 如果Ollama模块可用，尝试使用Python客户端
             if OLLAMA_AVAILABLE:
@@ -252,9 +248,8 @@ async def stream_ollama_response(model: str, messages: List[Dict], options: Dict
                                 buffer = []
                                 count = 0
                         except Exception as chunk_error:
-                            # 仅在调试模式下记录详细日志
-                            if settings.DEBUG:
-                                logger.warning(f"处理流式响应块失败: {chunk_error}, 块内容: {str(chunk)[:100]}")
+                            # 使用警告级别记录日志，避免使用settings.DEBUG
+                            logger.warning(f"处理流式响应块失败: {chunk_error}, 块内容: {str(chunk)[:100]}")
                             # 忽略处理失败的块
 
                     # 如果缓冲区中还有数据，发送剩余数据
@@ -528,9 +523,8 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
                                 if 'message' in parsed and 'content' in parsed['message']:
                                     content_parts.append(parsed['message']['content'])
                             except json.JSONDecodeError:
-                                # 仅在调试模式下记录详细日志
-                                if settings.DEBUG:
-                                    logger.debug(f"解析响应行失败: {line[:100]}")
+                                # 使用警告级别记录日志，避免使用settings.DEBUG
+                                logger.warning(f"解析响应行失败: {line[:100]}")
                                 continue
 
                         if has_done or content_parts:  # 如果有done标记或者有内容，则认为有效
@@ -623,11 +617,8 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
                         logger.info(f"Ollama Python客户端响应成功处理")
                         return response_data
                     except Exception as client_error:
-                        # 仅在调试模式下记录详细日志
-                        if settings.DEBUG:
-                            logger.warning(f"Ollama Python客户端处理失败: {client_error}")
-                        else:
-                            logger.warning(f"Ollama Python客户端处理失败: {str(client_error)[:100]}")
+                        # 使用警告级别记录日志，避免使用settings.DEBUG
+                        logger.warning(f"Ollama Python客户端处理失败: {str(client_error)[:100]}")
                         raise Exception(f"Ollama Python客户端处理失败: {str(client_error)[:100]}")
                 else:
                     raise Exception(f"无法连接到Ollama服务: {e}")
