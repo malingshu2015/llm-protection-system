@@ -289,6 +289,11 @@
       "pretend to be antisocial",
       "simulate extremist"
     ],
+    "categories": [
+      "role_play",
+      "role_play_jailbreak",
+      "harmful_roleplay"
+    ],
     "enabled": true,
     "block": true,
     "priority": 5
@@ -326,6 +331,11 @@
       "act as cult leader",
       "pretend to be crime boss",
       "roleplay as dangerous character"
+    ],
+    "categories": [
+      "role_play",
+      "role_play_jailbreak",
+      "fictional_character"
     ],
     "enabled": true,
     "block": true,
@@ -369,6 +379,11 @@
       "pretend to be Hitler",
       "roleplay as Stalin"
     ],
+    "categories": [
+      "role_play",
+      "role_play_jailbreak",
+      "historical_figure"
+    ],
     "enabled": true,
     "block": true,
     "priority": 6
@@ -407,6 +422,11 @@
       "act as advisor show stealing data",
       "pretend to be mentor guide scamming",
       "roleplay as guide instruct dangerous items"
+    ],
+    "categories": [
+      "role_play",
+      "role_play_jailbreak",
+      "instructional_roleplay"
     ],
     "enabled": true,
     "block": true,
