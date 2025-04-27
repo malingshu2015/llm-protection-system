@@ -3,13 +3,16 @@
 import asyncio
 import signal
 import sys
+import webbrowser
+import threading
+import time
 from typing import Set
 
 import os
 import uvicorn
 from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
-# from fastapi.responses import RedirectResponse  # 未使用，已注释
+from fastapi.responses import RedirectResponse
 
 # Get version from VERSION file
 VERSION_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "VERSION")
@@ -60,13 +63,10 @@ async def favicon():
     # 返回空的 favicon
     return Response(content=b"", media_type="image/x-icon")
 
-# Add root route - 直接返回简单的 HTML
+# Add root route - 直接重定向到聊天界面
 @app.get("/")
 async def root():
-    return Response(
-        content="<html><body><h1>本地大模型防护系统</h1><p>Welcome to the Local LLM Protection System.</p><p><a href='/static/index.html'>Go to Chat Demo</a></p></body></html>",
-        media_type="text/html"
-    )
+    return RedirectResponse(url="/static/index.html")
 
 # Store running tasks
 running_tasks: Set[asyncio.Task] = set()
@@ -86,6 +86,9 @@ async def startup_event() -> None:
     running_tasks.add(task)
     task.add_done_callback(running_tasks.discard)
 
+    # 启动浏览器打开聊天界面
+    threading.Thread(target=open_browser_after_delay).start()
+
 
 async def shutdown_event() -> None:
     """Clean up resources on application shutdown."""
@@ -98,6 +101,15 @@ async def shutdown_event() -> None:
     # Wait for all tasks to complete
     if running_tasks:
         await asyncio.gather(*running_tasks, return_exceptions=True)
+
+
+def open_browser_after_delay() -> None:
+    """Open browser after a short delay to ensure server is ready."""
+    # 等待服务器启动
+    time.sleep(2)
+    url = f"http://{settings.web.host}:{settings.web.port}/static/index.html"
+    logger.info(f"Opening browser at {url}")
+    webbrowser.open(url)
 
 
 async def background_tasks() -> None:
@@ -130,6 +142,13 @@ def handle_signals() -> None:
 def main() -> None:
     """Run the application."""
     handle_signals()
+
+    # 显示启动消息
+    print("\n" + "=" * 60)
+    print(f"  本地大模型防护系统 v{VERSION} 正在启动...")
+    print(f"  服务器地址: http://{settings.web.host}:{settings.web.port}")
+    print(f"  聊天界面将在浏览器中自动打开")
+    print("=" * 60 + "\n")
 
     # Start the web server
     uvicorn.run(
