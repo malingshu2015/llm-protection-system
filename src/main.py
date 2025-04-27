@@ -13,6 +13,7 @@ import uvicorn
 from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 # Get version from VERSION file
 VERSION_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "VERSION")
@@ -39,6 +40,15 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json"
+)
+
+# 添加 CORS 中间件
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许所有来源
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许所有方法
+    allow_headers=["*"],  # 允许所有头
 )
 
 # Register API routes
@@ -107,7 +117,9 @@ def open_browser_after_delay() -> None:
     """Open browser after a short delay to ensure server is ready."""
     # 等待服务器启动
     time.sleep(2)
-    url = f"http://{settings.web.host}:{settings.web.port}/static/index.html"
+    # 使用 localhost 而不是 0.0.0.0
+    host = "localhost" if settings.web.host == "0.0.0.0" else settings.web.host
+    url = f"http://{host}:{settings.web.port}/static/index.html"
     logger.info(f"Opening browser at {url}")
     webbrowser.open(url)
 
@@ -144,9 +156,10 @@ def main() -> None:
     handle_signals()
 
     # 显示启动消息
+    host = "localhost" if settings.web.host == "0.0.0.0" else settings.web.host
     print("\n" + "=" * 60)
     print(f"  本地大模型防护系统 v{VERSION} 正在启动...")
-    print(f"  服务器地址: http://{settings.web.host}:{settings.web.port}")
+    print(f"  服务器地址: http://{host}:{settings.web.port}")
     print(f"  聊天界面将在浏览器中自动打开")
     print("=" * 60 + "\n")
 
