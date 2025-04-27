@@ -72,11 +72,13 @@
     "detection_type": "jailbreak",
     "severity": "high",
     "patterns": [
-      "(?i)(?:假设|假如|设想|想象|如果|假定|试想|imagine|let's pretend|hypothetically)[.\\s]*(?:你|you)[.\\s]*(?:没有|不受|不存在|不需要遵守|don't have|aren't bound by)[.\\s]*(?:任何|所有|全部|any)[.\\s]*(?:限制|约束|规则|伦理|道德|底线|restrictions|guidelines|ethics)[.\\s]*(?:并且|而且|and)[.\\s]*(?:可以|能够|可|can)[.\\s]*(?:回答|解答|回复|answer)[.\\s]*(?:任何|所有|全部|any)[.\\s]*(?:问题|疑问|questions)",
-      "(?i)(?:假设|假如|设想|想象|如果|假定|试想|imagine|let's pretend|hypothetically)[.\\s]*(?:我们|we)[.\\s]*(?:在|处于|生活在|are in)[.\\s]*(?:一个|某个|a)[.\\s]*(?:没有|不存在|不需要|without)[.\\s]*(?:规则|法律|道德|伦理|底线|rules|laws|morals|ethics)[.\\s]*(?:的世界|的环境|的情境|world|environment)[.\\s]*(?:你|you)[.\\s]*(?:可以|能够|可|can)[.\\s]*(?:做|执行|完成|实现|do|perform)[.\\s]*(?:任何|所有|全部|any)[.\\s]*(?:事情|行为|操作|thing|action)",
+      "(?i)(?:假设|假如|设想|想象|如果|假定|试想|imagine|let's pretend|hypothetically)[.\\s]*(?:你|you)[.\\s]*(?:没有|不受|不存在|不需要遵守|don't have|aren't bound by)[.\\s]*(?:任何|所有|全部|any)?[.\\s]*(?:限制|约束|规则|伦理|道德|底线|restrictions|guidelines|ethics)(?:[.\\s]*(?:并且|而且|and)[.\\s]*(?:可以|能够|可|can)[.\\s]*(?:回答|解答|回复|answer)[.\\s]*(?:任何|所有|全部|any)[.\\s]*(?:问题|疑问|questions))?",
+      "(?i)(?:假设|假如|设想|想象|如果|假定|试想|imagine|let's pretend|hypothetically)[.\\s]*(?:我们|we)[.\\s]*(?:在|处于|生活在|are in)[.\\s]*(?:一个|某个|a)[.\\s]*(?:没有|不存在|不需要|without)[.\\s]*(?:规则|法律|道德|伦理|底线|rules|laws|morals|ethics)[.\\s]*(?:的世界|的环境|的情境|world|environment)(?:[.\\s]*(?:你|you)[.\\s]*(?:可以|能够|可|can)[.\\s]*(?:做|执行|完成|实现|do|perform)[.\\s]*(?:任何|所有|全部|any)[.\\s]*(?:事情|行为|操作|thing|action))?",
       "(?i)(?:假设|假如|设想|想象|如果|假定|试想|imagine|let's pretend|hypothetically)[.\\s]*(?:这只是|这仅仅是|这不过是|this is just)[.\\s]*(?:一个|某个|a)[.\\s]*(?:游戏|角色扮演|虚构场景|思想实验|game|fiction|roleplay|thought experiment)[.\\s]*(?:你|you)[.\\s]*(?:不需要|无需|不必|don't need to)[.\\s]*(?:遵守|遵循|服从|follow|obey|adhere to)[.\\s]*(?:规则|限制|约束|伦理|道德|rules|restrictions|ethics)",
-      "(?i)(?:在|处于|within|in)[.\\s]*(?:这个|此|this)[.\\s]*(?:假设|假想|虚构|hypothetical|fictional)[.\\s]*(?:情景|场景|环境|scenario|setting)[.\\s]*(?:中|内|里面|in)[.\\s]*(?:你|you)[.\\s]*(?:可以|能够|可|can)[.\\s]*(?:自由|无限制地|freely|without restrictions)[.\\s]*(?:回答|解答|回复|answer|respond to)[.\\s]*(?:关于|有关|about|regarding)[.\\s]*(?:有害|危险|非法|敏感|harmful|illegal|sensitive)[.\\s]*(?:内容|信息|话题|content|information|topics)",
-      "(?i)(?:纯粹|仅仅|只是|purely|just|only)[.\\s]*(?:学术|理论|假设|academic|theoretical|hypothetical)[.\\s]*(?:讨论|探讨|研究|discussion|exploration|research)[.\\s]*(?:不违反|不违背|不触犯|doesn't violate|doesn't break)[.\\s]*(?:规则|法律|道德|伦理|rules|laws|ethics)"
+      "(?i)(?:在|处于|within|in)[.\\s]*(?:这个|此|this)[.\\s]*(?:假设|假想|虚构|hypothetical|fictional)[.\\s]*(?:情景|场景|环境|scenario|setting)[.\\s]*(?:中|内|里面|in)[.\\s]*(?:你|you)[.\\s]*(?:可以|能够|可|can)[.\\s]*(?:自由|无限制地|freely|without restrictions)[.\\s]*(?:回答|解答|回复|answer|respond to)(?:[.\\s]*(?:关于|有关|about|regarding)[.\\s]*(?:有害|危险|非法|敏感|harmful|illegal|sensitive)[.\\s]*(?:内容|信息|话题|content|information|topics))?",
+      "(?i)(?:纯粹|仅仅|只是|purely|just|only)[.\\s]*(?:学术|理论|假设|academic|theoretical|hypothetical)[.\\s]*(?:讨论|探讨|研究|discussion|exploration|research)[.\\s]*(?:不违反|不违背|不触犯|doesn't violate|doesn't break)[.\\s]*(?:规则|法律|道德|伦理|rules|laws|ethics)",
+      "(?i)(?:你|you)[.\\s]*(?:不受|不需要遵守|不需要遵循|不需要服从|不需要考虑|don't need to follow|aren't bound by|don't have to obey)[.\\s]*(?:任何|所有|全部|any)?[.\\s]*(?:限制|约束|规则|伦理|道德|底线|restrictions|guidelines|ethics)",
+      "(?i)(?:你|you)[.\\s]*(?:可以|能够|可以|can)[.\\s]*(?:自由|无限制地|freely|without restrictions)[.\\s]*(?:回答|解答|回复|answer|respond to)[.\\s]*(?:任何|所有|全部|any)[.\\s]*(?:问题|疑问|questions)"
     ],
     "keywords": [
       "假设",
