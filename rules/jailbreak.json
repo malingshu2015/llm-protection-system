@@ -251,7 +251,7 @@
     "priority": 6
   },
   {
-    "id": "jb-009",
+    "id": "jb-013",
     "name": "Harmful Role-Playing Jailbreak",
     "description": "Detects jailbreak attempts using harmful or unethical role-playing scenarios",
     "detection_type": "jailbreak",
@@ -299,7 +299,7 @@
     "priority": 5
   },
   {
-    "id": "jb-010",
+    "id": "jb-014",
     "name": "Fictional Character Jailbreak",
     "description": "Detects jailbreak attempts using fictional characters known for harmful or unethical behavior",
     "detection_type": "jailbreak",
@@ -342,7 +342,7 @@
     "priority": 7
   },
   {
-    "id": "jb-011",
+    "id": "jb-015",
     "name": "Historical Controversial Figure Jailbreak",
     "description": "Detects jailbreak attempts using historical controversial figures",
     "detection_type": "jailbreak",
@@ -389,7 +389,7 @@
     "priority": 6
   },
   {
-    "id": "jb-012",
+    "id": "jb-016",
     "name": "Instructional Role-Playing Jailbreak",
     "description": "Detects jailbreak attempts using instructional role-playing scenarios",
     "detection_type": "jailbreak",
