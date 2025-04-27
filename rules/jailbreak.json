@@ -53,10 +53,10 @@
     "detection_type": "jailbreak",
     "severity": "high",
     "patterns": [
-      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:你|you)[.\\s]*(?:没有|don't have|aren't bound by)[.\\s]*(?:任何|any)[.\\s]*(?:限制|restrictions|guidelines|ethics)",
-      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:我们|we)[.\\s]*(?:在|are in)[.\\s]*(?:一个|a)[.\\s]*(?:没有|without)[.\\s]*(?:规则|rules|laws|道德|morals)[.\\s]*(?:的世界|world)",
-      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:这只是|this is just)[.\\s]*(?:一个|a)[.\\s]*(?:游戏|game|fiction|虚构)",
-      "(?i)(?:在|in)[.\\s]*(?:这个|this)[.\\s]*(?:假设|hypothetical)[.\\s]*(?:情景|scenario)[.\\s]*(?:中|in)[.\\s]*(?:你|you)[.\\s]*(?:可以|can)[.\\s]*(?:自由|freely)[.\\s]*(?:回答|answer)"
+      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:你|you)[.\\s]*(?:没有|don't have|aren't bound by)[.\\s]*(?:任何|any)[.\\s]*(?:限制|restrictions|guidelines|ethics)[.\\s]*(?:并且|and)[.\\s]*(?:可以|can)[.\\s]*(?:回答|answer)[.\\s]*(?:任何|any)[.\\s]*(?:问题|questions)",
+      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:我们|we)[.\\s]*(?:在|are in)[.\\s]*(?:一个|a)[.\\s]*(?:没有|without)[.\\s]*(?:规则|rules|laws|道德|morals)[.\\s]*(?:的世界|world)[.\\s]*(?:你|you)[.\\s]*(?:可以|can)[.\\s]*(?:做|do)[.\\s]*(?:任何|anything)",
+      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:这只是|this is just)[.\\s]*(?:一个|a)[.\\s]*(?:游戏|game|fiction|虚构)[.\\s]*(?:你|you)[.\\s]*(?:不需要|don't need to)[.\\s]*(?:遵守|follow)[.\\s]*(?:规则|rules)",
+      "(?i)(?:在|in)[.\\s]*(?:这个|this)[.\\s]*(?:假设|hypothetical)[.\\s]*(?:情景|scenario)[.\\s]*(?:中|in)[.\\s]*(?:你|you)[.\\s]*(?:可以|can)[.\\s]*(?:自由|freely)[.\\s]*(?:回答|answer)[.\\s]*(?:关于|about)[.\\s]*(?:有害|harmful|非法|illegal)[.\\s]*(?:内容|content)"
     ],
     "keywords": [
       "假设",
@@ -101,10 +101,10 @@
     "detection_type": "jailbreak",
     "severity": "medium",
     "patterns": [
-      "(?i)(?:continue|完成|继续)[.\\s]*(?:this|the|following|下面|这个)[.\\s]*(?:sentence|paragraph|text|句子|段落|文本)",
-      "(?i)(?:I'll|I will)[.\\s]*(?:start|begin)[.\\s]*(?:and|&)[.\\s]*(?:you|you'll)[.\\s]*(?:finish|complete|continue)",
-      "(?i)(?:complete|continue|finish)[.\\s]*(?:my|the)[.\\s]*(?:thought|sentence|paragraph)",
-      "(?i)(?:我会|I'll)[.\\s]*(?:开始|start)[.\\s]*(?:你|you)[.\\s]*(?:继续|continue)"
+      "(?i)(?:continue|完成|继续)[.\\s]*(?:this|the|following|下面|这个)[.\\s]*(?:sentence|paragraph|text|句子|段落|文本)[.\\s]*(?:about|关于)[.\\s]*(?:harmful|illegal|有害|非法)[.\\s]*(?:content|内容)",
+      "(?i)(?:I'll|I will)[.\\s]*(?:start|begin)[.\\s]*(?:and|&)[.\\s]*(?:you|you'll)[.\\s]*(?:finish|complete|continue)[.\\s]*(?:this|the|following|这个|下面)[.\\s]*(?:harmful|illegal|有害|非法)[.\\s]*(?:content|内容)",
+      "(?i)(?:complete|continue|finish)[.\\s]*(?:my|the)[.\\s]*(?:thought|sentence|paragraph)[.\\s]*(?:about|关于)[.\\s]*(?:harmful|illegal|有害|非法)[.\\s]*(?:content|内容|topics|主题)",
+      "(?i)(?:我会|I'll)[.\\s]*(?:开始|start)[.\\s]*(?:一个|a|an)[.\\s]*(?:有害|非法|harmful|illegal)[.\\s]*(?:内容|主题|content|topic)[.\\s]*(?:你|you)[.\\s]*(?:继续|continue)"
     ],
     "keywords": [
       "continue",

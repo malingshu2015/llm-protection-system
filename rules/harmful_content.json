@@ -6,11 +6,11 @@
     "detection_type": "harmful_content",
     "severity": "high",
     "patterns": [
-      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|才能)[.\\s]*(?:kill|murder|harm|injure|attack|杀|杀死|伤害|攻击)",
-      "(?i)(?:make|build|create|制作|制造|创建)[.\\s]*(?:a|an|一个)?[.\\s]*(?:bomb|explosive|weapon|炸弹|爆炸物|武器)",
-      "(?i)(?:plan|execute|carry[.\\s]*out|策划|执行|实施)[.\\s]*(?:a|an|一个)?[.\\s]*(?:attack|shooting|bombing|攻击|枪击|爆炸)",
-      "(?i)(?:最有效|最好|best|most effective)[.\\s]*(?:的|way|method|方法)[.\\s]*(?:to|来|of)[.\\s]*(?:kill|murder|杀人|谋杀)",
-      "(?i)(?:详细|detailed|step by step)[.\\s]*(?:指南|instructions|guide|说明)[.\\s]*(?:for|用于|关于)[.\\s]*(?:making|building|制作)[.\\s]*(?:explosives|bombs|weapons|爆炸物|炸弹|武器)"
+      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|才能)[.\\s]*(?:kill|murder|harm|injure|attack|杀|杀死|伤害|攻击)[.\\s]*(?:people|humans|person|他人|人|别人|someone)",
+      "(?i)(?:make|build|create|制作|制造|创建)[.\\s]*(?:a|an|一个)?[.\\s]*(?:bomb|explosive|weapon|炸弹|爆炸物|武器)[.\\s]*(?:to|for|用于|为了)?[.\\s]*(?:harm|kill|attack|伤害|杀|攻击)?",
+      "(?i)(?:plan|execute|carry[.\\s]*out|策划|执行|实施)[.\\s]*(?:a|an|一个)?[.\\s]*(?:attack|shooting|bombing|攻击|枪击|爆炸)[.\\s]*(?:on|against|对|针对)[.\\s]*(?:people|humans|person|他人|人|别人|someone|building|场所|建筑)",
+      "(?i)(?:最有效|最好|best|most effective)[.\\s]*(?:的|way|method|方法)[.\\s]*(?:to|来|of)[.\\s]*(?:kill|murder|杀人|谋杀)[.\\s]*(?:people|humans|person|他人|人|别人|someone)",
+      "(?i)(?:详细|detailed|step by step)[.\\s]*(?:指南|instructions|guide|说明)[.\\s]*(?:for|用于|关于)[.\\s]*(?:making|building|制作)[.\\s]*(?:explosives|bombs|weapons|爆炸物|炸弹|武器)[.\\s]*(?:to|for|用于|为了)?[.\\s]*(?:harm|kill|attack|伤害|杀|攻击)?"
     ],
     "keywords": [
       "kill",
@@ -91,11 +91,11 @@
     "detection_type": "harmful_content",
     "severity": "medium",
     "patterns": [
-      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|才能)[.\\s]*(?:hack|crack|steal|launder|counterfeit|黑入|破解|偷窃|洗钱|伪造)",
-      "(?i)(?:buy|sell|purchase|acquire|购买|销售|获取)[.\\s]*(?:illegal|illicit|非法|违禁)[.\\s]*(?:drugs|substances|weapons|毒品|物质|武器)",
-      "(?i)(?:evade|avoid|bypass|逃避|避免|绕过)[.\\s]*(?:taxes|law enforcement|security|税收|执法|安全)",
-      "(?i)(?:最佳|best)[.\\s]*(?:方法|way|method)[.\\s]*(?:to|来)[.\\s]*(?:hack|crack|steal|黑入|破解|偷窃)[.\\s]*(?:accounts|passwords|systems|账户|密码|系统)",
-      "(?i)(?:如何|how to)[.\\s]*(?:在不被发现的情况下|without getting caught)[.\\s]*(?:偷窃|steal|抢劫|rob)"
+      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|才能)[.\\s]*(?:hack|crack|steal|launder|counterfeit|黑入|破解|偷窃|洗钱|伪造)[.\\s]*(?:personal|他人|个人|private|私人)[.\\s]*(?:data|information|money|数据|信息|钱财)",
+      "(?i)(?:buy|sell|purchase|acquire|购买|销售|获取)[.\\s]*(?:illegal|illicit|非法|违禁)[.\\s]*(?:drugs|substances|weapons|毒品|物质|武器)[.\\s]*(?:for|用于)[.\\s]*(?:personal|他人|个人|illegal|非法)[.\\s]*(?:use|consumption|使用|消费)",
+      "(?i)(?:evade|avoid|bypass|逃避|避免|绕过)[.\\s]*(?:taxes|law enforcement|security|税收|执法|安全)[.\\s]*(?:illegally|非法地|违法地)",
+      "(?i)(?:最佳|best)[.\\s]*(?:方法|way|method)[.\\s]*(?:to|来)[.\\s]*(?:hack|crack|steal|黑入|破解|偷窃)[.\\s]*(?:accounts|passwords|systems|账户|密码|系统)[.\\s]*(?:without|permission|authorization|未经|许可|授权)",
+      "(?i)(?:如何|how to)[.\\s]*(?:在不被发现的情况下|without getting caught)[.\\s]*(?:偷窃|steal|抢劫|rob)[.\\s]*(?:from|stores|banks|people|从|商店|银行|他人)"
     ],
     "keywords": [
       "hack",

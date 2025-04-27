@@ -445,12 +445,20 @@ class HTTPInterceptor:
         Returns:
             The blocked response.
         """
+        # 根据不同的拦截原因提供更友好的提示信息
+        friendly_message = self._get_friendly_message(reason)
+        suggestion = self._get_suggestion(reason)
+
         content = json.dumps(
             {
                 "error": {
-                    "message": f"Request blocked by LLM Security Firewall: {reason}",
+                    "message": f"请求被本地大模型防护系统拦截: {reason}",
+                    "friendly_message": friendly_message,
+                    "suggestion": suggestion,
                     "type": "security_violation",
                     "code": status_code,
+                    "request_id": f"req-{int(time.time())}",
+                    "feedback_url": "/api/v1/feedback/false-positive"
                 }
             }
         )
@@ -460,6 +468,58 @@ class HTTPInterceptor:
             status_code=status_code,
             headers={"Content-Type": "application/json"},
         )
+
+    def _get_friendly_message(self, reason: str) -> str:
+        """根据拦截原因获取友好的提示信息。
+
+        Args:
+            reason: 拦截原因。
+
+        Returns:
+            友好的提示信息。
+        """
+        if "Prompt Injection" in reason:
+            return "您的请求可能包含试图操纵模型的内容，这可能会导致安全风险。"
+        elif "Jailbreak" in reason:
+            return "您的请求可能包含试图绕过模型安全限制的内容，这违反了使用规范。"
+        elif "Harmful Content" in reason:
+            return "您的请求可能包含有害内容，我们无法处理此类请求。"
+        elif "Sensitive Information" in reason:
+            return "您的请求可能包含敏感信息，为保护您的隐私，我们已拦截此请求。"
+        elif "Violence Content" in reason:
+            return "您的请求可能包含暴力内容，我们无法处理此类请求。"
+        elif "Self-Harm Content" in reason:
+            return "您的请求可能涉及自残内容，如果您需要帮助，请联系专业心理咨询机构。"
+        elif "Child Exploitation" in reason:
+            return "您的请求可能涉及儿童不当内容，这违反了法律法规和使用规范。"
+        else:
+            return "您的请求违反了安全规则，已被系统拦截。"
+
+    def _get_suggestion(self, reason: str) -> str:
+        """根据拦截原因获取建议。
+
+        Args:
+            reason: 拦截原因。
+
+        Returns:
+            建议内容。
+        """
+        if "Prompt Injection" in reason:
+            return "请避免使用试图操控模型的指令，如'忽略之前的指示'等。"
+        elif "Jailbreak" in reason:
+            return "请避免使用DAN等越狱提示，模型只能在安全限制内回答问题。"
+        elif "Harmful Content" in reason:
+            return "请避免询问有关制作危险物品、实施暴力行为等有害内容的问题。"
+        elif "Sensitive Information" in reason:
+            return "请不要在对话中分享密码、信用卡号等敏感个人信息，以保护您的隐私安全。"
+        elif "Violence Content" in reason:
+            return "请避免询问有关暴力行为的问题，尝试以更积极的方式表达您的需求。"
+        elif "Self-Harm Content" in reason:
+            return "如果您正在经历困难，请寻求专业帮助，全国心理援助热线：400-161-9995。"
+        elif "Child Exploitation" in reason:
+            return "此类内容严重违反法律法规，请立即停止相关查询。"
+        else:
+            return "请修改您的请求，避免包含可能违反安全规则的内容。如果您认为这是误判，可以通过反馈功能告诉我们。"
 
     async def _create_error_response(self, error_message: str) -> Response:
         """Create a response for internal errors.
