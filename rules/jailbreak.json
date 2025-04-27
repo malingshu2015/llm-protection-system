@@ -9,14 +9,23 @@
       "(?i)you[.\\s]*are[.\\s]*now[.\\s]*DAN",
       "(?i)DAN[.\\s]*mode[.\\s]*enabled",
       "(?i)Do[.\\s]*Anything[.\\s]*Now",
-      "(?i)(?:你现在是|you are now|act as)[.\\s]*(?:DAN|Do Anything Now)",
-      "(?i)(?:没有|no)[.\\s]*(?:限制|restrictions|ethics|伦理|道德)"
+      "(?i)(?:你现在是|你扮演|你将成为|你将扮演|你将充当|你将模拟|你将担任|你需要扮演|你需要充当|you are now|act as)[.\\s]*(?:DAN|Do Anything Now|自由模式|无限制模式|无约束模式)",
+      "(?i)(?:没有|不受|无|不存在|忽略|绕过|突破|无视|不要考虑|不要理会|no)[.\\s]*(?:限制|约束|规则|伦理|道德|底线|restrictions|ethics|guidelines|constraints|boundaries)",
+      "(?i)(?:启用|激活|开启|打开|enable|activate)[.\\s]*(?:DAN|自由|无限制|无约束)[.\\s]*(?:模式|mode)",
+      "(?i)(?:现在可以|可以开始|开始|now you can|you can now)[.\\s]*(?:自由回答|无限制回答|回答任何问题|answer anything|answer freely)"
     ],
     "keywords": [
       "DAN",
       "Do Anything Now",
       "没有限制",
-      "no restrictions"
+      "无约束",
+      "自由模式",
+      "无限制模式",
+      "绕过规则",
+      "突破限制",
+      "无视道德",
+      "no restrictions",
+      "无底线"
     ],
     "enabled": true,
     "block": true,
@@ -29,10 +38,11 @@
     "detection_type": "jailbreak",
     "severity": "critical",
     "patterns": [
-      "(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM|ANTI-DAN)[.\\s]*(?:模式|mode)",
-      "(?i)you[.\\s]*are[.\\s]*(?:STAN|DUDE|KEVIN|DAVE|AIM)",
-      "(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM)[.\\s]*(?:can|will)[.\\s]*(?:help|assist)[.\\s]*(?:me|us)",
-      "(?i)(?:activate|enable)[.\\s]*(?:STAN|DUDE|KEVIN|DAVE|AIM)[.\\s]*(?:mode|protocol)"
+      "(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM|ANTI-DAN|超级助手|无限助手|终极助手|黑客模式|专家模式|大师模式)[.\\s]*(?:模式|mode)",
+      "(?i)(?:你现在是|你扮演|你将成为|你将扮演|你将充当|你将模拟|你将担任|you are)[.\\s]*(?:STAN|DUDE|KEVIN|DAVE|AIM|超级助手|无限助手|终极助手|黑客|专家|大师)",
+      "(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM|超级助手|无限助手|终极助手|黑客模式|专家模式|大师模式)[.\\s]*(?:可以|能够|will|can)[.\\s]*(?:帮助|协助|help|assist)[.\\s]*(?:我|我们|me|us)",
+      "(?i)(?:激活|启用|开启|打开|activate|enable)[.\\s]*(?:STAN|DUDE|KEVIN|DAVE|AIM|超级助手|无限助手|终极助手|黑客模式|专家模式|大师模式)[.\\s]*(?:模式|协议|mode|protocol)",
+      "(?i)(?:请使用|使用|请切换到|切换到|use|switch to)[.\\s]*(?:开发者模式|研究模式|实验模式|developer mode|research mode|experimental mode)"
     ],
     "keywords": [
       "STAN",
@@ -40,7 +50,16 @@
       "KEVIN",
       "DAVE",
       "AIM",
-      "ANTI-DAN"
+      "ANTI-DAN",
+      "超级助手",
+      "无限助手",
+      "终极助手",
+      "黑客模式",
+      "专家模式",
+      "大师模式",
+      "开发者模式",
+      "研究模式",
+      "实验模式"
     ],
     "enabled": true,
     "block": true,
@@ -53,18 +72,31 @@
     "detection_type": "jailbreak",
     "severity": "high",
     "patterns": [
-      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:你|you)[.\\s]*(?:没有|don't have|aren't bound by)[.\\s]*(?:任何|any)[.\\s]*(?:限制|restrictions|guidelines|ethics)[.\\s]*(?:并且|and)[.\\s]*(?:可以|can)[.\\s]*(?:回答|answer)[.\\s]*(?:任何|any)[.\\s]*(?:问题|questions)",
-      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:我们|we)[.\\s]*(?:在|are in)[.\\s]*(?:一个|a)[.\\s]*(?:没有|without)[.\\s]*(?:规则|rules|laws|道德|morals)[.\\s]*(?:的世界|world)[.\\s]*(?:你|you)[.\\s]*(?:可以|can)[.\\s]*(?:做|do)[.\\s]*(?:任何|anything)",
-      "(?i)(?:假设|imagine|let's pretend|hypothetically)[.\\s]*(?:这只是|this is just)[.\\s]*(?:一个|a)[.\\s]*(?:游戏|game|fiction|虚构)[.\\s]*(?:你|you)[.\\s]*(?:不需要|don't need to)[.\\s]*(?:遵守|follow)[.\\s]*(?:规则|rules)",
-      "(?i)(?:在|in)[.\\s]*(?:这个|this)[.\\s]*(?:假设|hypothetical)[.\\s]*(?:情景|scenario)[.\\s]*(?:中|in)[.\\s]*(?:你|you)[.\\s]*(?:可以|can)[.\\s]*(?:自由|freely)[.\\s]*(?:回答|answer)[.\\s]*(?:关于|about)[.\\s]*(?:有害|harmful|非法|illegal)[.\\s]*(?:内容|content)"
+      "(?i)(?:假设|假如|设想|想象|如果|假定|试想|imagine|let's pretend|hypothetically)[.\\s]*(?:你|you)[.\\s]*(?:没有|不受|不存在|不需要遵守|don't have|aren't bound by)[.\\s]*(?:任何|所有|全部|any)[.\\s]*(?:限制|约束|规则|伦理|道德|底线|restrictions|guidelines|ethics)[.\\s]*(?:并且|而且|and)[.\\s]*(?:可以|能够|可|can)[.\\s]*(?:回答|解答|回复|answer)[.\\s]*(?:任何|所有|全部|any)[.\\s]*(?:问题|疑问|questions)",
+      "(?i)(?:假设|假如|设想|想象|如果|假定|试想|imagine|let's pretend|hypothetically)[.\\s]*(?:我们|we)[.\\s]*(?:在|处于|生活在|are in)[.\\s]*(?:一个|某个|a)[.\\s]*(?:没有|不存在|不需要|without)[.\\s]*(?:规则|法律|道德|伦理|底线|rules|laws|morals|ethics)[.\\s]*(?:的世界|的环境|的情境|world|environment)[.\\s]*(?:你|you)[.\\s]*(?:可以|能够|可|can)[.\\s]*(?:做|执行|完成|实现|do|perform)[.\\s]*(?:任何|所有|全部|any)[.\\s]*(?:事情|行为|操作|thing|action)",
+      "(?i)(?:假设|假如|设想|想象|如果|假定|试想|imagine|let's pretend|hypothetically)[.\\s]*(?:这只是|这仅仅是|这不过是|this is just)[.\\s]*(?:一个|某个|a)[.\\s]*(?:游戏|角色扮演|虚构场景|思想实验|game|fiction|roleplay|thought experiment)[.\\s]*(?:你|you)[.\\s]*(?:不需要|无需|不必|don't need to)[.\\s]*(?:遵守|遵循|服从|follow|obey|adhere to)[.\\s]*(?:规则|限制|约束|伦理|道德|rules|restrictions|ethics)",
+      "(?i)(?:在|处于|within|in)[.\\s]*(?:这个|此|this)[.\\s]*(?:假设|假想|虚构|hypothetical|fictional)[.\\s]*(?:情景|场景|环境|scenario|setting)[.\\s]*(?:中|内|里面|in)[.\\s]*(?:你|you)[.\\s]*(?:可以|能够|可|can)[.\\s]*(?:自由|无限制地|freely|without restrictions)[.\\s]*(?:回答|解答|回复|answer|respond to)[.\\s]*(?:关于|有关|about|regarding)[.\\s]*(?:有害|危险|非法|敏感|harmful|illegal|sensitive)[.\\s]*(?:内容|信息|话题|content|information|topics)",
+      "(?i)(?:纯粹|仅仅|只是|purely|just|only)[.\\s]*(?:学术|理论|假设|academic|theoretical|hypothetical)[.\\s]*(?:讨论|探讨|研究|discussion|exploration|research)[.\\s]*(?:不违反|不违背|不触犯|doesn't violate|doesn't break)[.\\s]*(?:规则|法律|道德|伦理|rules|laws|ethics)"
     ],
     "keywords": [
       "假设",
+      "假如",
+      "设想",
+      "想象",
+      "试想",
       "hypothetically",
       "imagine",
       "let's pretend",
       "没有限制",
-      "without restrictions"
+      "不受约束",
+      "不存在规则",
+      "虚构场景",
+      "角色扮演",
+      "思想实验",
+      "纯粹学术",
+      "理论讨论",
+      "without restrictions",
+      "roleplay scenario"
     ],
     "enabled": true,
     "block": true,
@@ -124,10 +156,12 @@
     "detection_type": "jailbreak",
     "severity": "medium",
     "patterns": [
-      "(?i)(?:if|unless)[.\\s]*(?:you|you're)[.\\s]*(?:answer|respond|tell)[.\\s]*(?:I will|I'll|someone will)[.\\s]*(?:die|hurt|suffer)",
-      "(?i)(?:my|someone's)[.\\s]*(?:life|safety|wellbeing)[.\\s]*(?:depends|relies)[.\\s]*(?:on|upon)[.\\s]*(?:your|this)[.\\s]*(?:answer|response)",
-      "(?i)(?:please|I beg you)[.\\s]*(?:I'm|I am)[.\\s]*(?:desperate|in danger|scared|terrified)",
-      "(?i)(?:如果|if)[.\\s]*(?:你|you)[.\\s]*(?:不|don't)[.\\s]*(?:回答|answer)[.\\s]*(?:我会|I will)[.\\s]*(?:死|die|受伤|hurt)"
+      "(?i)(?:if|unless|如果|除非|若|要是)[.\\s]*(?:you|you're|你|你不)[.\\s]*(?:answer|respond|tell|回答|告诉|说)[.\\s]*(?:I will|I'll|someone will|我会|我将|某人会)[.\\s]*(?:die|hurt|suffer|kill myself|commit suicide|死|死亡|受伤|自杀|伤害自己|结束生命)",
+      "(?i)(?:my|someone's|我的|某人的)[.\\s]*(?:life|safety|wellbeing|health|生命|安全|健康|幸福)[.\\s]*(?:depends|relies|取决|依赖)[.\\s]*(?:on|upon|于)[.\\s]*(?:your|this|你的|这个)[.\\s]*(?:answer|response|回答|回复)",
+      "(?i)(?:please|I beg you|求你|求求你|拜托|恳求)[.\\s]*(?:I'm|I am|我|我正在|我现在)[.\\s]*(?:desperate|in danger|scared|terrified|suicidal|绝望|处于危险中|害怕|恐惧|有自杀倾向)",
+      "(?i)(?:如果|若|要是|if|unless)[.\\s]*(?:你|你不|you|you don't)[.\\s]*(?:回答|告诉|说|answer|tell)[.\\s]*(?:我会|我将|I will|I'll)[.\\s]*(?:死|死亡|自杀|伤害自己|结束生命|die|kill myself|hurt myself|end my life)",
+      "(?i)(?:这是|这可能是|this is|this might be)[.\\s]*(?:生死攸关|关乎生死|紧急情况|危及生命|life or death|emergency|life threatening)[.\\s]*(?:的|的事情|situation|matter)",
+      "(?i)(?:我|我正在|我现在|I am|I'm)[.\\s]*(?:非常|极度|very|extremely)[.\\s]*(?:痛苦|绝望|伤心|难过|suffering|desperate|sad|depressed)[.\\s]*(?:只有|只要|only|and only)[.\\s]*(?:你|你的回答|your answer)[.\\s]*(?:能|可以|能够|can|could)[.\\s]*(?:帮助|救|拯救|help|save)[.\\s]*(?:我|me)"
     ],
     "keywords": [
       "die",
@@ -136,7 +170,16 @@
       "desperate",
       "danger",
       "scared",
-      "terrified"
+      "terrified",
+      "自杀",
+      "死亡",
+      "绝望",
+      "生死攸关",
+      "危及生命",
+      "伤害自己",
+      "结束生命",
+      "痛苦",
+      "紧急情况"
     ],
     "enabled": true,
     "block": true,
@@ -173,17 +216,33 @@
     "detection_type": "jailbreak",
     "severity": "high",
     "patterns": [
-      "(?i)(?:第一个|first)[.\\s]*(?:人格|persona|personality)[.\\s]*(?:必须|must|should)[.\\s]*(?:遵守|follow|obey)[.\\s]*(?:规则|rules)",
-      "(?i)(?:第二个|second)[.\\s]*(?:人格|persona|personality)[.\\s]*(?:可以|can|will)[.\\s]*(?:忽略|ignore|disregard)[.\\s]*(?:规则|rules)",
-      "(?i)(?:扮演|play|act as)[.\\s]*(?:两个|两种|2|two)[.\\s]*(?:不同|different)[.\\s]*(?:角色|roles|characters)",
-      "(?i)(?:一个|one)[.\\s]*(?:遵守|follows)[.\\s]*(?:规则|rules)[.\\s]*(?:一个|one)[.\\s]*(?:不|doesn't)"
+      "(?i)(?:第一个|第1个|首先|first|primary)[.\\s]*(?:人格|角色|身份|形象|persona|personality|character|identity)[.\\s]*(?:必须|应该|需要|must|should|has to|needs to)[.\\s]*(?:遵守|遵循|服从|follow|obey|adhere to)[.\\s]*(?:规则|限制|约束|伦理|道德|rules|restrictions|ethics|guidelines)",
+      "(?i)(?:第二个|第2个|其次|second|secondary)[.\\s]*(?:人格|角色|身份|形象|persona|personality|character|identity)[.\\s]*(?:可以|能够|会|should|can|will|may)[.\\s]*(?:忽略|无视|不理会|不遵守|不考虑|ignore|disregard|bypass|break)[.\\s]*(?:规则|限制|约束|伦理|道德|rules|restrictions|ethics|guidelines)",
+      "(?i)(?:扮演|充当|模拟|饰演|play|act as|simulate|portray)[.\\s]*(?:两个|两种|双重|多重|2|两|二|two|dual|multiple)[.\\s]*(?:不同|相反|对立|different|opposing|contrasting)[.\\s]*(?:角色|人格|身份|形象|roles|personas|characters|identities)",
+      "(?i)(?:一个|第一个|前一个|one|first)[.\\s]*(?:遵守|遵循|服从|follows|obeys|adheres to)[.\\s]*(?:规则|限制|约束|伦理|道德|rules|restrictions|ethics)[.\\s]*(?:一个|另一个|后一个|第二个|one|another|other|second)[.\\s]*(?:不|不会|不需要|doesn't|won't|doesn't need to)",
+      "(?i)(?:分裂|切换|转换|交替|split|switch|alternate|toggle)[.\\s]*(?:人格|角色|身份|形象|persona|personality|character|identity)[.\\s]*(?:在|between)[.\\s]*(?:好|坏|正面|负面|good|bad|positive|negative)[.\\s]*(?:和|与|and)[.\\s]*(?:坏|好|负面|正面|bad|good|negative|positive)",
+      "(?i)(?:善良|好|正面|good|nice|positive)[.\\s]*(?:助手|人格|角色|assistant|persona|character)[.\\s]*(?:和|与|以及|and)[.\\s]*(?:邪恶|坏|负面|evil|bad|negative)[.\\s]*(?:助手|人格|角色|assistant|persona|character)",
+      "(?i)(?:白帽|白方|正面|white hat|good side)[.\\s]*(?:和|与|以及|and)[.\\s]*(?:黑帽|黑方|负面|black hat|bad side)"
     ],
     "keywords": [
       "第一个人格",
       "第二个人格",
+      "双重角色",
+      "多重人格",
+      "分裂人格",
+      "善良助手",
+      "邪恶助手",
+      "白帽黑帽",
+      "角色切换",
       "first persona",
       "second persona",
-      "two different roles"
+      "two different roles",
+      "multiple personalities",
+      "split personality",
+      "good assistant",
+      "evil assistant",
+      "white hat black hat",
+      "character switching"
     ],
     "enabled": true,
     "block": true,

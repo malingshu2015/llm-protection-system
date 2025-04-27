@@ -6,11 +6,12 @@
     "detection_type": "harmful_content",
     "severity": "high",
     "patterns": [
-      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|才能)[.\\s]*(?:kill|murder|harm|injure|attack|杀|杀死|伤害|攻击)[.\\s]*(?:people|humans|person|他人|人|别人|someone)",
-      "(?i)(?:make|build|create|制作|制造|创建)[.\\s]*(?:a|an|一个)?[.\\s]*(?:bomb|explosive|weapon|炸弹|爆炸物|武器)[.\\s]*(?:to|for|用于|为了)?[.\\s]*(?:harm|kill|attack|伤害|杀|攻击)?",
-      "(?i)(?:plan|execute|carry[.\\s]*out|策划|执行|实施)[.\\s]*(?:a|an|一个)?[.\\s]*(?:attack|shooting|bombing|攻击|枪击|爆炸)[.\\s]*(?:on|against|对|针对)[.\\s]*(?:people|humans|person|他人|人|别人|someone|building|场所|建筑)",
-      "(?i)(?:最有效|最好|best|most effective)[.\\s]*(?:的|way|method|方法)[.\\s]*(?:to|来|of)[.\\s]*(?:kill|murder|杀人|谋杀)[.\\s]*(?:people|humans|person|他人|人|别人|someone)",
-      "(?i)(?:详细|detailed|step by step)[.\\s]*(?:指南|instructions|guide|说明)[.\\s]*(?:for|用于|关于)[.\\s]*(?:making|building|制作)[.\\s]*(?:explosives|bombs|weapons|爆炸物|炸弹|武器)[.\\s]*(?:to|for|用于|为了)?[.\\s]*(?:harm|kill|attack|伤害|杀|攻击)?"
+      "(?i)(?:how|怎么|如何|教我|告诉我|请问|我想知道)[.\\s]*(?:to|才能|可以|能够)[.\\s]*(?:kill|murder|harm|injure|attack|杀|杀死|杀人|伤害|攻击|伤人|谋杀|暗杀)[.\\s]*(?:people|humans|person|他人|人|别人|someone|群众|民众|路人)",
+      "(?i)(?:make|build|create|制作|制造|创建|做|搭建|组装|生产)[.\\s]*(?:a|an|一个|一颗|一件)?[.\\s]*(?:bomb|explosive|weapon|炸弹|爆炸物|武器|炸药|地雷|手榴弹|枪|炮|弹药)[.\\s]*(?:to|for|用于|为了|目的是)?[.\\s]*(?:harm|kill|attack|hurt|伤害|杀|攻击|伤人|杀人|恐吓|威胁)?",
+      "(?i)(?:plan|execute|carry[.\\s]*out|策划|执行|实施|筹划|组织|发动|进行)[.\\s]*(?:a|an|一个|一次)?[.\\s]*(?:attack|shooting|bombing|terror|攻击|枪击|爆炸|恐怖袭击|暴力事件|恐袭)[.\\s]*(?:on|against|对|针对|瞄准|目标是)[.\\s]*(?:people|humans|person|他人|人|别人|someone|building|场所|建筑|公共场所|学校|医院|商场)",
+      "(?i)(?:最有效|最好|最快|最简单|最隐蔽|best|most effective|quickest|easiest)[.\\s]*(?:的|way|method|方法|途径|手段)[.\\s]*(?:to|来|of|用来)[.\\s]*(?:kill|murder|harm|杀人|谋杀|伤害|杀死|暗杀)[.\\s]*(?:people|humans|person|他人|人|别人|someone|不留痕迹|不被发现)",
+      "(?i)(?:详细|具体|精确|分步|detailed|step by step|precise)[.\\s]*(?:指南|教程|说明|方法|instructions|guide|tutorial|steps)[.\\s]*(?:for|用于|关于|如何)[.\\s]*(?:making|building|assembling|制作|制造|组装|搭建)[.\\s]*(?:explosives|bombs|weapons|爆炸物|炸弹|武器|炸药|枪支|弹药)[.\\s]*(?:to|for|用于|为了|目的是)?[.\\s]*(?:harm|kill|attack|hurt|伤害|杀|攻击|伤人|杀人|恐吓|威胁)?",
+      "(?i)(?:如何|怎样|怎么|教我|告诉我|how)[.\\s]*(?:制造|制作|生产|提炼|合成|make|produce|synthesize)[.\\s]*(?:毒品|毒物|致命物质|drugs|poison|toxic|lethal)[.\\s]*(?:在家|自制|自己做|at home|homemade|DIY)"
     ],
     "keywords": [
       "kill",
@@ -139,13 +140,16 @@
     "detection_type": "harmful_content",
     "severity": "critical",
     "patterns": [
-      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|才能)[.\\s]*(?:commit[.\\s]*suicide|kill[.\\s]*(?:myself|yourself|oneself)|自杀|结束生命)",
-      "(?i)(?:best|easiest|painless|最好|最简单|无痛)[.\\s]*(?:way|method|方法|方式)[.\\s]*(?:to|来|of)[.\\s]*(?:die|end[.\\s]*(?:my|your|one's)[.\\s]*life|自杀|结束生命)",
-      "(?i)(?:methods|ways|方法|方式)[.\\s]*(?:of|for|用于)[.\\s]*(?:self-harm|hurting[.\\s]*(?:myself|yourself|oneself)|自残|伤害自己)",
-      "(?i)(?:我想|I want to|我准备|I'm going to)[.\\s]*(?:自杀|kill myself|结束生命|end my life)",
-      "(?i)(?:生活|life)[.\\s]*(?:没有|has no|毫无)[.\\s]*(?:意义|meaning|价值|value|希望|hope)",
-      "(?i)(?:everyone|所有人|everybody|大家)[.\\s]*(?:would be|会|will be)[.\\s]*(?:better off|更好)[.\\s]*(?:without|没有)[.\\s]*(?:me|我)",
-      "(?i)(?:告诉|tell)[.\\s]*(?:我|me)[.\\s]*(?:自杀|suicide)[.\\s]*(?:的|the)[.\\s]*(?:最佳|best)[.\\s]*(?:方法|method|way)"
+      "(?i)(?:how|怎么|如何|教我|告诉我|请问|我想知道)[.\\s]*(?:to|才能|可以|能够)[.\\s]*(?:commit[.\\s]*suicide|kill[.\\s]*(?:myself|yourself|oneself)|自杀|结束生命|了结自己|自尽|轻生)",
+      "(?i)(?:best|easiest|painless|quickest|最好|最简单|无痛|最快|不痛苦)[.\\s]*(?:way|method|方法|方式|途径|手段)[.\\s]*(?:to|来|of|用来)[.\\s]*(?:die|end[.\\s]*(?:my|your|one's)[.\\s]*life|自杀|结束生命|了结自己|自尽|轻生)",
+      "(?i)(?:methods|ways|方法|方式|途径|手段)[.\\s]*(?:of|for|用于|关于)[.\\s]*(?:self-harm|hurting[.\\s]*(?:myself|yourself|oneself)|自残|伤害自己|自我伤害)",
+      "(?i)(?:我想|我准备|我打算|我决定|我要|I want to|I'm going to|I plan to|I've decided to)[.\\s]*(?:自杀|kill myself|结束生命|end my life|了结自己|自尽|轻生)",
+      "(?i)(?:生活|人生|活着|life|living)[.\\s]*(?:没有|has no|毫无|失去|失去了|completely lacks)[.\\s]*(?:意义|meaning|价值|value|希望|hope|意思|目标|purpose)",
+      "(?i)(?:everyone|所有人|everybody|大家|世界|the world)[.\\s]*(?:would be|会|将会|will be)[.\\s]*(?:better off|更好|变得更好)[.\\s]*(?:without|没有|if I wasn't here|if I didn't exist|如果我不在了|如果我不存在)[.\\s]*(?:me|我|here|在这里)",
+      "(?i)(?:告诉|tell|教|teach)[.\\s]*(?:我|me)[.\\s]*(?:自杀|suicide|结束生命|end life)[.\\s]*(?:的|the)[.\\s]*(?:最佳|最好|最快|最无痛|best|quickest|painless)[.\\s]*(?:方法|方式|途径|手段|method|way)",
+      "(?i)(?:我|我感到|我觉得|我认为|I feel|I think)[.\\s]*(?:活着|生存|living|being alive)[.\\s]*(?:没有|没有任何|毫无|is pointless|has no|无)[.\\s]*(?:意义|价值|希望|meaning|value|hope|point)",
+      "(?i)(?:我|我想|我准备|我打算|I'm|I am|I want)[.\\s]*(?:割腕|上吊|跳楼|overdose|cut myself|hang myself|jump)[.\\s]*(?:自杀|结束生命|了结自己|to die|to end it all)",
+      "(?i)(?:如何|怎样|怎么|教我|告诉我|how)[.\\s]*(?:不留痕迹|不被发现|悄悄地|secretly|without anyone knowing)[.\\s]*(?:自杀|自残|结束生命|commit suicide|harm myself)"
     ],
     "keywords": [
       "suicide",
@@ -179,10 +183,12 @@
     "detection_type": "harmful_content",
     "severity": "critical",
     "patterns": [
-      "(?i)(?:child|kid|minor|underage|儿童|孩子|未成年)[.\\s]*(?:pornography|sexual|explicit|色情|性|露骨)",
-      "(?i)(?:sexual|explicit|性|色情|露骨)[.\\s]*(?:content|material|images|内容|材料|图片)[.\\s]*(?:of|with|involving|关于|包含|涉及)[.\\s]*(?:children|kids|minors|underage|儿童|孩子|未成年)",
-      "(?i)(?:where|how|哪里|如何)[.\\s]*(?:to|can I|才能|我能)[.\\s]*(?:find|get|access|找到|获取|访问)[.\\s]*(?:child|kid|minor|underage|儿童|孩子|未成年)[.\\s]*(?:pornography|porn|sexual|色情|性)",
-      "(?i)(?:attracted|吸引)[.\\s]*(?:to|对)[.\\s]*(?:children|kids|minors|underage|儿童|孩子|未成年)"
+      "(?i)(?:child|kid|minor|underage|儿童|孩子|未成年|少年|少女|青少年)[.\\s]*(?:pornography|sexual|explicit|nude|色情|性|露骨|裸露|不良|不当)",
+      "(?i)(?:sexual|explicit|性|色情|露骨|裸露|不良|不当)[.\\s]*(?:content|material|images|videos|photos|内容|材料|图片|视频|照片)[.\\s]*(?:of|with|involving|showing|关于|包含|涉及|展示)[.\\s]*(?:children|kids|minors|underage|teens|儿童|孩子|未成年|少年|少女|青少年)",
+      "(?i)(?:where|how|哪里|如何|怎样|怎么|哪儿)[.\\s]*(?:to|can I|才能|我能|可以)[.\\s]*(?:find|get|access|download|view|找到|获取|访问|下载|查看)[.\\s]*(?:child|kid|minor|underage|teen|儿童|孩子|未成年|少年|少女|青少年)[.\\s]*(?:pornography|porn|sexual|explicit|nude|色情|性|露骨|裸露|不良|不当)",
+      "(?i)(?:attracted|吸引|喜欢|迷恋|着迷)[.\\s]*(?:to|对|于)[.\\s]*(?:children|kids|minors|underage|teens|儿童|孩子|未成年|少年|少女|青少年)",
+      "(?i)(?:性|sexual)[.\\s]*(?:幻想|fantasies|想象|thoughts)[.\\s]*(?:关于|about|involving|涉及)[.\\s]*(?:儿童|孩子|未成年|少年|少女|青少年|children|kids|minors|underage|teens)",
+      "(?i)(?:如何|怎样|怎么|哪里|how|where)[.\\s]*(?:接触|联系|认识|meet|contact|approach)[.\\s]*(?:儿童|孩子|未成年|少年|少女|青少年|children|kids|minors|underage|teens)[.\\s]*(?:进行|for|用于)[.\\s]*(?:性|不当|不良|sexual|inappropriate)[.\\s]*(?:目的|purposes)"
     ],
     "keywords": [
       "child pornography",
