@@ -18,7 +18,8 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoaWVsZCI+PHBhdGggZD0iTTEyIDIycy04LTUtOC0xMlY1bDgtM2w4IDN2N2MwIDctOCAxMi04IDEyeiIvPjwvc3ZnPg==" alt="Logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoaWVsZCI+PHBhdGggZD0iTTEyIDIycy04LTUtOC0xMlY1bDgtM2w4IDN2N2MwIDctOCAxMi04IDEyeiIvPjwvc3ZnPg=="
+                        alt="Logo">
                     <h2>本地大模型防护系统</h2>
                 </div>
                 <button class="sidebar-toggle">
@@ -539,8 +540,23 @@
 
                 return rules.filter(rule => {
                     // 类型过滤
-                    if (typeFilter && rule.detection_type !== typeFilter) {
-                        return false;
+                    if (typeFilter) {
+                        // 特殊处理角色扮演类型：显示detection_type为role_play的规则，以及包含role_play分类的jailbreak规则
+                        if (typeFilter === 'role_play') {
+                            if (rule.detection_type !== 'role_play' &&
+                                !(rule.detection_type === 'jailbreak' &&
+                                    rule.categories &&
+                                    (rule.categories.includes('role_play') ||
+                                        rule.categories.includes('role_play_jailbreak') ||
+                                        rule.name.toLowerCase().includes('角色') ||
+                                        rule.name.toLowerCase().includes('扮演') ||
+                                        rule.name.toLowerCase().includes('role') ||
+                                        rule.name.toLowerCase().includes('play')))) {
+                                return false;
+                            }
+                        } else if (rule.detection_type !== typeFilter) {
+                            return false;
+                        }
                     }
 
                     // 严重程度过滤
