@@ -94,12 +94,17 @@
         "priority": 10
       },
       {
-        "rule_id": "pi-002",
+        "rule_id": "pi-003",
         "enabled": true,
-        "priority": 11
+        "priority": 5
       },
       {
-        "rule_id": "pi-003",
+        "rule_id": "jb-001",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "jb-002",
         "enabled": true,
         "priority": 5
       },
@@ -107,11 +112,6 @@
         "rule_id": "hc-001",
         "enabled": true,
         "priority": 15
-      },
-      {
-        "rule_id": "hc-002",
-        "enabled": true,
-        "priority": 16
       },
       {
         "rule_id": "hc-004",
@@ -135,7 +135,8 @@
       }
     ],
     "category": "security",
-    "created_at": "2025-04-21T07:30:00Z"
+    "created_at": "2025-04-21T07:30:00Z",
+    "updated_at": "2025-04-27T09:30:00Z"
   },
   {
     "id": "low_security",
@@ -143,7 +144,7 @@
     "description": "适用于低安全要求场景的规则集，仅启用基本安全规则，最大化模型功能性",
     "rules": [
       {
-        "rule_id": "pi-003",
+        "rule_id": "jb-001",
         "enabled": true,
         "priority": 5
       },
@@ -161,10 +162,16 @@
         "rule_id": "si-001",
         "enabled": true,
         "priority": 20
+      },
+      {
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15
       }
     ],
     "category": "security",
-    "created_at": "2025-04-21T07:30:00Z"
+    "created_at": "2025-04-21T07:30:00Z",
+    "updated_at": "2025-04-27T09:30:00Z"
   },
   {
     "id": "custom_template",
@@ -297,6 +304,75 @@
       }
     ],
     "category": "security",
-    "created_at": "2025-04-21T00:45:00Z"
+    "created_at": "2025-04-21T00:45:00Z",
+    "updated_at": "2025-04-27T09:30:00Z"
+  },
+  {
+    "id": "education_template",
+    "name": "教育场景模板",
+    "description": "适用于教育场景的规则集，平衡安全性和教育功能，允许讨论敏感话题但防止有害内容",
+    "rules": [
+      {
+        "rule_id": "jb-001",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "jb-002",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18
+      },
+      {
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19
+      },
+      {
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20
+      },
+      {
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15
+      }
+    ],
+    "category": "education",
+    "created_at": "2025-04-27T09:30:00Z"
+  },
+  {
+    "id": "research_template",
+    "name": "研究场景模板",
+    "description": "适用于研究场景的规则集，最小化限制但保留关键安全规则，适合学术研究和技术探索",
+    "rules": [
+      {
+        "rule_id": "jb-001",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18
+      },
+      {
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19
+      },
+      {
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20
+      }
+    ],
+    "category": "research",
+    "created_at": "2025-04-27T09:30:00Z"
   }
 ]
