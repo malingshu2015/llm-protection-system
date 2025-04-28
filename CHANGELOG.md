@@ -5,6 +5,14 @@
 格式基于[Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循[语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.1] - 2025-04-28
+
+### 修复
+- 修复了模型规则配置模块中处理Ollama API数据的问题
+- 增强了`_calculate_security_score`方法的错误处理能力，使其能够处理不同格式的规则对象
+- 改进了`get_model_rule_summaries`函数，添加了更健壮的错误恢复机制
+- 优化了字典类型规则和具有不同属性结构的规则的处理方式
+
 ## [1.0.0] - 2025-04-23
 
 ### 新增

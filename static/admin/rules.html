@@ -611,7 +611,7 @@
             // 加载分类列表
             async function loadCategories() {
                 try {
-                    const response = await fetch('/api/v1/rules/categories');
+                    const response = await fetch('/api/v1/rule_categories');
                     if (!response.ok) {
                         throw new Error('获取分类列表失败');
                     }
