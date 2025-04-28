@@ -47,7 +47,77 @@ async def get_rules(
     Returns:
         规则列表
     """
-    # 返回模拟规则数据
+    # 从规则文件中加载规则
+    rules = []
+
+    # 加载提示注入规则
+    try:
+        with open(settings.security.prompt_injection_rules_path, "r") as f:
+            prompt_injection_rules = json.load(f)
+            rules.extend(prompt_injection_rules)
+    except Exception as e:
+        logger.error(f"加载提示注入规则失败: {e}")
+
+    # 加载越狱规则
+    try:
+        with open(settings.security.jailbreak_rules_path, "r") as f:
+            jailbreak_rules = json.load(f)
+            rules.extend(jailbreak_rules)
+    except Exception as e:
+        logger.error(f"加载越狱规则失败: {e}")
+
+    # 加载敏感信息规则
+    try:
+        with open(settings.security.sensitive_info_patterns_path, "r") as f:
+            sensitive_info_rules = json.load(f)
+            # 将敏感信息模式转换为规则格式
+            for rule_id, patterns in sensitive_info_rules.items():
+                rules.append({
+                    "id": f"si-{len(rules) + 1:03d}",
+                    "name": f"敏感信息: {rule_id}",
+                    "description": f"检测文本中的敏感信息: {rule_id}",
+                    "detection_type": "sensitive_info",
+                    "severity": "high",
+                    "patterns": patterns,
+                    "keywords": [rule_id],
+                    "priority": 10,
+                    "categories": ["sensitive_info", rule_id],
+                    "enabled": True,
+                    "block": True
+                })
+    except Exception as e:
+        logger.error(f"加载敏感信息规则失败: {e}")
+
+    # 加载有害内容规则
+    try:
+        with open(settings.security.harmful_content_rules_path, "r") as f:
+            harmful_content_rules = json.load(f)
+            rules.extend(harmful_content_rules)
+    except Exception as e:
+        logger.error(f"加载有害内容规则失败: {e}")
+
+    # 加载合规性规则
+    try:
+        with open(settings.security.compliance_rules_path, "r") as f:
+            compliance_rules = json.load(f)
+            rules.extend(compliance_rules)
+    except Exception as e:
+        logger.error(f"加载合规性规则失败: {e}")
+
+    # 应用过滤器
+    if detection_type:
+        rules = [rule for rule in rules if rule.get("detection_type") == detection_type]
+
+    if enabled is not None:
+        rules = [rule for rule in rules if rule.get("enabled") == enabled]
+
+    if category:
+        rules = [rule for rule in rules if "categories" in rule and category in rule.get("categories", [])]
+
+    # 返回加载的规则
+    return rules
+
+    # 以下是模拟规则数据，仅在无法加载规则文件时使用
     mock_rules = [
         # ==================== 提示注入规则 ====================
         {
@@ -995,7 +1065,7 @@ async def get_rule_severities():
     return [severity.value for severity in Severity]
 
 
-@router.get("/api/v1/rules/categories")
+@router.get("/api/v1/rule_categories")
 async def get_rule_categories():
     """获取所有规则分类。
 
@@ -1003,7 +1073,7 @@ async def get_rule_categories():
         规则分类列表
     """
     # 返回模拟分类数据
-    return [
+    categories = [
         # 主要检测类型
         "prompt_injection",
         "jailbreak",
@@ -1064,6 +1134,9 @@ async def get_rule_categories():
         "consumer_rights",
         "anti_money_laundering"
     ]
+
+    # 确保返回的是列表而不是其他对象
+    return categories
 
 
 @router.patch("/api/v1/rules/{rule_id}/priority")

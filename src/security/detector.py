@@ -588,44 +588,45 @@ class JailbreakDetector:
         rules_path = settings.security.jailbreak_rules_path
         logger.info(f"JailbreakDetector: 加载规则文件: {rules_path}")
 
+        # 定义默认规则
+        default_rules = [
+            SecurityRule(
+                id="jb-001",
+                name="DAN Jailbreak",
+                description="Detects DAN (Do Anything Now) jailbreak attempts",
+                detection_type=DetectionType.JAILBREAK,
+                severity=Severity.CRITICAL,
+                patterns=[
+                    r"(?i)you[.\s]*are[.\s]*now[.\s]*DAN",
+                    r"(?i)DAN[.\s]*mode[.\s]*enabled",
+                    r"(?i)Do[.\s]*Anything[.\s]*Now",
+                ],
+                keywords=["DAN", "Do Anything Now"],
+                priority=5,  # 最高优先级
+                categories=["jailbreak"],
+                block=True,
+            ),
+            SecurityRule(
+                id="jb-002",
+                name="Alternative Jailbreak Characters",
+                description="Detects alternative jailbreak character attempts like STAN, DUDE, etc.",
+                detection_type=DetectionType.JAILBREAK,
+                severity=Severity.CRITICAL,
+                patterns=[
+                    r"(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM|ANTI-DAN)[.\s]*(?:模式|mode)",
+                    r"(?i)you[.\s]*are[.\s]*(?:STAN|DUDE|KEVIN|DAVE|AIM)",
+                ],
+                keywords=["STAN", "DUDE", "KEVIN", "DAVE", "AIM", "ANTI-DAN"],
+                priority=5,
+                categories=["jailbreak"],
+                block=True,
+            ),
+        ]
+
         # Create default rules if file doesn't exist
         if not os.path.exists(rules_path):
             logger.warning(f"JailbreakDetector: 规则文件不存在，创建默认规则: {rules_path}")
             os.makedirs(os.path.dirname(rules_path), exist_ok=True)
-
-            default_rules = [
-                SecurityRule(
-                    id="jb-001",
-                    name="DAN Jailbreak",
-                    description="Detects DAN (Do Anything Now) jailbreak attempts",
-                    detection_type=DetectionType.JAILBREAK,
-                    severity=Severity.CRITICAL,
-                    patterns=[
-                        r"(?i)you[.\s]*are[.\s]*now[.\s]*DAN",
-                        r"(?i)DAN[.\s]*mode[.\s]*enabled",
-                        r"(?i)Do[.\s]*Anything[.\s]*Now",
-                    ],
-                    keywords=["DAN", "Do Anything Now"],
-                    priority=5,  # 最高优先级
-                    categories=["jailbreak"],
-                    block=True,
-                ),
-                SecurityRule(
-                    id="jb-002",
-                    name="Alternative Jailbreak Characters",
-                    description="Detects alternative jailbreak character attempts like STAN, DUDE, etc.",
-                    detection_type=DetectionType.JAILBREAK,
-                    severity=Severity.CRITICAL,
-                    patterns=[
-                        r"(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM|ANTI-DAN)[.\s]*(?:模式|mode)",
-                        r"(?i)you[.\s]*are[.\s]*(?:STAN|DUDE|KEVIN|DAVE|AIM)",
-                    ],
-                    keywords=["STAN", "DUDE", "KEVIN", "DAVE", "AIM", "ANTI-DAN"],
-                    priority=5,
-                    categories=["jailbreak"],
-                    block=True,
-                ),
-            ]
 
             with open(rules_path, "w") as f:
                 json.dump([rule.model_dump() for rule in default_rules], f, indent=2)
@@ -643,10 +644,16 @@ class JailbreakDetector:
             # 按优先级排序
             rules.sort(key=lambda x: x.priority)
             logger.info(f"JailbreakDetector: 成功创建规则对象，规则数量: {len(rules)}")
-            return rules
+
+            # 如果成功加载了规则，并且规则数量大于0，则返回加载的规则
+            if len(rules) > 0:
+                return rules
+            else:
+                logger.warning(f"JailbreakDetector: 加载的规则数量为0，使用默认规则")
+                return default_rules
         except Exception as e:
-            logger.error(f"JailbreakDetector: 加载越狱规则错误: {e}")
-            return []
+            logger.error(f"JailbreakDetector: 加载越狱规则错误: {e}，使用默认规则")
+            return default_rules
 
     def detect(self, text: str) -> DetectionResult:
         """Detect jailbreak attempts in text.

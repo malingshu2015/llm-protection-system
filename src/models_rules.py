@@ -50,6 +50,7 @@ class ModelRuleSummary(BaseModel):
 
     model_id: str
     model_name: str
+    template_id: Optional[str] = None
     template_name: Optional[str] = None
     rules_count: int = 0
     enabled_rules_count: int = 0

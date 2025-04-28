@@ -120,32 +120,72 @@ async def get_model_rule_summaries():
         # 创建模型ID到名称的映射
         model_names = {}
         for model in models_data.get("models", []):
-            model_id = model.get("model")
-            model_names[model_id] = model_id
+            # Ollama API 返回的模型对象使用 'model' 属性作为模型 ID
+            # 如果 'model' 属性不存在，则尝试使用 'name' 属性
+            # 如果都不存在，则使用字典中的第一个值作为 ID
+            if isinstance(model, dict):
+                model_id = model.get("model", model.get("name", next(iter(model.values()), "unknown")))
+                model_names[model_id] = model_id
+            else:
+                # 如果模型不是字典，则尝试将其作为字符串使用
+                try:
+                    model_id = str(model)
+                    model_names[model_id] = model_id
+                except:
+                    logger.warning(f"无法处理模型数据: {model}")
+                    continue
+
+        # 添加一些常见的模型，以防 Ollama API 没有返回这些模型
+        common_models = ["llama2:latest", "llama3.2:latest", "gemma3:latest", "tinyllama:latest", "deepseek-r1:14b"]
+        for model_id in common_models:
+            if model_id not in model_names:
+                model_names[model_id] = model_id
 
         # 为每个配置创建摘要
         summaries = []
         for config in configs:
-            model_name = model_names.get(config.model_id, config.model_id)
-            summary = model_rule_manager.get_model_rule_summary(config.model_id, model_name, all_rules)
-            summaries.append(summary)
+            try:
+                model_name = model_names.get(config.model_id, config.model_id)
+                # 使用 try-except 块捕获 get_model_rule_summary 中的异常
+                try:
+                    summary = model_rule_manager.get_model_rule_summary(config.model_id, model_name, all_rules)
+                    summaries.append(summary)
+                except Exception as e:
+                    logger.warning(f"为模型 {config.model_id} 创建摘要失败: {e}")
+                    # 创建一个基本的摘要，避免前端显示错误
+                    summary = ModelRuleSummary(
+                        model_id=config.model_id,
+                        model_name=model_name,
+                        template_id=None,
+                        template_name=None,
+                        rules_count=0,
+                        enabled_rules_count=0,
+                        security_score=0,
+                        last_updated=datetime.now()
+                    )
+                    summaries.append(summary)
+            except Exception as e:
+                logger.warning(f"处理模型 {config.model_id} 配置失败: {e}")
 
         # 为每个模型创建摘要（包括尚未配置的模型）
         for model_id, model_name in model_names.items():
-            # 检查是否已经有这个模型的摘要
-            if not any(summary.model_id == model_id for summary in summaries):
-                # 创建一个空的摘要
-                summary = ModelRuleSummary(
-                    model_id=model_id,
-                    model_name=model_name,
-                    template_id=None,
-                    template_name=None,
-                    rules_count=0,
-                    enabled_rules_count=0,
-                    security_score=0,
-                    last_updated=datetime.now()
-                )
-                summaries.append(summary)
+            try:
+                # 检查是否已经有这个模型的摘要
+                if not any(summary.model_id == model_id for summary in summaries):
+                    # 创建一个空的摘要
+                    summary = ModelRuleSummary(
+                        model_id=model_id,
+                        model_name=model_name,
+                        template_id=None,
+                        template_name=None,
+                        rules_count=0,
+                        enabled_rules_count=0,
+                        security_score=0,
+                        last_updated=datetime.now()
+                    )
+                    summaries.append(summary)
+            except Exception as e:
+                logger.warning(f"为模型 {model_id} 创建默认摘要失败: {e}")
 
         return summaries
     except Exception as e:

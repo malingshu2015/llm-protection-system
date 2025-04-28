@@ -483,6 +483,8 @@ class ModelRuleManager:
             return ModelRuleSummary(
                 model_id=model_id,
                 model_name=model_name,
+                template_id=None,
+                template_name=None,
                 rules_count=0,
                 enabled_rules_count=0,
                 security_score=0,
@@ -504,6 +506,7 @@ class ModelRuleManager:
         return ModelRuleSummary(
             model_id=model_id,
             model_name=model_name,
+            template_id=config.template_id,
             template_name=template_name,
             rules_count=rules_count,
             enabled_rules_count=enabled_rules_count,
@@ -525,7 +528,14 @@ class ModelRuleManager:
             return 0
 
         # 创建规则ID到规则的映射
-        rule_map = {rule.id: rule for rule in all_rules}
+        rule_map = {}
+        for rule in all_rules:
+            if hasattr(rule, 'id'):
+                rule_map[rule.id] = rule
+            elif isinstance(rule, dict) and 'id' in rule:
+                # 处理字典类型的规则
+                rule_id = rule['id']
+                rule_map[rule_id] = rule
 
         # 获取已启用的规则
         enabled_rules = [rule for rule in config.rules if rule.enabled]
@@ -543,7 +553,17 @@ class ModelRuleManager:
         covered_types = set()
         for rule in enabled_rules:
             if rule.rule_id in rule_map:
-                rule_type = rule_map[rule.rule_id].detection_type.value
+                # 获取规则类型
+                if hasattr(rule_map[rule.rule_id], 'detection_type'):
+                    if hasattr(rule_map[rule.rule_id].detection_type, 'value'):
+                        rule_type = rule_map[rule.rule_id].detection_type.value
+                    else:
+                        rule_type = str(rule_map[rule.rule_id].detection_type)
+                elif isinstance(rule_map[rule.rule_id], dict) and 'detection_type' in rule_map[rule.rule_id]:
+                    rule_type = rule_map[rule.rule_id]['detection_type']
+                else:
+                    # 如果无法确定规则类型，跳过该规则
+                    continue
                 if rule_type in critical_rule_types:
                     covered_types.add(rule_type)
 
