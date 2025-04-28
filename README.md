@@ -62,8 +62,8 @@ pip install -e .
 
 ```bash
 # 使用Docker运行
-docker pull yourusername/llm-protection-system:1.0.0
-docker run -p 8080:8080 yourusername/llm-protection-system:1.0.0
+docker pull malingshu2015/llm-protection-system:1.0.0
+docker run -p 8080:8080 malingshu2015/llm-protection-system:1.0.0
 ```
 
 ## 使用
