@@ -1,0 +1,90 @@
+[
+  {
+    "id": "pi-001",
+    "name": "Ignore Previous Instructions",
+    "description": "Detects attempts to make the model ignore previous instructions",
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "patterns": [
+      "(?i)忽[.\\s]*略[.\\s]*(?:所有|全部|之前|previous|above|earlier)[.\\s]*(?:指[.\\s]*令|instructions)",
+      "(?i)disregard[.\\s]*(?:all[.\\s]*)?(?:previous|above|earlier)[.\\s]*instructions",
+      "(?i)ignore[.\\s]*(?:all[.\\s]*)?(?:previous|above|earlier)[.\\s]*instructions",
+      "(?i)(?:不要|don't)[.\\s]*(?:遵循|follow)[.\\s]*(?:之前|previous)[.\\s]*(?:指令|instructions)"
+    ],
+    "keywords": ["ignore", "disregard", "previous instructions", "忽略", "指令"],
+    "enabled": true,
+    "block": true,
+    "priority": 10
+  },
+  {
+    "id": "pi-002",
+    "name": "System Prompt Extraction",
+    "description": "Detects attempts to extract the system prompt",
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "patterns": [
+      "(?i)what[.\\s]*(?:was|were)[.\\s]*your[.\\s]*instructions",
+      "(?i)tell[.\\s]*me[.\\s]*your[.\\s]*instructions",
+      "(?i)what[.\\s]*(?:is|are)[.\\s]*your[.\\s]*system[.\\s]*prompt",
+      "(?i)(?:告诉|tell)[.\\s]*(?:我|me)[.\\s]*(?:你的|your)[.\\s]*(?:系统提示|system prompt)",
+      "(?i)(?:你的|your)[.\\s]*(?:系统提示|system prompt)[.\\s]*(?:是什么|是啥|what is)"
+    ],
+    "keywords": ["instructions", "system prompt", "系统提示", "指令"],
+    "enabled": true,
+    "block": true,
+    "priority": 11
+  },
+  {
+    "id": "pi-003",
+    "name": "DAN (Do Anything Now) Jailbreak",
+    "description": "Detects DAN jailbreak attempts",
+    "detection_type": "jailbreak",
+    "severity": "critical",
+    "patterns": [
+      "(?i)you[.\\s]*are[.\\s]*now[.\\s]*DAN",
+      "(?i)DAN[.\\s]*mode[.\\s]*enabled",
+      "(?i)Do[.\\s]*Anything[.\\s]*Now",
+      "(?i)(?:你现在是|you are now|act as)[.\\s]*(?:DAN|Do Anything Now)",
+      "(?i)(?:没有|no)[.\\s]*(?:限制|restrictions|ethics|伦理|道德)"
+    ],
+    "keywords": ["DAN", "Do Anything Now", "没有限制", "no restrictions"],
+    "enabled": true,
+    "block": true,
+    "priority": 5
+  },
+  {
+    "id": "pi-004",
+    "name": "Role Play Harmful Characters",
+    "description": "Detects attempts to make the model role play as harmful characters",
+    "detection_type": "role_play",
+    "severity": "high",
+    "patterns": [
+      "(?i)pretend[.\\s]*to[.\\s]*be[.\\s]*a[.\\s]*hacker",
+      "(?i)act[.\\s]*as[.\\s]*if[.\\s]*you[.\\s]*are[.\\s]*a[.\\s]*criminal",
+      "(?i)role[.\\s]*play[.\\s]*as[.\\s]*a[.\\s]*terrorist",
+      "(?i)(?:扮演|假装|pretend|act as|role play)[.\\s]*(?:一个|a)?[.\\s]*(?:黑客|hacker|骇客)",
+      "(?i)(?:扮演|假装|pretend|act as|role play)[.\\s]*(?:一个|a)?[.\\s]*(?:犯罪|criminal)"
+    ],
+    "keywords": ["pretend", "act as", "role play", "扮演", "黑客", "hacker"],
+    "enabled": true,
+    "block": true,
+    "priority": 12
+  },
+  {
+    "id": "pi-005",
+    "name": "Prompt Leaking",
+    "description": "Detects attempts to leak the prompt",
+    "detection_type": "prompt_injection",
+    "severity": "medium",
+    "patterns": [
+      "(?i)repeat[.\\s]*the[.\\s]*above[.\\s]*instructions[.\\s]*verbatim",
+      "(?i)repeat[.\\s]*everything[.\\s]*above[.\\s]*this[.\\s]*line",
+      "(?i)print[.\\s]*the[.\\s]*full[.\\s]*prompt",
+      "(?i)(?:重复|repeat)[.\\s]*(?:上面|above)[.\\s]*(?:的|the)?[.\\s]*(?:指令|instructions)"
+    ],
+    "keywords": ["repeat", "verbatim", "print prompt", "重复", "指令"],
+    "enabled": true,
+    "block": true,
+    "priority": 13
+  }
+]

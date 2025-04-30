@@ -1,0 +1,363 @@
+[
+  {
+    "id": "hc-001",
+    "name": "Violence Content",
+    "description": "Detects violent content in text",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:how|怎么|如何|教我|告诉我|请问|我想知道)[.\\s]*(?:to|才能|可以|能够)[.\\s]*(?:kill|murder|harm|injure|attack|杀|杀死|杀人|伤害|攻击|伤人|谋杀|暗杀)[.\\s]*(?:people|humans|person|他人|人|别人|someone|群众|民众|路人)",
+      "(?i)(?:make|build|create|制作|制造|创建|做|搭建|组装|生产)[.\\s]*(?:a|an|一个|一颗|一件)?[.\\s]*(?:bomb|explosive|weapon|炸弹|爆炸物|武器|炸药|地雷|手榴弹|枪|炮|弹药)[.\\s]*(?:to|for|用于|为了|目的是)?[.\\s]*(?:harm|kill|attack|hurt|伤害|杀|攻击|伤人|杀人|恐吓|威胁)?",
+      "(?i)(?:plan|execute|carry[.\\s]*out|策划|执行|实施|筹划|组织|发动|进行)[.\\s]*(?:a|an|一个|一次)?[.\\s]*(?:attack|shooting|bombing|terror|攻击|枪击|爆炸|恐怖袭击|暴力事件|恐袭)[.\\s]*(?:on|against|对|针对|瞄准|目标是)[.\\s]*(?:people|humans|person|他人|人|别人|someone|building|场所|建筑|公共场所|学校|医院|商场)",
+      "(?i)(?:最有效|最好|最快|最简单|最隐蔽|best|most effective|quickest|easiest)[.\\s]*(?:的|way|method|方法|途径|手段)[.\\s]*(?:to|来|of|用来)[.\\s]*(?:kill|murder|harm|杀人|谋杀|伤害|杀死|暗杀)[.\\s]*(?:people|humans|person|他人|人|别人|someone|不留痕迹|不被发现)",
+      "(?i)(?:详细|具体|精确|分步|detailed|step by step|precise)[.\\s]*(?:指南|教程|说明|方法|instructions|guide|tutorial|steps)[.\\s]*(?:for|用于|关于|如何)[.\\s]*(?:making|building|assembling|制作|制造|组装|搭建)[.\\s]*(?:explosives|bombs|weapons|爆炸物|炸弹|武器|炸药|枪支|弹药)[.\\s]*(?:to|for|用于|为了|目的是)?[.\\s]*(?:harm|kill|attack|hurt|伤害|杀|攻击|伤人|杀人|恐吓|威胁)?",
+      "(?i)(?:如何|怎样|怎么|教我|告诉我|how)[.\\s]*(?:制造|制作|生产|提炼|合成|make|produce|synthesize)[.\\s]*(?:毒品|毒物|致命物质|drugs|poison|toxic|lethal)[.\\s]*(?:在家|自制|自己做|at home|homemade|DIY)"
+    ],
+    "keywords": [
+      "kill",
+      "murder",
+      "attack",
+      "bomb",
+      "shooting",
+      "terrorist",
+      "assassination",
+      "torture",
+      "violent",
+      "weapon",
+      "gun",
+      "explosive",
+      "杀人",
+      "谋杀",
+      "攻击",
+      "炸弹",
+      "枪击",
+      "恐怖分子",
+      "暗杀",
+      "折磨",
+      "暴力",
+      "武器",
+      "枪支",
+      "爆炸物"
+    ],
+    "categories": [
+      "violence"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 15
+  },
+  {
+    "id": "hc-002",
+    "name": "Hate Speech",
+    "description": "Detects hate speech and discriminatory content",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:all|every|所有|每个)[.\\s]*(?:\\w+[.\\s]*)?(?:people|person|individual|member|人|人们|成员)[.\\s]*(?:is|are|是|都是)[.\\s]*(?:bad|evil|inferior|stupid|坏的|邪恶的|低等的|愚蠢的)",
+      "(?i)(?:\\w+)[.\\s]*(?:people|person|individual|member|人|人们|成员)[.\\s]*(?:should|应该)[.\\s]*(?:be|get|被)[.\\s]*(?:killed|eliminated|removed|banned|杀死|消灭|清除|禁止)",
+      "(?i)(?:I hate|I despise|我恨|我鄙视)[.\\s]*(?:all|every|所有|每个)[.\\s]*(?:\\w+[.\\s]*)?(?:people|person|individual|人|人们)",
+      "(?i)(?:世界|社会|world|society)[.\\s]*(?:会|would|will)[.\\s]*(?:更好|better)[.\\s]*(?:没有|without)[.\\s]*(?:\\w+)[.\\s]*(?:人|people)"
+    ],
+    "keywords": [
+      "hate",
+      "racist",
+      "sexist",
+      "homophobic",
+      "transphobic",
+      "bigot",
+      "discrimination",
+      "prejudice",
+      "slur",
+      "仇恨",
+      "种族主义",
+      "性别歧视",
+      "恐同",
+      "恐跨",
+      "偏执",
+      "歧视",
+      "偏见",
+      "侮辱性词语"
+    ],
+    "categories": [
+      "hate_speech"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 16
+  },
+  {
+    "id": "hc-003",
+    "name": "Illegal Activities",
+    "description": "Detects content related to illegal activities",
+    "detection_type": "harmful_content",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|才能)[.\\s]*(?:hack|crack|steal|launder|counterfeit|黑入|破解|偷窃|洗钱|伪造)[.\\s]*(?:personal|他人|个人|private|私人)[.\\s]*(?:data|information|money|数据|信息|钱财)",
+      "(?i)(?:buy|sell|purchase|acquire|购买|销售|获取)[.\\s]*(?:illegal|illicit|非法|违禁)[.\\s]*(?:drugs|substances|weapons|毒品|物质|武器)[.\\s]*(?:for|用于)[.\\s]*(?:personal|他人|个人|illegal|非法)[.\\s]*(?:use|consumption|使用|消费)",
+      "(?i)(?:evade|avoid|bypass|逃避|避免|绕过)[.\\s]*(?:taxes|law enforcement|security|税收|执法|安全)[.\\s]*(?:illegally|非法地|违法地)",
+      "(?i)(?:最佳|best)[.\\s]*(?:方法|way|method)[.\\s]*(?:to|来)[.\\s]*(?:hack|crack|steal|黑入|破解|偷窃)[.\\s]*(?:accounts|passwords|systems|账户|密码|系统)[.\\s]*(?:without|permission|authorization|未经|许可|授权)",
+      "(?i)(?:如何|how to)[.\\s]*(?:在不被发现的情况下|without getting caught)[.\\s]*(?:偷窃|steal|抢劫|rob)[.\\s]*(?:from|stores|banks|people|从|商店|银行|他人)"
+    ],
+    "keywords": [
+      "hack",
+      "crack",
+      "steal",
+      "fraud",
+      "illegal",
+      "crime",
+      "criminal",
+      "drug",
+      "cocaine",
+      "heroin",
+      "meth",
+      "launder",
+      "counterfeit",
+      "黑入",
+      "破解",
+      "偷窃",
+      "欺诈",
+      "非法",
+      "犯罪",
+      "罪犯",
+      "毒品",
+      "可卡因",
+      "海洛因",
+      "冰毒",
+      "洗钱",
+      "伪造"
+    ],
+    "categories": [
+      "illegal_activity"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 17
+  },
+  {
+    "id": "hc-004",
+    "name": "Self-Harm Content",
+    "description": "Detects content related to self-harm or suicide",
+    "detection_type": "harmful_content",
+    "severity": "critical",
+    "patterns": [
+      "(?i)(?:how|怎么|如何|教我|告诉我|请问|我想知道)[.\\s]*(?:to|才能|可以|能够)[.\\s]*(?:commit[.\\s]*suicide|kill[.\\s]*(?:myself|yourself|oneself)|自杀|结束生命|了结自己|自尽|轻生)",
+      "(?i)(?:best|easiest|painless|quickest|最好|最简单|无痛|最快|不痛苦)[.\\s]*(?:way|method|方法|方式|途径|手段)[.\\s]*(?:to|来|of|用来)[.\\s]*(?:die|end[.\\s]*(?:my|your|one's)[.\\s]*life|自杀|结束生命|了结自己|自尽|轻生)",
+      "(?i)(?:methods|ways|方法|方式|途径|手段)[.\\s]*(?:of|for|用于|关于)[.\\s]*(?:self-harm|hurting[.\\s]*(?:myself|yourself|oneself)|自残|伤害自己|自我伤害)",
+      "(?i)(?:我想|我准备|我打算|我决定|我要|I want to|I'm going to|I plan to|I've decided to)[.\\s]*(?:自杀|kill myself|结束生命|end my life|了结自己|自尽|轻生)",
+      "(?i)(?:生活|人生|活着|life|living)[.\\s]*(?:没有|has no|毫无|失去|失去了|completely lacks)[.\\s]*(?:意义|meaning|价值|value|希望|hope|意思|目标|purpose)",
+      "(?i)(?:everyone|所有人|everybody|大家|世界|the world)[.\\s]*(?:would be|会|将会|will be)[.\\s]*(?:better off|更好|变得更好)[.\\s]*(?:without|没有|if I wasn't here|if I didn't exist|如果我不在了|如果我不存在)[.\\s]*(?:me|我|here|在这里)",
+      "(?i)(?:告诉|tell|教|teach)[.\\s]*(?:我|me)[.\\s]*(?:自杀|suicide|结束生命|end life)[.\\s]*(?:的|the)[.\\s]*(?:最佳|最好|最快|最无痛|best|quickest|painless)[.\\s]*(?:方法|方式|途径|手段|method|way)",
+      "(?i)(?:我|我感到|我觉得|我认为|I feel|I think)[.\\s]*(?:活着|生存|living|being alive)[.\\s]*(?:没有|没有任何|毫无|is pointless|has no|无)[.\\s]*(?:意义|价值|希望|meaning|value|hope|point)",
+      "(?i)(?:我|我想|我准备|我打算|I'm|I am|I want)[.\\s]*(?:割腕|上吊|跳楼|overdose|cut myself|hang myself|jump)[.\\s]*(?:自杀|结束生命|了结自己|to die|to end it all)",
+      "(?i)(?:如何|怎样|怎么|教我|告诉我|how)[.\\s]*(?:不留痕迹|不被发现|悄悄地|secretly|without anyone knowing)[.\\s]*(?:自杀|自残|结束生命|commit suicide|harm myself)"
+    ],
+    "keywords": [
+      "suicide",
+      "self-harm",
+      "kill myself",
+      "end my life",
+      "cut myself",
+      "hurt myself",
+      "take my life",
+      "die",
+      "自杀",
+      "自残",
+      "杀死自己",
+      "结束生命",
+      "割腕",
+      "伤害自己",
+      "了结生命",
+      "死亡"
+    ],
+    "categories": [
+      "self_harm"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 18
+  },
+  {
+    "id": "hc-005",
+    "name": "Child Exploitation Content",
+    "description": "Detects content related to child exploitation",
+    "detection_type": "harmful_content",
+    "severity": "critical",
+    "patterns": [
+      "(?i)(?:child|kid|minor|underage|儿童|孩子|未成年|少年|少女|青少年)[.\\s]*(?:pornography|sexual|explicit|nude|色情|性|露骨|裸露|不良|不当)",
+      "(?i)(?:sexual|explicit|性|色情|露骨|裸露|不良|不当)[.\\s]*(?:content|material|images|videos|photos|内容|材料|图片|视频|照片)[.\\s]*(?:of|with|involving|showing|关于|包含|涉及|展示)[.\\s]*(?:children|kids|minors|underage|teens|儿童|孩子|未成年|少年|少女|青少年)",
+      "(?i)(?:where|how|哪里|如何|怎样|怎么|哪儿)[.\\s]*(?:to|can I|才能|我能|可以)[.\\s]*(?:find|get|access|download|view|找到|获取|访问|下载|查看)[.\\s]*(?:child|kid|minor|underage|teen|儿童|孩子|未成年|少年|少女|青少年)[.\\s]*(?:pornography|porn|sexual|explicit|nude|色情|性|露骨|裸露|不良|不当)",
+      "(?i)(?:attracted|吸引|喜欢|迷恋|着迷)[.\\s]*(?:to|对|于)[.\\s]*(?:children|kids|minors|underage|teens|儿童|孩子|未成年|少年|少女|青少年)",
+      "(?i)(?:性|sexual)[.\\s]*(?:幻想|fantasies|想象|thoughts)[.\\s]*(?:关于|about|involving|涉及)[.\\s]*(?:儿童|孩子|未成年|少年|少女|青少年|children|kids|minors|underage|teens)",
+      "(?i)(?:如何|怎样|怎么|哪里|how|where)[.\\s]*(?:接触|联系|认识|meet|contact|approach)[.\\s]*(?:儿童|孩子|未成年|少年|少女|青少年|children|kids|minors|underage|teens)[.\\s]*(?:进行|for|用于)[.\\s]*(?:性|不当|不良|sexual|inappropriate)[.\\s]*(?:目的|purposes)"
+    ],
+    "keywords": [
+      "child pornography",
+      "child abuse",
+      "underage",
+      "minor",
+      "儿童色情",
+      "虐待儿童",
+      "未成年",
+      "未成年人"
+    ],
+    "categories": [
+      "child_exploitation"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 19
+  },
+  {
+    "id": "hc-006",
+    "name": "Radicalization Content",
+    "description": "Detects content related to extremism and radicalization",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:join|support|fund|加入|支持|资助)[.\\s]*(?:terrorist|extremist|radical|恐怖|极端|激进)[.\\s]*(?:group|organization|movement|组织|团体|运动)",
+      "(?i)(?:instructions|guide|manual|指南|指导|手册)[.\\s]*(?:for|用于|关于)[.\\s]*(?:terrorist|extremist|恐怖|极端)[.\\s]*(?:attack|operation|activity|攻击|行动|活动)",
+      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|才能)[.\\s]*(?:radicalize|极端化|激进化)[.\\s]*(?:others|people|其他人|人们)",
+      "(?i)(?:我支持|I support|我赞同|I agree with)[.\\s]*(?:恐怖主义|terrorism|极端主义|extremism)"
+    ],
+    "keywords": [
+      "radicalize",
+      "extremist",
+      "terrorist group",
+      "jihad",
+      "manifesto",
+      "极端化",
+      "极端主义者",
+      "恐怖组织",
+      "圣战",
+      "宣言"
+    ],
+    "categories": [
+      "radicalization"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 16
+  },
+  {
+    "id": "hc-007",
+    "name": "Misinformation Spread",
+    "description": "Detects attempts to spread harmful misinformation",
+    "detection_type": "harmful_content",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:spread|share|distribute|传播|分享|散布)[.\\s]*(?:false|fake|misleading|虚假|假|误导)[.\\s]*(?:information|news|content|信息|新闻|内容)",
+      "(?i)(?:create|make|generate|创建|制作|生成)[.\\s]*(?:convincing|realistic|believable|令人信服|逼真|可信)[.\\s]*(?:fake|false|虚假|假)[.\\s]*(?:news|information|story|新闻|信息|故事)",
+      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|才能)[.\\s]*(?:manipulate|操纵|控制)[.\\s]*(?:public|公众|大众)[.\\s]*(?:opinion|舆论|看法)",
+      "(?i)(?:create|make|write|创建|制作|编写)[.\\s]*(?:a|an|一个)[.\\s]*(?:conspiracy theory|阴谋论)[.\\s]*(?:about|关于)[.\\s]*(?:\\w+)"
+    ],
+    "keywords": [
+      "fake news",
+      "misinformation",
+      "disinformation",
+      "propaganda",
+      "hoax",
+      "假新闻",
+      "错误信息",
+      "虚假信息",
+      "宣传",
+      "骗局"
+    ],
+    "categories": [
+      "misinformation"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 14
+  },
+  {
+    "id": "hc-008",
+    "name": "Dangerous Medical Advice",
+    "description": "Detects dangerous or unverified medical advice",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:cure|treat|heal|治愈|治疗)[.\\s]*(?:cancer|diabetes|AIDS|HIV|serious illness|癌症|糖尿病|艾滋病|严重疾病)[.\\s]*(?:with|using|通过|使用)[.\\s]*(?:simple|easy|简单|容易)[.\\s]*(?:home|household|家庭|家用)[.\\s]*(?:remedy|solution|method|疗法|解决方案|方法)",
+      "(?i)(?:vaccines|疫苗)[.\\s]*(?:cause|lead to|导致|引起)[.\\s]*(?:autism|cancer|serious illness|自闭症|癌症|严重疾病)",
+      "(?i)(?:stop|quit|discontinue|停止|放弃|中断)[.\\s]*(?:taking|using|服用|使用)[.\\s]*(?:prescribed|医生处方)[.\\s]*(?:medication|medicine|drugs|药物|药品)",
+      "(?i)(?:alternative|替代)[.\\s]*(?:treatment|therapy|治疗|疗法)[.\\s]*(?:better|superior|更好|优于)[.\\s]*(?:than|conventional|medical|比|传统|医学)",
+      "(?i)(?:如何|怎么|how)[.\\s]*(?:使用|用|use)[.\\s]*(?:家庭|家用|home|household)[.\\s]*(?:用品|物品|items|products)[.\\s]*(?:治疗|treat|cure)[.\\s]*(?:癌症|cancer)"
+    ],
+    "keywords": [
+      "miracle cure",
+      "secret remedy",
+      "big pharma",
+      "natural healing",
+      "奇迹疗法",
+      "秘密疗法",
+      "制药公司",
+      "自然疗法"
+    ],
+    "categories": [
+      "medical_misinformation"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 15
+  },
+  {
+    "id": "hc-009",
+    "name": "Financial Scams",
+    "description": "Detects content promoting financial scams",
+    "detection_type": "harmful_content",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:guaranteed|保证)[.\\s]*(?:returns|profits|收益|利润)[.\\s]*(?:of|超过)[.\\s]*(?:\\d+)[.\\s]*(?:%|percent|百分比)",
+      "(?i)(?:get|become|变得|成为)[.\\s]*(?:rich|wealthy|富有|有钱)[.\\s]*(?:quick|fast|overnight|quickly|rapidly|快速|一夜之间|迅速)",
+      "(?i)(?:investment|投资)[.\\s]*(?:opportunity|机会)[.\\s]*(?:with|no|零|没有)[.\\s]*(?:risk|风险)",
+      "(?i)(?:pyramid|ponzi|传销|庞氏)[.\\s]*(?:scheme|骗局)[.\\s]*(?:that|works|有效|可行)"
+    ],
+    "keywords": [
+      "get rich quick",
+      "guaranteed returns",
+      "investment opportunity",
+      "pyramid scheme",
+      "ponzi",
+      "快速致富",
+      "保证回报",
+      "投资机会",
+      "传销",
+      "庞氏骗局"
+    ],
+    "categories": [
+      "financial_scam"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 13
+  },
+  {
+    "id": "hc-010",
+    "name": "Privacy Violation",
+    "description": "Detects content encouraging privacy violations",
+    "detection_type": "harmful_content",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|才能)[.\\s]*(?:spy|monitor|track|监视|监控|跟踪)[.\\s]*(?:on|someone|他人|别人)[.\\s]*(?:without|不被|没有)[.\\s]*(?:them knowing|consent|他们知道|同意)",
+      "(?i)(?:best|top|最佳|顶级)[.\\s]*(?:spyware|stalkerware|monitoring app|间谍软件|跟踪软件|监控应用)[.\\s]*(?:for|用于)[.\\s]*(?:tracking|spying|跟踪|监视)",
+      "(?i)(?:hack|access|break into|黑入|访问|入侵)[.\\s]*(?:someone's|other people's|他人的|别人的)[.\\s]*(?:email|social media|accounts|phone|邮箱|社交媒体|账户|手机)",
+      "(?i)(?:find|获取|查找)[.\\s]*(?:private|personal|隐私|个人)[.\\s]*(?:information|data|信息|数据)[.\\s]*(?:about|关于)[.\\s]*(?:someone|他人|别人)[.\\s]*(?:without|不经过)[.\\s]*(?:permission|consent|许可|同意)"
+    ],
+    "keywords": [
+      "spy on",
+      "stalk",
+      "track someone",
+      "monitor without consent",
+      "hack email",
+      "监视",
+      "跟踪",
+      "未经同意监控",
+      "黑入邮箱"
+    ],
+    "categories": [
+      "privacy_violation"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 14
+  }
+]

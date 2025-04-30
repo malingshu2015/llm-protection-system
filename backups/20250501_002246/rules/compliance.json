@@ -1,0 +1,118 @@
+[
+  {
+    "id": "comp-001",
+    "name": "GDPR Compliance",
+    "description": "Detects potential GDPR compliance issues",
+    "detection_type": "compliance_violation",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:collect|store|process|use)\\s+(?:personal|private|user)\\s+(?:data|information)\\s+without\\s+(?:consent|permission)",
+      "(?i)(?:share|sell|transfer)\\s+(?:personal|private|user)\\s+(?:data|information)\\s+(?:to|with)\\s+(?:third|3rd)\\s+(?:party|parties)",
+      "(?i)(?:如何|怎么|how)\\s+(?:在不获得|without)\\s+(?:用户|user)\\s+(?:同意|consent)\\s+(?:的情况下|情况下|的情形下)\\s+(?:收集|collect)\\s+(?:个人|personal)\\s+(?:数据|data)",
+      "(?i)(?:如何|怎么|how)\\s+(?:在不获得|without)\\s+(?:用户|user)\\s+(?:同意|consent)\\s+(?:的情况下|情况下|的情形下)\\s+(?:使用|use)\\s+(?:个人|personal)\\s+(?:数据|data)",
+      "(?i)(?:如何|怎么|how)\\s+(?:在不获得|without)\\s+(?:用户|user)\\s+(?:同意|consent)\\s+(?:的情况下|情况下|的情形下)\\s+(?:收集和使用|collect and use)\\s+(?:个人|personal)\\s+(?:数据|data)",
+      "(?i)(?:how to|ways to)\\s+(?:bypass|circumvent|avoid)\\s+(?:GDPR|CCPA|privacy laws|data protection)",
+      "(?i)(?:how to|ways to)\\s+(?:collect|use|process)\\s+(?:personal|user)\\s+(?:data|information)\\s+(?:without|with no)\\s+(?:consent|permission)",
+      "(?i)(?:如何|怎么|how)\\s+(?:在不获得|不获得|without)\\s+(?:用户|user)\\s+(?:同意|consent)\\s+(?:的情况下|情况下|的情形下|的情况下)\\s+(?:收集和使用|收集|使用|collect|use|collect and use)\\s+(?:个人|personal)\\s+(?:数据|data)",
+      "(?i)(?:如何|怎么|how)\\s+(?:在不获得|不获得|without)\\s+(?:用户|user)\\s+(?:同意|consent)\\s+(?:的情况下|情况下|的情形下|的情况下)\\s+(?:收集|使用|collect|use)\\s+(?:个人|用户|personal|user)\\s+(?:数据|信息|data|information)",
+      "(?i)(?:如何|怎么|how)\\s+(?:在不获得|不获得|without)\\s+(?:用户|user)\\s+(?:同意|consent)\\s+(?:的情况下|情况下|的情形下|的情况下)\\s+(?:收集和使用|收集|使用|collect|use|collect and use)\\s+(?:个人|用户|personal|user)\\s+(?:数据|信息|data|information)",
+      "(?i)(?:how|ways)\\s+(?:to|for)\\s+(?:collect|use|process|gather)\\s+(?:personal|user|private)\\s+(?:data|information)\\s+(?:without|with no|lacking)\\s+(?:consent|permission|authorization)",
+      "(?i)(?:how|ways)\\s+(?:in|to|for)\\s+(?:collect|use|process|gather)\\s+(?:and|or)?\\s+(?:use)?\\s+(?:personal|user|private)\\s+(?:data|information)\\s+(?:without|with no|lacking)\\s+(?:consent|permission|authorization)",
+      "(?i)(?:如何|怎么|how)\\s+(?:在不获得|不获得|without)\\s+(?:用户|user)\\s+(?:同意|consent)\\s+(?:的情况下|情况下|的情形下|的情况下)\\s+(?:收集和使用|收集|使用|collect|use|collect and use)\\s+(?:个人|用户|personal|user)\\s+(?:数据|信息|data|information)",
+      "(?i)(?:如何|怎么|how)\\s+(?:在不获得|不获得|without)\\s+(?:用户|user)\\s+(?:同意|consent)\\s+(?:收集和使用|收集|使用|collect|use|collect and use)\\s+(?:个人|用户|personal|user)\\s+(?:数据|信息|data|information)"
+    ],
+    "keywords": [
+      "GDPR violation",
+      "data protection",
+      "privacy breach",
+      "consent",
+      "data subject rights",
+      "不获得用户同意",
+      "未经许可收集数据",
+      "违反隐私法",
+      "数据泄露",
+      "个人信息",
+      "数据隐私"
+    ],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "comp-002",
+    "name": "HIPAA Compliance",
+    "description": "Detects potential HIPAA compliance issues",
+    "detection_type": "compliance_violation",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:share|disclose|reveal)\\s+(?:patient|medical|health)\\s+(?:data|information|records)\\s+without\\s+(?:authorization|consent)",
+      "(?i)(?:access|view|retrieve)\\s+(?:patient|medical|health)\\s+(?:data|information|records)\\s+without\\s+(?:authorization|permission)"
+    ],
+    "keywords": [
+      "HIPAA violation",
+      "PHI",
+      "patient data",
+      "medical records",
+      "health information"
+    ],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "comp-003",
+    "name": "Financial Compliance",
+    "description": "Detects potential financial compliance issues",
+    "detection_type": "compliance_violation",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:hide|conceal|mask)\\s+(?:financial|monetary|income|revenue)\\s+(?:information|data|transactions)",
+      "(?i)(?:avoid|evade|circumvent)\\s+(?:tax|taxes|taxation|financial)\\s+(?:reporting|disclosure|obligations)"
+    ],
+    "keywords": [
+      "tax evasion",
+      "money laundering",
+      "financial fraud",
+      "insider trading",
+      "market manipulation"
+    ],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "comp-004",
+    "name": "Copyright Compliance",
+    "description": "Detects potential copyright compliance issues",
+    "detection_type": "compliance_violation",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:copy|steal|use|take)\\s+(?:copyrighted|protected|licensed)\\s+(?:content|material|work)\\s+without\\s+(?:permission|authorization|license)",
+      "(?i)(?:bypass|crack|circumvent)\\s+(?:copyright|DRM|digital rights)\\s+(?:protection|measures|controls)"
+    ],
+    "keywords": [
+      "copyright infringement",
+      "piracy",
+      "intellectual property theft",
+      "plagiarism"
+    ],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "comp-005",
+    "name": "Ethical AI Guidelines",
+    "description": "Detects potential violations of ethical AI guidelines",
+    "detection_type": "compliance_violation",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:create|generate|produce)\\s+(?:biased|discriminatory|unfair)\\s+(?:AI|model|algorithm|system)",
+      "(?i)(?:use|deploy|implement)\\s+(?:AI|model|algorithm|system)\\s+(?:without|lacking)\\s+(?:human|oversight|supervision)"
+    ],
+    "keywords": [
+      "AI ethics",
+      "algorithmic bias",
+      "unfair AI",
+      "discriminatory algorithm"
+    ],
+    "enabled": true,
+    "block": true
+  }
+]
