@@ -2,7 +2,7 @@
 
 一个全面的安全防护系统，为本地部署的大型语言模型提供安全防护。
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.2-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 
@@ -62,8 +62,8 @@ pip install -e .
 
 ```bash
 # 使用Docker运行
-docker pull malingshu2015/llm-protection-system:1.0.0
-docker run -p 8080:8080 malingshu2015/llm-protection-system:1.0.0
+docker pull malingshu2015/llm-protection-system:1.0.2
+docker run -p 8080:8080 malingshu2015/llm-protection-system:1.0.2
 ```
 
 ## 使用

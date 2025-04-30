@@ -3,7 +3,7 @@ version: '3'
 services:
   llm-protection:
     build: .
-    image: llm-protection-system:1.0.0
+    image: llm-protection-system:1.0.2
     container_name: llm-protection-system
     ports:
       - "8080:8080"
