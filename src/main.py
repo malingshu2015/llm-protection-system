@@ -15,6 +15,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.middleware.security_middleware import SecurityMiddleware
+
 # Get version from VERSION file
 VERSION_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "VERSION")
 VERSION = "1.0.0"  # Default version
@@ -50,6 +52,9 @@ app.add_middleware(
     allow_methods=["*"],  # 允许所有方法
     allow_headers=["*"],  # 允许所有头
 )
+
+# 添加安全中间件
+app.add_middleware(SecurityMiddleware)
 
 # Register API routes
 app.include_router(api_router)

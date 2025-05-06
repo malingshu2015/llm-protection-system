@@ -54,8 +54,17 @@ class SecurityConfig(BaseSettings):
     jailbreak_rules_path: str = Field(
         default="rules/jailbreak.json"
     )
+    api_keys_path: str = Field(
+        default="data/security/api_keys.json"
+    )
+    rate_limit_path: str = Field(
+        default="data/security/rate_limits.json"
+    )
     max_prompt_length: int = Field(default=4096)
     max_response_length: int = Field(default=8192)
+    enable_api_auth: bool = Field(default=True)
+    enable_rate_limiting: bool = Field(default=True)
+    enable_content_masking: bool = Field(default=True)
 
     model_config = {
         "env_prefix": "SECURITY_",
