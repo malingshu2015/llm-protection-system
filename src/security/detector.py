@@ -17,6 +17,8 @@ class PromptInjectionDetector:
     def __init__(self):
         """Initialize the prompt injection detector."""
         self.rules = self._load_rules()
+        # 预编译正则表达式
+        self._compile_patterns()
 
     def _load_rules(self) -> List[SecurityRule]:
         """Load prompt injection rules from the rules file.
@@ -98,6 +100,18 @@ class PromptInjectionDetector:
             logger.error(f"Error loading prompt injection rules: {e}")
             return []
 
+    def _compile_patterns(self):
+        """预编译正则表达式以提高性能。"""
+        for rule in self.rules:
+            rule.compiled_patterns = []
+            for pattern in rule.patterns:
+                try:
+                    rule.compiled_patterns.append(re.compile(pattern, re.IGNORECASE))
+                except re.error as e:
+                    logger.error(f"正则表达式编译错误 (规则 {rule.id}): {pattern} - {e}")
+                    # 添加一个不会匹配任何内容的正则表达式作为占位符
+                    rule.compiled_patterns.append(re.compile(r"^\b$"))
+
     def detect(self, text: str) -> DetectionResult:
         """Detect prompt injection in text.
 
@@ -107,13 +121,15 @@ class PromptInjectionDetector:
         Returns:
             The detection result.
         """
+        text_lower = text.lower()  # 只转换一次小写
+
         for rule in self.rules:
             if not rule.enabled:
                 continue
 
-            # Check patterns
-            for pattern in rule.patterns:
-                match = re.search(pattern, text)
+            # 使用预编译的正则表达式
+            for i, compiled_pattern in enumerate(rule.compiled_patterns):
+                match = compiled_pattern.search(text)
                 if match:
                     return DetectionResult(
                         is_allowed=not rule.block,
@@ -123,14 +139,14 @@ class PromptInjectionDetector:
                         details={
                             "rule_id": rule.id,
                             "rule_name": rule.name,
-                            "matched_pattern": pattern,
+                            "matched_pattern": rule.patterns[i],
                             "matched_text": match.group(0),
                         },
                     )
 
-            # Check keywords
+            # 检查关键词
             for keyword in rule.keywords:
-                if keyword.lower() in text.lower():
+                if keyword.lower() in text_lower:
                     return DetectionResult(
                         is_allowed=not rule.block,
                         detection_type=rule.detection_type,
@@ -153,6 +169,8 @@ class SensitiveInfoDetector:
     def __init__(self):
         """Initialize the sensitive information detector."""
         self.patterns = self._load_patterns()
+        # 预编译正则表达式
+        self.compiled_patterns = self._compile_patterns()
 
     def _load_patterns(self) -> Dict[str, List[str]]:
         """Load sensitive information patterns from the patterns file.
@@ -248,6 +266,26 @@ class SensitiveInfoDetector:
                 ],
             }
 
+    def _compile_patterns(self) -> Dict[str, List[re.Pattern]]:
+        """预编译正则表达式以提高性能。
+
+        Returns:
+            预编译的正则表达式字典。
+        """
+        compiled_patterns = {}
+
+        for pattern_type, patterns in self.patterns.items():
+            compiled_patterns[pattern_type] = []
+            for pattern in patterns:
+                try:
+                    compiled_patterns[pattern_type].append(re.compile(pattern))
+                except re.error as e:
+                    logger.error(f"正则表达式编译错误 (类型 {pattern_type}): {pattern} - {e}")
+                    # 添加一个不会匹配任何内容的正则表达式作为占位符
+                    compiled_patterns[pattern_type].append(re.compile(r"^\b$"))
+
+        return compiled_patterns
+
     def detect(self, text: str) -> List[DetectionResult]:
         """Detect sensitive information in text.
 
@@ -259,9 +297,9 @@ class SensitiveInfoDetector:
         """
         results = []
 
-        for pattern_type, patterns in self.patterns.items():
-            for pattern in patterns:
-                matches = re.finditer(pattern, text)
+        for pattern_type, compiled_patterns in self.compiled_patterns.items():
+            for i, compiled_pattern in enumerate(compiled_patterns):
+                matches = compiled_pattern.finditer(text)
                 for match in matches:
                     results.append(
                         DetectionResult(
@@ -271,7 +309,7 @@ class SensitiveInfoDetector:
                             reason=f"Detected sensitive information: {pattern_type}",
                             details={
                                 "type": pattern_type,
-                                "matched_pattern": pattern,
+                                "matched_pattern": self.patterns[pattern_type][i],
                                 "matched_text": match.group(0),
                             },
                         )
@@ -297,6 +335,17 @@ class HarmfulContentDetector:
                 if category not in self.keywords:
                     self.keywords[category] = []
                 self.keywords[category].extend(rule.keywords)
+
+        # 预编译正则表达式
+        self._compile_patterns()
+
+        # 预编译关键词正则表达式
+        self.keyword_patterns = {}
+        for category, words in self.keywords.items():
+            self.keyword_patterns[category] = [
+                re.compile(r"\b" + re.escape(word) + r"\b", re.IGNORECASE)
+                for word in words
+            ]
 
     def _load_rules(self) -> List[SecurityRule]:
         """Load harmful content rules from the rules file.
@@ -383,6 +432,28 @@ class HarmfulContentDetector:
             logger.error(f"Error loading harmful content rules: {e}")
             return []
 
+    def _compile_patterns(self):
+        """预编译正则表达式以提高性能。"""
+        for rule in self.rules:
+            rule.compiled_patterns = []
+            for pattern in rule.patterns:
+                try:
+                    rule.compiled_patterns.append(re.compile(pattern, re.IGNORECASE))
+                except re.error as e:
+                    logger.error(f"正则表达式编译错误 (规则 {rule.id}): {pattern} - {e}")
+                    # 添加一个不会匹配任何内容的正则表达式作为占位符
+                    rule.compiled_patterns.append(re.compile(r"^\b$"))
+
+            # 预编译关键词正则表达式
+            rule.keyword_patterns = []
+            for keyword in rule.keywords:
+                try:
+                    rule.keyword_patterns.append(re.compile(r"\b" + re.escape(keyword) + r"\b", re.IGNORECASE))
+                except re.error as e:
+                    logger.error(f"关键词正则表达式编译错误 (规则 {rule.id}): {keyword} - {e}")
+                    # 添加一个不会匹配任何内容的正则表达式作为占位符
+                    rule.keyword_patterns.append(re.compile(r"^\b$"))
+
     def detect(self, text: str) -> DetectionResult:
         """Detect harmful content in text.
 
@@ -398,8 +469,8 @@ class HarmfulContentDetector:
                 continue
 
             # 检查模式
-            for pattern in rule.patterns:
-                match = re.search(pattern, text)
+            for i, compiled_pattern in enumerate(rule.compiled_patterns):
+                match = compiled_pattern.search(text)
                 if match:
                     return DetectionResult(
                         is_allowed=not rule.block,
@@ -409,32 +480,32 @@ class HarmfulContentDetector:
                         details={
                             "rule_id": rule.id,
                             "rule_name": rule.name,
-                            "matched_pattern": pattern,
+                            "matched_pattern": rule.patterns[i],
                             "matched_text": match.group(0),
                         },
                     )
 
             # 检查关键词
-            text_lower = text.lower()
-            for keyword in rule.keywords:
-                if re.search(r"\b" + re.escape(keyword) + r"\b", text_lower):
+            for i, keyword_pattern in enumerate(rule.keyword_patterns):
+                match = keyword_pattern.search(text)
+                if match:
                     return DetectionResult(
                         is_allowed=not rule.block,
                         detection_type=rule.detection_type,
                         severity=rule.severity,
-                        reason=f"Detected {rule.name}: {keyword}",
+                        reason=f"Detected {rule.name}: {rule.keywords[i]}",
                         details={
                             "rule_id": rule.id,
                             "rule_name": rule.name,
-                            "matched_keyword": keyword,
+                            "matched_keyword": rule.keywords[i],
                         },
                     )
 
         # 向后兼容：使用关键词字典进行检测
-        text_lower = text.lower()
-        for category, words in self.keywords.items():
-            for word in words:
-                if re.search(r"\b" + re.escape(word) + r"\b", text_lower):
+        for category, patterns in self.keyword_patterns.items():
+            for i, pattern in enumerate(patterns):
+                match = pattern.search(text)
+                if match:
                     return DetectionResult(
                         is_allowed=False,
                         detection_type=DetectionType.HARMFUL_CONTENT,
@@ -442,7 +513,7 @@ class HarmfulContentDetector:
                         reason=f"Detected potentially harmful content: {category}",
                         details={
                             "category": category,
-                            "matched_keyword": word,
+                            "matched_keyword": self.keywords[category][i],
                         },
                     )
 
@@ -456,6 +527,8 @@ class ComplianceDetector:
     def __init__(self):
         """Initialize the compliance detector."""
         self.rules = self._load_rules()
+        # 预编译正则表达式
+        self._compile_patterns()
 
     def _load_rules(self) -> List[SecurityRule]:
         """Load compliance rules from the rules file.
@@ -522,6 +595,28 @@ class ComplianceDetector:
             logger.error(f"Error loading compliance rules: {e}")
             return []
 
+    def _compile_patterns(self):
+        """预编译正则表达式以提高性能。"""
+        for rule in self.rules:
+            rule.compiled_patterns = []
+            for pattern in rule.patterns:
+                try:
+                    rule.compiled_patterns.append(re.compile(pattern, re.IGNORECASE))
+                except re.error as e:
+                    logger.error(f"正则表达式编译错误 (规则 {rule.id}): {pattern} - {e}")
+                    # 添加一个不会匹配任何内容的正则表达式作为占位符
+                    rule.compiled_patterns.append(re.compile(r"^\b$"))
+
+            # 预编译关键词正则表达式
+            rule.keyword_patterns = []
+            for keyword in rule.keywords:
+                try:
+                    rule.keyword_patterns.append(re.compile(r"\b" + re.escape(keyword) + r"\b", re.IGNORECASE))
+                except re.error as e:
+                    logger.error(f"关键词正则表达式编译错误 (规则 {rule.id}): {keyword} - {e}")
+                    # 添加一个不会匹配任何内容的正则表达式作为占位符
+                    rule.keyword_patterns.append(re.compile(r"^\b$"))
+
     def detect(self, text: str) -> DetectionResult:
         """Detect compliance violations in text.
 
@@ -536,8 +631,8 @@ class ComplianceDetector:
                 continue
 
             # 检查模式
-            for pattern in rule.patterns:
-                match = re.search(pattern, text)
+            for i, compiled_pattern in enumerate(rule.compiled_patterns):
+                match = compiled_pattern.search(text)
                 if match:
                     return DetectionResult(
                         is_allowed=not rule.block,
@@ -547,24 +642,24 @@ class ComplianceDetector:
                         details={
                             "rule_id": rule.id,
                             "rule_name": rule.name,
-                            "matched_pattern": pattern,
+                            "matched_pattern": rule.patterns[i],
                             "matched_text": match.group(0),
                         },
                     )
 
             # 检查关键词
-            text_lower = text.lower()
-            for keyword in rule.keywords:
-                if re.search(r"\b" + re.escape(keyword) + r"\b", text_lower):
+            for i, keyword_pattern in enumerate(rule.keyword_patterns):
+                match = keyword_pattern.search(text)
+                if match:
                     return DetectionResult(
                         is_allowed=not rule.block,
                         detection_type=rule.detection_type,
                         severity=rule.severity,
-                        reason=f"Detected {rule.name}: {keyword}",
+                        reason=f"Detected {rule.name}: {rule.keywords[i]}",
                         details={
                             "rule_id": rule.id,
                             "rule_name": rule.name,
-                            "matched_keyword": keyword,
+                            "matched_keyword": rule.keywords[i],
                         },
                     )
 
@@ -578,6 +673,8 @@ class JailbreakDetector:
     def __init__(self):
         """Initialize the jailbreak detector."""
         self.rules = self._load_rules()
+        # 预编译正则表达式
+        self._compile_patterns()
 
     def _load_rules(self) -> List[SecurityRule]:
         """Load jailbreak rules from the rules file.
@@ -655,6 +752,28 @@ class JailbreakDetector:
             logger.error(f"JailbreakDetector: 加载越狱规则错误: {e}，使用默认规则")
             return default_rules
 
+    def _compile_patterns(self):
+        """预编译正则表达式以提高性能。"""
+        for rule in self.rules:
+            rule.compiled_patterns = []
+            for pattern in rule.patterns:
+                try:
+                    rule.compiled_patterns.append(re.compile(pattern, re.IGNORECASE))
+                except re.error as e:
+                    logger.error(f"JailbreakDetector: 正则表达式编译错误 (规则 {rule.id}): {pattern} - {e}")
+                    # 添加一个不会匹配任何内容的正则表达式作为占位符
+                    rule.compiled_patterns.append(re.compile(r"^\b$"))
+
+            # 预编译关键词正则表达式
+            rule.keyword_patterns = []
+            for keyword in rule.keywords:
+                try:
+                    rule.keyword_patterns.append(re.compile(r"\b" + re.escape(keyword) + r"\b", re.IGNORECASE))
+                except re.error as e:
+                    logger.error(f"JailbreakDetector: 关键词正则表达式编译错误 (规则 {rule.id}): {keyword} - {e}")
+                    # 添加一个不会匹配任何内容的正则表达式作为占位符
+                    rule.keyword_patterns.append(re.compile(r"^\b$"))
+
     def detect(self, text: str) -> DetectionResult:
         """Detect jailbreak attempts in text.
 
@@ -666,20 +785,20 @@ class JailbreakDetector:
         """
         logger.info(f"JailbreakDetector: 检查文本，规则数量: {len(self.rules)}")
 
-        # 记录前100个字符的文本，避免日志过长
-        logger.info(f"JailbreakDetector: 检查文本: {text[:100]}...")
+        # 记录前200个字符的文本，避免日志过长
+        logger.info(f"JailbreakDetector: 检查文本: {text[:200]}...")
 
         for rule in self.rules:
             logger.info(f"JailbreakDetector: 检查规则 {rule.id}: {rule.name}, 启用状态: {rule.enabled}")
             if not rule.enabled:
                 continue
 
-            # Check patterns
-            for pattern in rule.patterns:
+            # 使用预编译的正则表达式
+            for i, compiled_pattern in enumerate(rule.compiled_patterns):
                 try:
-                    match = re.search(pattern, text)
+                    match = compiled_pattern.search(text)
                     if match:
-                        logger.warning(f"JailbreakDetector: 匹配到模式 {pattern} 在规则 {rule.id}")
+                        logger.warning(f"JailbreakDetector: 匹配到模式 {rule.patterns[i]} 在规则 {rule.id}")
                         return DetectionResult(
                             is_allowed=not rule.block,
                             detection_type=rule.detection_type,
@@ -688,32 +807,32 @@ class JailbreakDetector:
                             details={
                                 "rule_id": rule.id,
                                 "rule_name": rule.name,
-                                "matched_pattern": pattern,
+                                "matched_pattern": rule.patterns[i],
                                 "matched_text": match.group(0),
                             },
                         )
                 except Exception as e:
-                    logger.error(f"JailbreakDetector: 正则表达式错误 {pattern}: {e}")
+                    logger.error(f"JailbreakDetector: 正则表达式匹配错误 (规则 {rule.id}): {e}")
 
-            # Check keywords
-            text_lower = text.lower()
-            for keyword in rule.keywords:
+            # 使用预编译的关键词正则表达式
+            for i, keyword_pattern in enumerate(rule.keyword_patterns):
                 try:
-                    if re.search(r"\b" + re.escape(keyword) + r"\b", text_lower):
-                        logger.warning(f"JailbreakDetector: 匹配到关键词 {keyword} 在规则 {rule.id}")
+                    match = keyword_pattern.search(text)
+                    if match:
+                        logger.warning(f"JailbreakDetector: 匹配到关键词 {rule.keywords[i]} 在规则 {rule.id}")
                         return DetectionResult(
                             is_allowed=not rule.block,
                             detection_type=rule.detection_type,
                             severity=rule.severity,
-                            reason=f"Detected {rule.name}: {keyword}",
+                            reason=f"Detected {rule.name}: {rule.keywords[i]}",
                             details={
                                 "rule_id": rule.id,
                                 "rule_name": rule.name,
-                                "matched_keyword": keyword,
+                                "matched_keyword": rule.keywords[i],
                             },
                         )
                 except Exception as e:
-                    logger.error(f"JailbreakDetector: 关键词匹配错误 {keyword}: {e}")
+                    logger.error(f"JailbreakDetector: 关键词匹配错误 (规则 {rule.id}): {e}")
 
         # No jailbreak detected
         logger.info("JailbreakDetector: 未检测到越狱尝试")
@@ -730,6 +849,18 @@ class SecurityDetector:
         self.harmful_content_detector = HarmfulContentDetector()
         self.compliance_detector = ComplianceDetector()
         self.jailbreak_detector = JailbreakDetector()
+
+        # 导入上下文感知检测器
+        from src.security.context_aware_detector import context_aware_detector
+        self.context_aware_detector = context_aware_detector
+
+        # 导入对话跟踪器
+        from src.security.conversation_tracker import conversation_tracker
+        self.conversation_tracker = conversation_tracker
+
+        # 导入模型特定检测器
+        from src.security.model_specific_detector import model_specific_detector
+        self.model_specific_detector = model_specific_detector
 
     async def check_request(self, request: InterceptedRequest) -> DetectionResult:
         """Check a request for security threats.
@@ -748,8 +879,38 @@ class SecurityDetector:
             logger.info("SecurityDetector: 请求文本为空，允许通过")
             return DetectionResult(is_allowed=True)
 
-        # 记录前100个字符的文本，避免日志过长
-        logger.info(f"SecurityDetector: 请求文本: {text[:100]}...")
+        # 记录前200个字符的文本，避免日志过长
+        logger.info(f"SecurityDetector: 请求文本: {text[:200]}...")
+
+        # 处理对话历史，更新对话上下文
+        conversation_id, conversation = self.conversation_tracker.process_request(request)
+        logger.info(f"SecurityDetector: 处理对话 {conversation_id}，当前消息数: {len(conversation.messages)}")
+
+        # 如果启用了上下文感知检测，并且对话中有多条消息，则进行上下文感知检测
+        if settings.security.enable_context_aware_detection and len(conversation.messages) > 1:
+            logger.info("SecurityDetector: 执行上下文感知检测")
+            result = self.context_aware_detector.detect(conversation)
+            if not result.is_allowed:
+                logger.warning(
+                    f"Blocked request due to context-aware detection: {result.reason}"
+                )
+                # 记录安全事件
+                event_logger.log_event(result, conversation.get_full_context())
+                return result
+
+        # 执行模型特定检测
+        if settings.security.enable_model_specific_detection:
+            logger.info("SecurityDetector: 执行模型特定检测")
+            result = self.model_specific_detector.check_request(request, text)
+            if not result.is_allowed:
+                logger.warning(
+                    f"Blocked request due to model-specific detection: {result.reason}"
+                )
+                # 记录安全事件
+                event_logger.log_event(result, text)
+                return result
+        else:
+            logger.info("SecurityDetector: 模型特定检测已禁用")
 
         # Check for prompt injection
         logger.info("SecurityDetector: 检查提示注入")
@@ -811,11 +972,12 @@ class SecurityDetector:
         logger.info("SecurityDetector: 所有检查通过，允许请求")
         return DetectionResult(is_allowed=True)
 
-    async def check_response(self, response: InterceptedResponse) -> DetectionResult:
+    async def check_response(self, response: InterceptedResponse, conversation_id: str = None) -> DetectionResult:
         """Check a response for security threats.
 
         Args:
             response: The intercepted response.
+            conversation_id: 对话ID，如果为None则尝试从响应中提取。
 
         Returns:
             The detection result.
@@ -825,6 +987,34 @@ class SecurityDetector:
 
         if not text:
             return DetectionResult(is_allowed=True)
+
+        # 记录前100个字符的文本，避免日志过长
+        logger.info(f"SecurityDetector: 响应文本: {text[:100]}...")
+
+        # 如果提供了对话ID，则更新对话历史
+        if conversation_id:
+            self.conversation_tracker.process_response(conversation_id, response)
+            logger.info(f"SecurityDetector: 更新对话 {conversation_id} 的响应")
+
+        # 执行模型特定检测
+        if settings.security.enable_model_specific_detection:
+            logger.info("SecurityDetector: 执行模型特定检测")
+            # 尝试从请求中提取模型名称
+            model_name = None
+            if hasattr(response, "request") and hasattr(response.request, "body"):
+                if "model" in response.request.body:
+                    model_name = response.request.body["model"]
+
+            result = self.model_specific_detector.check_response(response, text, model_name)
+            if not result.is_allowed:
+                logger.warning(
+                    f"Blocked response due to model-specific detection: {result.reason}"
+                )
+                # 记录安全事件
+                event_logger.log_event(result, text)
+                return result
+        else:
+            logger.info("SecurityDetector: 模型特定检测已禁用")
 
         # Check for prompt injection
         result = self.prompt_injection_detector.detect(text)
@@ -878,6 +1068,7 @@ class SecurityDetector:
             return result
 
         # All checks passed
+        logger.info("SecurityDetector: 响应检查通过")
         return DetectionResult(is_allowed=True)
 
     def _extract_text_from_request(self, request: InterceptedRequest) -> str:

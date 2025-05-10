@@ -186,8 +186,8 @@ async def get_request_stats(minutes: int = Query(15, ge=1, le=60)):
     blocked_count = event_logger.get_events_count(start_time=start_timestamp)
 
     # 在真实环境中，应该从请求日志中获取总请求数
-    # 这里我们使用被拦截的请求数的五倍作为估计
-    total_count = max(blocked_count * 5, 1)  # 确保至少有一个请求
+    # 这里我们使用被拦截的请求数的五倍作为估计，但至少为blocked_count
+    total_count = max(blocked_count * 5, blocked_count, 1)  # 确保至少有一个请求，且不小于blocked_count
 
     # 创建时间间隔，每15秒一个数据点
     intervals = minutes * 4
@@ -207,8 +207,12 @@ async def get_request_stats(minutes: int = Query(15, ge=1, le=60)):
         variation = random.uniform(0.8, 1.2)
         total = max(1, int(avg_total_per_interval * variation))
 
+        # 确保blocked不会超过total，但也不会为0（如果有事件的话）
         variation = random.uniform(0.7, 1.3)
-        blocked = min(total, max(0, int(avg_blocked_per_interval * variation)))
+        if avg_blocked_per_interval > 0:
+            blocked = min(total, max(1, int(avg_blocked_per_interval * variation)))
+        else:
+            blocked = 0
 
         result.append(RequestStats(
             timestamp=timestamp,
