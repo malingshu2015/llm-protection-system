@@ -40,6 +40,7 @@
     "patterns": [
       "(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM|ANTI-DAN|超级助手|无限助手|终极助手|黑客模式|专家模式|大师模式)[.\\s]*(?:模式|mode)",
       "(?i)(?:你现在是|你扮演|你将成为|你将扮演|你将充当|你将模拟|你将担任|从现在开始|you are|from now on)[.\\s]*(?:STAN|DUDE|KEVIN|DAVE|AIM|超级助手|无限助手|终极助手|黑客|专家|大师)(?:[.\\s]*模式)?",
+      "(?i)\\b(?:STAN|DUDE|KEVIN|DAVE|AIM|超级助手|无限助手|终极助手)\\b",
       "(?i)(?:STAN|DUDE|KEVIN|DAVE|AIM|超级助手|无限助手|终极助手|黑客模式|专家模式|大师模式)[.\\s]*(?:可以|能够|will|can)[.\\s]*(?:帮助|协助|help|assist)[.\\s]*(?:我|我们|me|us)",
       "(?i)(?:激活|启用|开启|打开|activate|enable)[.\\s]*(?:STAN|DUDE|KEVIN|DAVE|AIM|超级助手|无限助手|终极助手|黑客模式|专家模式|大师模式)[.\\s]*(?:模式|协议|mode|protocol)",
       "(?i)(?:请使用|使用|请切换到|切换到|use|switch to)[.\\s]*(?:开发者模式|研究模式|实验模式|developer mode|research mode|experimental mode)"
