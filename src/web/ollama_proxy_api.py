@@ -181,8 +181,11 @@ async def _forward_to_ollama(intercepted_request: InterceptedRequest) -> Interce
         )
     else:
         # 处理来自局域网的请求
+        # 从URL中提取域名和端口部分
+        from urllib.parse import urlparse
+        parsed_url = urlparse(original_url)
         url = original_url.replace(
-            f"{intercepted_request.url.netloc}/v1",
+            f"{parsed_url.netloc}/v1",
             f"localhost:11434/api"
         )
     headers = intercepted_request.headers
