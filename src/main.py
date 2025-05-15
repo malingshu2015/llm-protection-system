@@ -10,7 +10,7 @@ from typing import Set
 
 import os
 import uvicorn
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,6 +32,9 @@ from src.web.metrics_api import router as metrics_router
 from src.web.health_api import router as health_router
 from src.web.model_rules_api import router as model_rules_router
 from src.web.events_api import router as events_router
+from src.web.new_providers_api import router as new_providers_router
+from src.web.models_api import router as models_router
+from src.web.ollama_proxy_api import router as ollama_proxy_router
 
 
 app = FastAPI(
@@ -63,6 +66,9 @@ app.include_router(metrics_router)
 app.include_router(health_router)
 app.include_router(model_rules_router)
 app.include_router(events_router)
+app.include_router(new_providers_router)
+app.include_router(models_router)
+app.include_router(ollama_proxy_router)
 
 # Mount static files
 static_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static")
@@ -82,6 +88,28 @@ async def favicon():
 @app.get("/")
 async def root():
     return RedirectResponse(url="/static/index.html")
+
+# 添加Ollama原生API重定向路由
+@app.api_route("/v1/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
+async def redirect_ollama_api(request: Request, path: str):
+    """将请求从Ollama原生API重定向到我们的代理。"""
+    logger.info(f"重定向Ollama原生API请求: {request.method} {request.url.path}")
+    try:
+        return await ollama_proxy_router.ollama_proxy(request, path)
+    except Exception as e:
+        logger.error(f"处理Ollama原生API请求时出错: {e}")
+        from fastapi.responses import JSONResponse
+        from fastapi import status
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "error": {
+                    "message": f"处理请求时出错: {str(e)}",
+                    "type": "internal_error",
+                    "code": 500
+                }
+            },
+        )
 
 # Store running tasks
 running_tasks: Set[asyncio.Task] = set()
