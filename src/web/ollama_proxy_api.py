@@ -181,8 +181,12 @@ async def _forward_to_ollama(intercepted_request: InterceptedRequest) -> Interce
     parsed_url = urlparse(original_url)
     logger.info(f"解析后的URL: {parsed_url}, netloc: {parsed_url.netloc}, path: {parsed_url.path}")
 
-    # 构建新的URL
-    url = f"http://localhost:11434/api{parsed_url.path.replace('/v1', '')}"
+    # 构建新的URL - 注意：Ollama的chat completions API是/api/chat，而不是/api/chat/completions
+    if "chat/completions" in parsed_url.path:
+        url = "http://localhost:11434/api/chat"
+    else:
+        # 处理其他API路径
+        url = f"http://localhost:11434/api{parsed_url.path.replace('/v1', '')}"
     logger.info(f"转发到Ollama的URL: {url}")
     headers = intercepted_request.headers
     data = json.dumps(intercepted_request.body) if intercepted_request.body else None
