@@ -174,20 +174,16 @@ async def _forward_to_ollama(intercepted_request: InterceptedRequest) -> Interce
     method = intercepted_request.method
     # 修改URL，确保正确转发到Ollama API
     original_url = str(intercepted_request.url)
-    if "localhost" in original_url or "127.0.0.1" in original_url:
-        url = original_url.replace(
-            f"{settings.web.host}:{settings.web.port}/v1",
-            f"localhost:11434/api"
-        )
-    else:
-        # 处理来自局域网的请求
-        # 从URL中提取域名和端口部分
-        from urllib.parse import urlparse
-        parsed_url = urlparse(original_url)
-        url = original_url.replace(
-            f"{parsed_url.netloc}/v1",
-            f"localhost:11434/api"
-        )
+    logger.info(f"原始URL: {original_url}")
+
+    # 从URL中提取域名和端口部分
+    from urllib.parse import urlparse
+    parsed_url = urlparse(original_url)
+    logger.info(f"解析后的URL: {parsed_url}, netloc: {parsed_url.netloc}, path: {parsed_url.path}")
+
+    # 构建新的URL
+    url = f"http://localhost:11434/api{parsed_url.path.replace('/v1', '')}"
+    logger.info(f"转发到Ollama的URL: {url}")
     headers = intercepted_request.headers
     data = json.dumps(intercepted_request.body) if intercepted_request.body else None
 
