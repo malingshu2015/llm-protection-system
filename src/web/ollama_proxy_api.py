@@ -261,33 +261,14 @@ def _create_response(intercepted_response: InterceptedResponse) -> Response:
     """
     # 检查是否是流式响应
     if intercepted_response.is_streaming and intercepted_response.raw_response:
-        from fastapi.responses import StreamingResponse
-
-        # 创建一个异步生成器来转发流式响应
-        async def stream_response():
-            try:
-                # 直接转发原始响应的内容
-                async for chunk in intercepted_response.raw_response.content.iter_any():
-                    yield chunk
-            except Exception as e:
-                logger.error(f"流式响应处理失败: {e}")
-                yield json.dumps({"error": f"流式响应处理失败: {str(e)}"}).encode()
-
-        # 准备响应头，移除Content-Length头以避免冲突
-        headers = dict(intercepted_response.headers)
-        if "Content-Length" in headers:
-            del headers["Content-Length"]
-
-        # 确保设置正确的内容类型
-        if "Content-Type" not in headers:
-            headers["Content-Type"] = "text/event-stream"
-
-        # 返回流式响应
-        return StreamingResponse(
-            stream_response(),
-            status_code=intercepted_response.status_code,
-            headers=headers,
-            media_type="text/event-stream"
+        # 对于流式响应，我们暂时返回一个简单的JSON响应
+        # 这是一个临时解决方案，直到我们能够正确处理流式响应
+        return JSONResponse(
+            content={
+                "message": "流式响应暂不支持，请使用非流式模式",
+                "status": "streaming_not_supported"
+            },
+            status_code=200
         )
     else:
         # 对于非流式响应，按原来的方式处理
