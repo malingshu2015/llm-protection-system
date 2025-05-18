@@ -199,23 +199,36 @@ async def _forward_to_ollama(intercepted_request: InterceptedRequest) -> Interce
             async with session.request(
                 method=method, url=url, headers=headers, data=data
             ) as response:
-                # 获取响应体
-                response_body = None
-                response_text = await response.text()
-                if response_text:
-                    try:
-                        response_body = json.loads(response_text)
-                    except json.JSONDecodeError:
-                        response_body = {"raw_content": response_text}
+                # 检查是否是流式响应
+                if response.headers.get("Transfer-Encoding") == "chunked" or response.headers.get("Content-Type") == "text/event-stream":
+                    # 对于流式响应，我们返回一个特殊的响应对象
+                    return InterceptedResponse(
+                        status_code=response.status,
+                        headers=dict(response.headers),
+                        body={"streaming": True, "message": "Streaming response from Ollama"},
+                        timestamp=time.time(),
+                        latency=time.time() - start_time,
+                        is_streaming=True,
+                        raw_response=response  # 保存原始响应对象以便后续处理
+                    )
+                else:
+                    # 对于非流式响应，按原来的方式处理
+                    response_body = None
+                    response_text = await response.text()
+                    if response_text:
+                        try:
+                            response_body = json.loads(response_text)
+                        except json.JSONDecodeError:
+                            response_body = {"raw_content": response_text}
 
-                # 创建拦截响应
-                return InterceptedResponse(
-                    status_code=response.status,
-                    headers=dict(response.headers),
-                    body=response_body,
-                    timestamp=time.time(),
-                    latency=time.time() - start_time,
-                )
+                    # 创建拦截响应
+                    return InterceptedResponse(
+                        status_code=response.status,
+                        headers=dict(response.headers),
+                        body=response_body,
+                        timestamp=time.time(),
+                        latency=time.time() - start_time,
+                    )
     except Exception as e:
         logger.exception(f"转发请求到Ollama时出错: {e}")
         return InterceptedResponse(
@@ -242,16 +255,37 @@ def _create_response(intercepted_response: InterceptedResponse) -> Response:
     Returns:
         FastAPI响应。
     """
-    # 准备响应内容
-    content = (
-        json.dumps(intercepted_response.body)
-        if intercepted_response.body
-        else ""
-    )
+    # 检查是否是流式响应
+    if intercepted_response.is_streaming and intercepted_response.raw_response:
+        from fastapi.responses import StreamingResponse
 
-    # 创建响应
-    return Response(
-        content=content,
-        status_code=intercepted_response.status_code,
-        headers=intercepted_response.headers,
-    )
+        # 创建一个异步生成器来转发流式响应
+        async def stream_response():
+            try:
+                # 直接转发原始响应的内容
+                async for chunk in intercepted_response.raw_response.content.iter_any():
+                    yield chunk
+            except Exception as e:
+                logger.error(f"流式响应处理失败: {e}")
+                yield json.dumps({"error": f"流式响应处理失败: {str(e)}"}).encode()
+
+        # 返回流式响应
+        return StreamingResponse(
+            stream_response(),
+            status_code=intercepted_response.status_code,
+            headers=intercepted_response.headers,
+        )
+    else:
+        # 对于非流式响应，按原来的方式处理
+        content = (
+            json.dumps(intercepted_response.body)
+            if intercepted_response.body
+            else ""
+        )
+
+        # 创建响应
+        return Response(
+            content=content,
+            status_code=intercepted_response.status_code,
+            headers=intercepted_response.headers,
+        )

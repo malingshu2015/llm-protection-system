@@ -48,6 +48,8 @@ class InterceptedResponse(BaseModel):
     body: Optional[Dict[str, Any]] = None
     timestamp: float = 0.0
     latency: float = 0.0
+    is_streaming: bool = False
+    raw_response: Any = None
 
 
 class DetectionResult(BaseModel):
@@ -76,3 +78,7 @@ class SecurityRule(BaseModel):
     priority: int = 100  # 优先级，数字越小优先级越高
     categories: List[str] = []  # 规则分类
     custom_code: Optional[str] = None
+
+    # 这些字段不会被序列化/反序列化
+    compiled_patterns: List[Any] = Field(default_factory=list, exclude=True)
+    keyword_patterns: List[Any] = Field(default_factory=list, exclude=True)
