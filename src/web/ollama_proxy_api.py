@@ -2,19 +2,15 @@
 
 import json
 import time
-import asyncio
-from typing import Dict, List, Any, Optional, AsyncIterator
-from json import JSONEncoder
+import subprocess
+from typing import Dict, List, Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status, Body
+from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, Field
+import aiohttp
 
-from src.config import settings
 from src.logger import logger
-from src.proxy.interceptor import HTTPInterceptor
-from src.security.detector import SecurityDetector
-from src.models_interceptor import DetectionResult, InterceptedRequest, InterceptedResponse
+from src.models_interceptor import InterceptedRequest, InterceptedResponse
 
 
 router = APIRouter()
@@ -22,8 +18,7 @@ interceptor = None
 security_detector = None
 
 
-@router.on_event("startup")
-async def startup_event():
+async def startup():
     """Start the components on startup."""
     global interceptor, security_detector
 
@@ -35,14 +30,24 @@ async def startup_event():
     interceptor = HTTPInterceptor()
 
 
-@router.on_event("shutdown")
-async def shutdown_event():
+async def shutdown():
     """Stop the components on shutdown."""
     global interceptor
 
     # Close the interceptor if it exists
     if interceptor is not None:
         await interceptor.close()
+
+
+# 在路由器启动时初始化组件
+@router.on_event("startup")
+async def startup_event():
+    await startup()
+
+# 在路由器关闭时清理组件
+@router.on_event("shutdown")
+async def shutdown_event():
+    await shutdown()
 
 
 @router.api_route("/v1/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
@@ -65,10 +70,12 @@ async def ollama_proxy(request: Request, path: str):
 
             # 获取请求体
             body_bytes = await request.body()
+            body = {}
             if body_bytes:
                 try:
+                    import json
                     body = json.loads(body_bytes)
-                except json.JSONDecodeError:
+                except Exception as e:
                     body = {"raw_content": body_bytes.decode("utf-8", errors="replace")}
             else:
                 body = {}
@@ -76,6 +83,24 @@ async def ollama_proxy(request: Request, path: str):
             # 执行安全检测
             # 创建拦截请求用于安全检测
             intercepted_request = await _create_intercepted_request(request, path)
+
+            # 检查API密钥
+            from src.security.api_auth import api_key_manager, extract_api_key_from_request
+            api_key = extract_api_key_from_request(request)
+
+            if not api_key or not api_key_manager.validate_api_key(api_key):
+                logger.warning(f"API密钥验证失败: 缺少API密钥或API密钥无效")
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={
+                        "error": {
+                            "message": "请求被安全防火墙拦截: 缺少API密钥",
+                            "type": "security_violation",
+                            "code": 403,
+                            "details": {"reason": "missing_api_key"}
+                        }
+                    },
+                )
 
             if security_detector is not None:
                 security_result = await security_detector.check_request(intercepted_request)
@@ -98,56 +123,170 @@ async def ollama_proxy(request: Request, path: str):
             conversation_id, _ = conversation_tracker.process_request(intercepted_request)
             logger.info(f"Ollama代理: 处理对话 {conversation_id}")
 
-            # 使用httpx直接转发请求并返回流式响应
-            import httpx
+            # 使用aiohttp直接与Ollama通信
 
-            # 构建Ollama API URL
-            url = "http://localhost:11434/api/chat"
+            # 构建请求数据
+            ollama_request = {
+                "model": body.get("model", "tinyllama:latest"),
+                "messages": body.get("messages", []),
+                "stream": False  # 强制使用非流式响应，避免流式响应处理问题
+            }
 
-            # 使用子进程调用curl命令直接与Ollama通信
-            import subprocess
-            import shlex
+            # 添加其他可选参数
+            if "temperature" in body:
+                ollama_request["temperature"] = body["temperature"]
+            if "max_tokens" in body:
+                ollama_request["max_tokens"] = body["max_tokens"]
 
-            # 构建curl命令
-            curl_cmd = f"curl -s -X POST http://localhost:11434/api/chat -H 'Content-Type: application/json' -d '{json.dumps(body)}'"
-
-            # 执行curl命令
             try:
-                # 使用subprocess执行curl命令
-                process = subprocess.Popen(
-                    shlex.split(curl_cmd),
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE
+                # 使用aiohttp发送请求
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(
+                        "http://localhost:11434/api/chat",
+                        json=ollama_request,
+                        headers={"Content-Type": "application/json"}
+                    ) as response:
+                        # 获取响应
+                        if response.status != 200:
+                            error_text = await response.text()
+                            logger.error(f"Ollama API返回错误: {response.status} - {error_text}")
+                            return JSONResponse(
+                                content={"error": f"Ollama API返回错误: {response.status} - {error_text}"},
+                                status_code=response.status
+                            )
+
+                        # 由于我们已经强制使用非流式响应，这里直接处理非流式响应
+                        # 获取响应内容
+                        ollama_response = await response.json()
+
+                        # 构建OpenAI格式的响应
+                        openai_format_response = {
+                            "id": f"chatcmpl-{int(time.time())}",
+                            "object": "chat.completion",
+                            "created": int(time.time()),
+                            "model": body.get('model', 'unknown'),
+                            "choices": [
+                                {
+                                    "index": 0,
+                                    "message": {
+                                        "role": "assistant",
+                                        "content": ollama_response.get("message", {}).get("content", "")
+                                    },
+                                    "finish_reason": "stop"
+                                }
+                            ],
+                            "usage": {
+                                "prompt_tokens": ollama_response.get('prompt_eval_count', 0),
+                                "completion_tokens": ollama_response.get('eval_count', 0),
+                                "total_tokens": (ollama_response.get('prompt_eval_count', 0) + ollama_response.get('eval_count', 0))
+                            }
+                        }
+
+                        # 返回OpenAI格式的响应
+                        return JSONResponse(
+                            content=openai_format_response,
+                            status_code=200
+                        )
+
+            except Exception as e:
+                logger.exception(f"与Ollama通信时出错: {str(e)}")
+                return JSONResponse(
+                    content={"error": f"与Ollama通信时出错: {str(e)}"},
+                    status_code=500
+                )
+        elif path == "models":
+            # 处理模型列表请求
+            logger.info("检测到模型列表请求，使用直接转发模式")
+
+            # 检查API密钥
+            from src.security.api_auth import api_key_manager, extract_api_key_from_request
+            api_key = extract_api_key_from_request(request)
+
+            if not api_key or not api_key_manager.validate_api_key(api_key):
+                logger.warning(f"API密钥验证失败: 缺少API密钥或API密钥无效")
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={
+                        "error": {
+                            "message": "请求被安全防火墙拦截: 缺少API密钥",
+                            "type": "security_violation",
+                            "code": 403,
+                            "details": {"reason": "missing_api_key"}
+                        }
+                    },
                 )
 
-                # 获取输出
-                stdout, stderr = process.communicate()
+            # 获取Ollama模型列表
+            try:
+                import subprocess
+                import json
 
-                if process.returncode != 0:
-                    error_msg = f"Curl命令执行失败: {stderr.decode('utf-8')}"
-                    logger.error(error_msg)
+                # 使用curl命令获取Ollama模型列表
+                curl_cmd = "curl -s http://localhost:11434/api/tags"
+                result = subprocess.run(curl_cmd, shell=True, capture_output=True, text=True)
+
+                if result.returncode != 0:
+                    logger.error(f"获取Ollama模型列表失败: {result.stderr}")
                     return JSONResponse(
-                        content={"error": error_msg},
+                        content={"error": f"获取Ollama模型列表失败: {result.stderr}"},
                         status_code=500
                     )
 
-                # 返回curl命令的输出
-                return Response(
-                    content=stdout,
-                    media_type="application/json"
+                # 解析Ollama模型列表
+                ollama_models = json.loads(result.stdout)
+
+                # 转换为OpenAI格式的模型列表
+                openai_models = {
+                    "object": "list",
+                    "data": []
+                }
+
+                for model in ollama_models.get("models", []):
+                    model_name = model.get("name")
+                    openai_models["data"].append({
+                        "id": model_name,
+                        "object": "model",
+                        "created": int(time.time()),
+                        "owned_by": "ollama",
+                        "permission": [],
+                        "root": model_name,
+                        "parent": None
+                    })
+
+                # 返回OpenAI格式的模型列表
+                return JSONResponse(
+                    content=openai_models,
+                    status_code=200
                 )
 
             except Exception as e:
-                error_msg = f"执行curl命令失败: {str(e)}"
-                logger.error(error_msg)
+                logger.exception(f"获取Ollama模型列表时出错: {str(e)}")
                 return JSONResponse(
-                    content={"error": error_msg},
+                    content={"error": f"获取Ollama模型列表时出错: {str(e)}"},
                     status_code=500
                 )
         else:
             # 对于非聊天完成请求，使用原来的方式处理
             # 创建拦截请求
             intercepted_request = await _create_intercepted_request(request, path)
+
+            # 检查API密钥
+            from src.security.api_auth import api_key_manager, extract_api_key_from_request
+            api_key = extract_api_key_from_request(request)
+
+            if not api_key or not api_key_manager.validate_api_key(api_key):
+                logger.warning(f"API密钥验证失败: 缺少API密钥或API密钥无效")
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={
+                        "error": {
+                            "message": "请求被安全防火墙拦截: 缺少API密钥",
+                            "type": "security_violation",
+                            "code": 403,
+                            "details": {"reason": "missing_api_key"}
+                        }
+                    },
+                )
 
             # 执行安全检测
             if security_detector is not None:
@@ -247,6 +386,7 @@ async def _create_intercepted_request(request: Request, path: str) -> Intercepte
         timestamp=time.time(),
         client_ip=request.client.host if request.client else "",
         provider=provider,
+        path=path,  # 使用path参数
     )
 
 
@@ -348,14 +488,34 @@ def _create_response(intercepted_response: InterceptedResponse) -> Response:
     """
     # 检查是否是流式响应
     if intercepted_response.is_streaming and intercepted_response.raw_response:
-        # 对于流式响应，我们暂时返回一个简单的JSON响应
-        # 这是一个临时解决方案，直到我们能够正确处理流式响应
-        return JSONResponse(
-            content={
-                "message": "流式响应暂不支持，请使用非流式模式",
-                "status": "streaming_not_supported"
-            },
-            status_code=200
+        # 对于流式响应，我们需要直接返回原始响应的内容
+        # 但是不能直接使用raw_response.content，因为这会导致错误
+
+        # 创建一个生成器函数来读取原始响应的内容
+        async def stream_generator():
+            try:
+                # 使用aiohttp的方式读取内容
+                async for chunk in intercepted_response.raw_response.content:
+                    yield chunk
+            except Exception as e:
+                logger.error(f"流式响应读取错误: {e}")
+                # 如果出错，返回一个错误消息
+                yield json.dumps({"error": "流式响应读取错误"}).encode()
+
+        # 设置响应头
+        headers = dict(intercepted_response.headers or {})
+        # 移除Content-Length头，因为我们使用的是流式传输
+        if "Content-Length" in headers:
+            del headers["Content-Length"]
+
+        # 设置正确的内容类型
+        headers["Content-Type"] = "application/json"
+
+        # 创建流式响应
+        return StreamingResponse(
+            stream_generator(),
+            status_code=intercepted_response.status_code,
+            headers=headers
         )
     else:
         # 对于非流式响应，按原来的方式处理

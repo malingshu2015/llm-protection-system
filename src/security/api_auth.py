@@ -266,6 +266,11 @@ def extract_api_key_from_request(request: Request) -> Optional[str]:
     if api_key:
         return api_key
 
+    # 从Authorization头部获取
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        return auth_header[7:]  # 移除"Bearer "前缀
+
     # 从查询参数获取
     api_key = request.query_params.get("api_key")
     if api_key:
