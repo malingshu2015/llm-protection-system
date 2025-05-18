@@ -982,6 +982,11 @@ class SecurityDetector:
         Returns:
             The detection result.
         """
+        # 检查是否是流式响应
+        if response.is_streaming:
+            logger.info("SecurityDetector: 检测到流式响应，跳过内容检查")
+            return DetectionResult(is_allowed=True)
+
         # Extract text from response
         text = self._extract_text_from_response(response)
 
