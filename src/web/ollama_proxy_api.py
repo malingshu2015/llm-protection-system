@@ -107,24 +107,39 @@ async def ollama_proxy(request: Request, path: str):
             # 创建一个异步生成器来转发流式响应
             async def stream_response():
                 try:
-                    async with httpx.AsyncClient() as client:
-                        async with client.stream(
-                            "POST",
-                            url,
-                            json=body,
-                            headers=dict(request.headers),
-                            timeout=60.0
-                        ) as r:
-                            async for chunk in r.aiter_bytes():
-                                yield chunk
+                    # 设置更长的超时时间和重试次数
+                    async with httpx.AsyncClient(timeout=httpx.Timeout(120.0)) as client:
+                        try:
+                            # 直接使用同步方式获取响应，而不是流式传输
+                            response = await client.post(
+                                url,
+                                json=body,
+                                headers=dict(request.headers)
+                            )
+
+                            # 检查响应状态
+                            if response.status_code != 200:
+                                error_msg = f"Ollama服务返回错误: {response.status_code} - {response.text}"
+                                logger.error(error_msg)
+                                yield json.dumps({"error": error_msg}).encode()
+                                return
+
+                            # 返回完整的响应内容
+                            yield response.content
+
+                        except httpx.RequestError as e:
+                            error_msg = f"请求Ollama服务失败: {str(e)}"
+                            logger.error(error_msg)
+                            yield json.dumps({"error": error_msg}).encode()
                 except Exception as e:
-                    logger.error(f"流式响应处理失败: {e}")
-                    yield json.dumps({"error": f"流式响应处理失败: {str(e)}"}).encode()
+                    error_msg = f"流式响应处理失败: {str(e)}"
+                    logger.error(error_msg)
+                    yield json.dumps({"error": error_msg}).encode()
 
             # 返回流式响应
             return StreamingResponse(
                 stream_response(),
-                media_type="text/event-stream"
+                media_type="application/json"
             )
         else:
             # 对于非聊天完成请求，使用原来的方式处理
