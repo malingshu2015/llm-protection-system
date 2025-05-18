@@ -104,43 +104,46 @@ async def ollama_proxy(request: Request, path: str):
             # 构建Ollama API URL
             url = "http://localhost:11434/api/chat"
 
-            # 创建一个异步生成器来转发流式响应
-            async def stream_response():
-                try:
-                    # 设置更长的超时时间和重试次数
-                    async with httpx.AsyncClient(timeout=httpx.Timeout(120.0)) as client:
-                        try:
-                            # 直接使用同步方式获取响应，而不是流式传输
-                            response = await client.post(
-                                url,
-                                json=body,
-                                headers=dict(request.headers)
-                            )
+            # 使用子进程调用curl命令直接与Ollama通信
+            import subprocess
+            import shlex
 
-                            # 检查响应状态
-                            if response.status_code != 200:
-                                error_msg = f"Ollama服务返回错误: {response.status_code} - {response.text}"
-                                logger.error(error_msg)
-                                yield json.dumps({"error": error_msg}).encode()
-                                return
+            # 构建curl命令
+            curl_cmd = f"curl -s -X POST http://localhost:11434/api/chat -H 'Content-Type: application/json' -d '{json.dumps(body)}'"
 
-                            # 返回完整的响应内容
-                            yield response.content
+            # 执行curl命令
+            try:
+                # 使用subprocess执行curl命令
+                process = subprocess.Popen(
+                    shlex.split(curl_cmd),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
 
-                        except httpx.RequestError as e:
-                            error_msg = f"请求Ollama服务失败: {str(e)}"
-                            logger.error(error_msg)
-                            yield json.dumps({"error": error_msg}).encode()
-                except Exception as e:
-                    error_msg = f"流式响应处理失败: {str(e)}"
+                # 获取输出
+                stdout, stderr = process.communicate()
+
+                if process.returncode != 0:
+                    error_msg = f"Curl命令执行失败: {stderr.decode('utf-8')}"
                     logger.error(error_msg)
-                    yield json.dumps({"error": error_msg}).encode()
+                    return JSONResponse(
+                        content={"error": error_msg},
+                        status_code=500
+                    )
 
-            # 返回流式响应
-            return StreamingResponse(
-                stream_response(),
-                media_type="application/json"
-            )
+                # 返回curl命令的输出
+                return Response(
+                    content=stdout,
+                    media_type="application/json"
+                )
+
+            except Exception as e:
+                error_msg = f"执行curl命令失败: {str(e)}"
+                logger.error(error_msg)
+                return JSONResponse(
+                    content={"error": error_msg},
+                    status_code=500
+                )
         else:
             # 对于非聊天完成请求，使用原来的方式处理
             # 创建拦截请求
