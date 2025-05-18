@@ -59,56 +59,125 @@ async def ollama_proxy(request: Request, path: str):
     try:
         logger.info(f"收到Ollama原生API请求: {request.method} {request.url.path}")
 
-        # 创建拦截请求
-        intercepted_request = await _create_intercepted_request(request, path)
+        # 检查是否是聊天完成请求
+        if "chat/completions" in path:
+            logger.info("检测到聊天完成请求，使用直接转发模式")
 
-        # 执行安全检测
-        if security_detector is not None:
-            security_result = await security_detector.check_request(intercepted_request)
-            if not security_result.is_allowed:
-                logger.warning(f"安全检测失败: {security_result.reason}")
-                return JSONResponse(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    content={
-                        "error": {
-                            "message": f"本地大模型防护系统阻止了请求: {security_result.reason}",
-                            "type": "security_violation",
-                            "code": 403,
-                            "details": security_result.details if hasattr(security_result, 'details') else None
-                        }
-                    },
-                )
+            # 获取请求体
+            body_bytes = await request.body()
+            if body_bytes:
+                try:
+                    body = json.loads(body_bytes)
+                except json.JSONDecodeError:
+                    body = {"raw_content": body_bytes.decode("utf-8", errors="replace")}
+            else:
+                body = {}
 
-        # 获取对话ID
-        from src.security.conversation_tracker import conversation_tracker
-        conversation_id, _ = conversation_tracker.process_request(intercepted_request)
-        logger.info(f"Ollama代理: 处理对话 {conversation_id}")
-
-        # 转发请求到Ollama
-        response = await _forward_to_ollama(intercepted_request)
-
-        # 对于流式响应，跳过内容检查
-        if response.is_streaming:
-            logger.info("检测到流式响应，跳过内容检查")
-        else:
             # 执行安全检测
-            security_result = await security_detector.check_response(response, conversation_id)
-            if not security_result.is_allowed:
-                logger.warning(f"响应安全检测失败: {security_result.reason}")
-                return JSONResponse(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    content={
-                        "error": {
-                            "message": f"本地大模型防护系统阻止了响应: {security_result.reason}",
-                            "type": "security_violation",
-                            "code": 403,
-                            "details": security_result.details if hasattr(security_result, 'details') else None
-                        }
-                    },
-                )
+            # 创建拦截请求用于安全检测
+            intercepted_request = await _create_intercepted_request(request, path)
 
-        # 返回响应
-        return _create_response(response)
+            if security_detector is not None:
+                security_result = await security_detector.check_request(intercepted_request)
+                if not security_result.is_allowed:
+                    logger.warning(f"安全检测失败: {security_result.reason}")
+                    return JSONResponse(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        content={
+                            "error": {
+                                "message": f"本地大模型防护系统阻止了请求: {security_result.reason}",
+                                "type": "security_violation",
+                                "code": 403,
+                                "details": security_result.details if hasattr(security_result, 'details') else None
+                            }
+                        },
+                    )
+
+            # 获取对话ID
+            from src.security.conversation_tracker import conversation_tracker
+            conversation_id, _ = conversation_tracker.process_request(intercepted_request)
+            logger.info(f"Ollama代理: 处理对话 {conversation_id}")
+
+            # 使用httpx直接转发请求并返回流式响应
+            import httpx
+
+            # 构建Ollama API URL
+            url = "http://localhost:11434/api/chat"
+
+            # 创建一个异步生成器来转发流式响应
+            async def stream_response():
+                try:
+                    async with httpx.AsyncClient() as client:
+                        async with client.stream(
+                            "POST",
+                            url,
+                            json=body,
+                            headers=dict(request.headers),
+                            timeout=60.0
+                        ) as r:
+                            async for chunk in r.aiter_bytes():
+                                yield chunk
+                except Exception as e:
+                    logger.error(f"流式响应处理失败: {e}")
+                    yield json.dumps({"error": f"流式响应处理失败: {str(e)}"}).encode()
+
+            # 返回流式响应
+            return StreamingResponse(
+                stream_response(),
+                media_type="text/event-stream"
+            )
+        else:
+            # 对于非聊天完成请求，使用原来的方式处理
+            # 创建拦截请求
+            intercepted_request = await _create_intercepted_request(request, path)
+
+            # 执行安全检测
+            if security_detector is not None:
+                security_result = await security_detector.check_request(intercepted_request)
+                if not security_result.is_allowed:
+                    logger.warning(f"安全检测失败: {security_result.reason}")
+                    return JSONResponse(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        content={
+                            "error": {
+                                "message": f"本地大模型防护系统阻止了请求: {security_result.reason}",
+                                "type": "security_violation",
+                                "code": 403,
+                                "details": security_result.details if hasattr(security_result, 'details') else None
+                            }
+                        },
+                    )
+
+            # 获取对话ID
+            from src.security.conversation_tracker import conversation_tracker
+            conversation_id, _ = conversation_tracker.process_request(intercepted_request)
+            logger.info(f"Ollama代理: 处理对话 {conversation_id}")
+
+            # 转发请求到Ollama
+            response = await _forward_to_ollama(intercepted_request)
+
+            # 对于流式响应，跳过内容检查
+            if response.is_streaming:
+                logger.info("检测到流式响应，跳过内容检查")
+            else:
+                # 执行安全检测
+                security_result = await security_detector.check_response(response, conversation_id)
+                if not security_result.is_allowed:
+                    logger.warning(f"响应安全检测失败: {security_result.reason}")
+                    return JSONResponse(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        content={
+                            "error": {
+                                "message": f"本地大模型防护系统阻止了响应: {security_result.reason}",
+                                "type": "security_violation",
+                                "code": 403,
+                                "details": security_result.details if hasattr(security_result, 'details') else None
+                            }
+                        },
+                    )
+
+            # 返回响应
+            return _create_response(response)
 
     except Exception as e:
         logger.exception(f"处理Ollama原生API请求时出错: {e}")
