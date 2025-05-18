@@ -273,11 +273,21 @@ def _create_response(intercepted_response: InterceptedResponse) -> Response:
                 logger.error(f"流式响应处理失败: {e}")
                 yield json.dumps({"error": f"流式响应处理失败: {str(e)}"}).encode()
 
+        # 准备响应头，移除Content-Length头以避免冲突
+        headers = dict(intercepted_response.headers)
+        if "Content-Length" in headers:
+            del headers["Content-Length"]
+
+        # 确保设置正确的内容类型
+        if "Content-Type" not in headers:
+            headers["Content-Type"] = "text/event-stream"
+
         # 返回流式响应
         return StreamingResponse(
             stream_response(),
             status_code=intercepted_response.status_code,
-            headers=intercepted_response.headers,
+            headers=headers,
+            media_type="text/event-stream"
         )
     else:
         # 对于非流式响应，按原来的方式处理
