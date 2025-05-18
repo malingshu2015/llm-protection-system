@@ -87,21 +87,25 @@ async def ollama_proxy(request: Request, path: str):
         # 转发请求到Ollama
         response = await _forward_to_ollama(intercepted_request)
 
-        # 执行安全检测
-        security_result = await security_detector.check_response(response, conversation_id)
-        if not security_result.is_allowed:
-            logger.warning(f"响应安全检测失败: {security_result.reason}")
-            return JSONResponse(
-                status_code=status.HTTP_403_FORBIDDEN,
-                content={
-                    "error": {
-                        "message": f"本地大模型防护系统阻止了响应: {security_result.reason}",
-                        "type": "security_violation",
-                        "code": 403,
-                        "details": security_result.details if hasattr(security_result, 'details') else None
-                    }
-                },
-            )
+        # 对于流式响应，跳过内容检查
+        if response.is_streaming:
+            logger.info("检测到流式响应，跳过内容检查")
+        else:
+            # 执行安全检测
+            security_result = await security_detector.check_response(response, conversation_id)
+            if not security_result.is_allowed:
+                logger.warning(f"响应安全检测失败: {security_result.reason}")
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={
+                        "error": {
+                            "message": f"本地大模型防护系统阻止了响应: {security_result.reason}",
+                            "type": "security_violation",
+                            "code": 403,
+                            "details": security_result.details if hasattr(security_result, 'details') else None
+                        }
+                    },
+                )
 
         # 返回响应
         return _create_response(response)
