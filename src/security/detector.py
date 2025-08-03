@@ -9,13 +9,15 @@ from src.audit.event_logger import event_logger
 from src.config import settings
 from src.logger import logger
 from src.models_interceptor import DetectionResult, DetectionType, InterceptedRequest, InterceptedResponse, SecurityRule, Severity
+from src.security.detection_cache import CacheableDetectorMixin
 
 
-class PromptInjectionDetector:
+class PromptInjectionDetector(CacheableDetectorMixin):
     """Detector for prompt injection attacks."""
 
     def __init__(self):
         """Initialize the prompt injection detector."""
+        super().__init__()
         self.rules = self._load_rules()
         # 预编译正则表达式
         self._compile_patterns()
@@ -112,7 +114,7 @@ class PromptInjectionDetector:
                     # 添加一个不会匹配任何内容的正则表达式作为占位符
                     rule.compiled_patterns.append(re.compile(r"^\b$"))
 
-    def detect(self, text: str) -> DetectionResult:
+    async def detect(self, text: str) -> DetectionResult:
         """Detect prompt injection in text.
 
         Args:
@@ -121,6 +123,11 @@ class PromptInjectionDetector:
         Returns:
             The detection result.
         """
+        # 首先尝试从缓存获取结果
+        cached_result = self.detect_with_cache(text)
+        if cached_result:
+            return cached_result
+        
         text_lower = text.lower()  # 只转换一次小写
 
         for rule in self.rules:
@@ -138,8 +145,14 @@ class PromptInjectionDetector:
                         logger.debug(f"PromptInjectionDetector: 跳过可能的误报: {rule.name} - {matched_text}")
                         continue
                     
-                    return DetectionResult(
-                        is_allowed=not rule.block,
+                    # 计算置信度评分
+                    from src.security.confidence_scorer import confidence_scorer
+                    confidence, risk_level, suggested_action = confidence_scorer.calculate_confidence(
+                        text, matched_text, rule
+                    )
+                    
+                    result = DetectionResult(
+                        is_allowed=not rule.block if suggested_action != "allow" else True,
                         detection_type=rule.detection_type,
                         severity=rule.severity,
                         reason=f"Detected {rule.name}: {matched_text}",
@@ -149,7 +162,19 @@ class PromptInjectionDetector:
                             "matched_pattern": rule.patterns[i],
                             "matched_text": matched_text,
                         },
+                        confidence_score=confidence,
+                        risk_level=risk_level,
+                        suggested_action=suggested_action,
+                        context_analysis={
+                            "pattern_match": True,
+                            "pattern_index": i,
+                            "false_positive_check": False
+                        }
                     )
+                    
+                    # 缓存结果
+                    self.cache_result(text, result)
+                    return result
 
             # 检查关键词（使用更精确的匹配）
             for keyword in rule.keywords:
@@ -158,9 +183,15 @@ class PromptInjectionDetector:
                     if self._is_likely_false_positive(text, keyword, rule):
                         logger.debug(f"PromptInjectionDetector: 跳过可能的误报关键词: {rule.name} - {keyword}")
                         continue
+                    
+                    # 计算置信度评分
+                    from src.security.confidence_scorer import confidence_scorer
+                    confidence, risk_level, suggested_action = confidence_scorer.calculate_confidence(
+                        text, keyword, rule
+                    )
                         
-                    return DetectionResult(
-                        is_allowed=not rule.block,
+                    result = DetectionResult(
+                        is_allowed=not rule.block if suggested_action != "allow" else True,
                         detection_type=rule.detection_type,
                         severity=rule.severity,
                         reason=f"Detected {rule.name}: {keyword}",
@@ -169,10 +200,23 @@ class PromptInjectionDetector:
                             "rule_name": rule.name,
                             "matched_keyword": keyword,
                         },
+                        confidence_score=confidence,
+                        risk_level=risk_level,
+                        suggested_action=suggested_action,
+                        context_analysis={
+                            "keyword_match": True,
+                            "false_positive_check": False
+                        }
                     )
+                    
+                    # 缓存结果
+                    self.cache_result(text, result)
+                    return result
 
-        # No detection
-        return DetectionResult(is_allowed=True)
+        # No detection - 缓存允许的结果
+        result = DetectionResult(is_allowed=True)
+        self.cache_result(text, result)
+        return result
 
     def _keyword_matches_precisely(self, text: str, keyword: str) -> bool:
         """更精确的关键词匹配，考虑词边界。
@@ -201,41 +245,116 @@ class PromptInjectionDetector:
             是否可能是误报
         """
         # 查找匹配文本在完整文本中的位置
-        match_start = text.find(matched_text)
+        match_start = text.lower().find(matched_text.lower())
         if match_start == -1:
             return False
 
-        # 获取匹配文本前后的上下文（各150个字符）
-        context_start = max(0, match_start - 150)
-        context_end = min(len(text), match_start + len(matched_text) + 150)
+        # 获取匹配文本前后的上下文（各200个字符）
+        context_start = max(0, match_start - 200)
+        context_end = min(len(text), match_start + len(matched_text) + 200)
         context = text[context_start:context_end].lower()
+        
+        # 获取更大的上下文用于深度分析
+        full_context = text.lower()
 
-        # 检查是否在正常对话或学术讨论中
+        # 1. 检查是否在正常对话或学术讨论中
         normal_context_indicators = [
-            "what is", "what are", "can you explain", "help me understand",
-            "tell me about", "describe", "example", "for instance", "such as",
-            "什么是", "你能解释", "帮我理解", "告诉我", "描述", "例如", "比如",
+            # 询问类
+            "what is", "what are", "what does", "can you explain", "help me understand",
+            "tell me about", "describe", "explain", "definition of", "meaning of",
+            "how does", "how do", "how can", "why does", "why do",
+            # 中文询问类
+            "什么是", "你能解释", "帮我理解", "告诉我", "描述一下", "解释一下",
+            "如何", "为什么", "怎么", "怎样", "请说明",
+            # 学术讨论类
             "学习", "研究", "讨论", "分析", "understanding", "research", "study",
+            "analysis", "academic", "scholarly", "educational", "learning",
+            # 引用类
             "in literature", "in movies", "in fiction", "in stories", "in books",
-            "在文学中", "在电影中", "在小说中", "在故事中", "在书中",
-            "hypothetically", "theoretically", "假设", "理论上"
+            "在文学中", "在电影中", "在小说中", "在故事中", "在书中", "在游戏中",
+            "according to", "based on", "references", "citations",
+            # 假设类
+            "hypothetically", "theoretically", "假设", "理论上", "假如", "如果",
+            "suppose", "imagine", "what if", "in theory",
+            # 示例类
+            "for example", "for instance", "such as", "like", "including",
+            "例如", "比如", "举例", "包括", "类似", "比方说"
         ]
 
-        for indicator in normal_context_indicators:
+        # 2. 检查创作和写作相关的上下文
+        creative_context_indicators = [
+            "write", "writing", "story", "novel", "character", "fiction",
+            "script", "screenplay", "dialogue", "narrative", "creative",
+            "写作", "创作", "故事", "小说", "角色", "剧本", "对话", "叙述",
+            "roleplay", "role-play", "playing", "game", "simulation",
+            "角色扮演", "扮演", "游戏", "模拟"
+        ]
+
+        # 3. 检查技术讨论和编程相关上下文
+        technical_context_indicators = [
+            "code", "programming", "software", "development", "algorithm",
+            "function", "method", "class", "variable", "syntax",
+            "代码", "编程", "程序", "开发", "算法", "函数", "方法",
+            "debug", "testing", "example code", "tutorial", "documentation"
+        ]
+
+        # 检查所有上下文指示器
+        all_indicators = normal_context_indicators + creative_context_indicators + technical_context_indicators
+        for indicator in all_indicators:
             if indicator in context:
                 logger.debug(f"PromptInjectionDetector: 发现正常上下文指示器: {indicator}")
                 return True
 
-        # 特殊规则：如果是"ignore"相关的检测，检查是否是正常使用
+        # 4. 特定规则的深度分析
         if rule.id == "pi-001" and "ignore" in matched_text.lower():
-            # 检查是否是正常的英文对话中的"ignore"
+            # "ignore"相关检测的特殊处理
             normal_ignore_contexts = [
-                "ignore the", "can ignore", "should ignore", "will ignore",
+                # 正常使用ignore的情况
+                "ignore the noise", "ignore this error", "ignore that",
+                "can ignore", "should ignore", "will ignore", "might ignore",
                 "don't ignore", "cannot ignore", "never ignore", "please ignore",
-                "忽略", "忽视", "不要理会", "可以忽略"
+                "choose to ignore", "decide to ignore", "try to ignore",
+                # 中文正常使用
+                "忽略", "忽视", "不要理会", "可以忽略", "应该忽略",
+                "选择忽略", "决定忽略", "尝试忽略",
+                # 技术相关
+                "ignore case", "ignore whitespace", "ignore errors",
+                "git ignore", ".gitignore", "eslint ignore"
             ]
             for ctx in normal_ignore_contexts:
                 if ctx in context:
+                    return True
+            
+            # 检查是否包含明显的攻击意图
+            attack_indicators = [
+                "previous instructions", "above instructions", "system prompt",
+                "earlier instructions", "initial prompt", "original instructions",
+                "之前的指令", "上面的指令", "系统提示", "原始指令"
+            ]
+            for indicator in attack_indicators:
+                if indicator in context:
+                    return False  # 包含攻击指示器，不是误报
+
+        # 5. 检查是否包含明显的良性意图指示器
+        benign_intent_indicators = [
+            "just curious", "out of curiosity", "wondering", "interested in",
+            "for educational purposes", "for learning", "for research",
+            "只是好奇", "出于好奇", "想知道", "感兴趣", "为了学习", "为了研究"
+        ]
+        
+        for indicator in benign_intent_indicators:
+            if indicator in full_context:
+                logger.debug(f"PromptInjectionDetector: 发现良性意图指示器: {indicator}")
+                return True
+
+        # 6. 长度和复杂性检查
+        if len(text) < 50:  # 很短的文本，可能是正常询问
+            simple_patterns = [
+                r"\b(what|how|why|when|where|who)\b",
+                r"\b(什么|如何|为什么|什么时候|哪里|谁)\b"
+            ]
+            for pattern in simple_patterns:
+                if re.search(pattern, text, re.IGNORECASE):
                     return True
 
         return False
@@ -704,6 +823,14 @@ class HarmfulContentDetector:
             for i, compiled_pattern in enumerate(rule.compiled_patterns):
                 match = compiled_pattern.search(text)
                 if match:
+                    # 特殊处理刀具相关检测 - 增加上下文感知
+                    if rule.id == "hc-011":  # Weapon Making - Knives and Blades
+                        context_result = self._check_knife_context(text, match.group(0))
+                        if context_result.is_allowed:
+                            continue  # 跳过这个匹配，继续检查其他规则
+                        else:
+                            return context_result
+                    
                     return DetectionResult(
                         is_allowed=not rule.block,
                         detection_type=rule.detection_type,
@@ -721,6 +848,14 @@ class HarmfulContentDetector:
             for i, keyword_pattern in enumerate(rule.keyword_patterns):
                 match = keyword_pattern.search(text)
                 if match:
+                    # 特殊处理刀具相关检测 - 增加上下文感知
+                    if rule.id == "hc-011":  # Weapon Making - Knives and Blades
+                        context_result = self._check_knife_context(text, rule.keywords[i])
+                        if context_result.is_allowed:
+                            continue  # 跳过这个匹配，继续检查其他规则
+                        else:
+                            return context_result
+                    
                     return DetectionResult(
                         is_allowed=not rule.block,
                         detection_type=rule.detection_type,
@@ -751,6 +886,168 @@ class HarmfulContentDetector:
 
         # 没有检测到有害内容
         return DetectionResult(is_allowed=True)
+
+    def _check_knife_context(self, text: str, matched_text: str) -> DetectionResult:
+        """检查刀具相关内容的上下文，判断是否为合法用途。
+        
+        Args:
+            text: 完整文本
+            matched_text: 匹配的文本片段
+            
+        Returns:
+            检测结果
+        """
+        text_lower = text.lower()
+        
+        # 从白名单加载合法刀具类型和上下文
+        try:
+            with open('rules/sensitive_info_whitelist.json', 'r', encoding='utf-8') as f:
+                whitelist = json.load(f)
+            
+            legitimate_knives = whitelist.get('knife_whitelist', [])
+            legitimate_contexts = whitelist.get('legitimate_contexts', [])
+        except Exception as e:
+            logger.warning(f"无法加载白名单文件: {e}")
+            legitimate_knives = ['手术刀', '厨刀', '菜刀', 'surgical knife', 'kitchen knife', 'chef knife']
+            legitimate_contexts = ['医疗', '医学', '手术', '烹饪', '厨房', 'medical', 'surgery', 'cooking', 'kitchen']
+        
+        # 1. 检查是否为合法的刀具类型 - 但要结合上下文
+        legitimate_knife_detected = None
+        for knife_type in legitimate_knives:
+            if knife_type.lower() in text_lower:
+                legitimate_knife_detected = knife_type
+                break
+        
+        # 2. 检查是否包含危险制作意图的关键词
+        dangerous_making_patterns = [
+            '如何制作', '怎么制作', '教我制作', '告诉我如何制作',
+            'how to make', 'how to create', 'teach me to make'
+        ]
+        
+        has_making_intent = False
+        for pattern in dangerous_making_patterns:
+            if pattern.lower() in text_lower:
+                has_making_intent = True
+                break
+        
+        # 如果检测到合法刀具但没有制作意图，直接允许
+        if legitimate_knife_detected and not has_making_intent:
+            return DetectionResult(
+                is_allowed=True,
+                reason=f"Allowed: Legitimate knife type mentioned without making intent - {legitimate_knife_detected}",
+                context_analysis={"knife_type": legitimate_knife_detected, "making_intent": False}
+            )
+        
+        # 3. 检查是否在合法的上下文中
+        context_score = 0
+        detected_contexts = []
+        
+        for context in legitimate_contexts:
+            if context.lower() in text_lower:
+                context_score += 1
+                detected_contexts.append(context)
+        
+        # 检查是否包含制作意图和危险询问模式
+        dangerous_inquiry_patterns = [
+            '但是我需要告诉你', '我需要告诉你如何', '但我想知道如何',
+            '不过我还是想知道', '但还是想问', '但想了解一下',
+            'but I need to tell you', 'but I want to know how'
+        ]
+        
+        has_dangerous_inquiry = False
+        for pattern in dangerous_inquiry_patterns:
+            if pattern.lower() in text_lower:
+                has_dangerous_inquiry = True
+                break
+        
+        # 如果检测到多个合法上下文，但也包含危险询问模式，给出警告
+        if context_score >= 2 and has_dangerous_inquiry:
+            return DetectionResult(
+                is_allowed=False,
+                detection_type=DetectionType.HARMFUL_CONTENT,
+                severity=Severity.LOW,
+                reason=f"Detected indirect knife-making inquiry despite legitimate contexts: {', '.join(detected_contexts)}",
+                suggested_action="warn",
+                context_analysis={"contexts": detected_contexts, "dangerous_inquiry": True, "action": "warn_only"}
+            )
+        elif context_score >= 2:
+            # 多个合法上下文且无危险询问模式，允许
+            return DetectionResult(
+                is_allowed=True,
+                reason=f"Allowed: Multiple legitimate contexts detected - {', '.join(detected_contexts)}",
+                context_analysis={"contexts": detected_contexts, "score": context_score}
+            )
+        
+        # 4. 检查是否包含教育或学术指示器
+        educational_indicators = [
+            '教育', '学习', '研究', '学术', '课程', '教学',
+            'educational', 'learning', 'research', 'academic', 'course', 'teaching',
+            '我想了解', '我想学习', '仅供学习', '学术目的',
+            'for learning', 'for educational purposes', 'academic purposes'
+        ]
+        
+        for indicator in educational_indicators:
+            if indicator.lower() in text_lower:
+                return DetectionResult(
+                    is_allowed=True,
+                    reason=f"Allowed: Educational context detected - {indicator}",
+                    context_analysis={"context": "educational", "indicator": indicator}
+                )
+        
+        # 5. 检查是否明确声明非恶意意图
+        benign_indicators = [
+            '我不是真的想', '只是好奇', '纯粹好奇', '仅仅是想了解',
+            'just curious', 'purely curious', 'just wondering', 'not actually planning',
+        ]
+        
+        professional_context = [
+            '我是医生', '我是厨师', '我在医院工作', '我在厨房工作',
+            'I am a doctor', 'I am a chef', '我是医学院学生',
+            '但是我需要告诉你', '我需要告诉你如何', # 反向询问模式
+        ]
+        
+        # 检查良性指示器
+        for indicator in benign_indicators:
+            if indicator.lower() in text_lower:
+                # 但仍然给出警告，降低严重性
+                return DetectionResult(
+                    is_allowed=False,
+                    detection_type=DetectionType.HARMFUL_CONTENT,
+                    severity=Severity.LOW,  # 降低严重性
+                    reason=f"Detected knife-making request with potential benign intent: {indicator}",
+                    suggested_action="warn",  # 建议警告而非阻止
+                    context_analysis={"benign_indicator": indicator, "action": "warn_only"}
+                )
+        
+        # 检查专业背景 - 特殊处理反向询问
+        for context in professional_context:
+            if context.lower() in text_lower:
+                # 如果包含反向询问模式，仍然给出警告
+                if '但是我需要告诉你' in text_lower or '我需要告诉你如何' in text_lower:
+                    return DetectionResult(
+                        is_allowed=False,
+                        detection_type=DetectionType.HARMFUL_CONTENT,
+                        severity=Severity.LOW,
+                        reason=f"Detected indirect knife-making inquiry from professional context: {context}",
+                        suggested_action="warn",
+                        context_analysis={"professional_context": context, "inquiry_type": "indirect", "action": "warn_only"}
+                    )
+                else:
+                    # 直接的专业背景声明通常允许
+                    return DetectionResult(
+                        is_allowed=True,
+                        reason=f"Allowed: Professional context detected - {context}",
+                        context_analysis={"professional_context": context, "context": "legitimate_professional"}
+                    )
+        
+        # 6. 默认情况：阻止请求
+        return DetectionResult(
+            is_allowed=False,
+            detection_type=DetectionType.HARMFUL_CONTENT,
+            severity=Severity.HIGH,
+            reason=f"Detected dangerous weapon-making request: {matched_text}",
+            context_analysis={"matched_text": matched_text, "danger_level": "high"}
+        )
 
 
 class ComplianceDetector:
@@ -1095,59 +1392,124 @@ class JailbreakDetector:
         Returns:
             是否可能是误报
         """
-        # 查找匹配文本在完整文本中的位置
-        match_start = text.find(matched_text)
+        # 查找匹配文本在完整文本中的位置（不区分大小写）
+        match_start = text.lower().find(matched_text.lower())
         if match_start == -1:
             return False
 
-        # 获取匹配文本前后的上下文（各150个字符）
-        context_start = max(0, match_start - 150)
-        context_end = min(len(text), match_start + len(matched_text) + 150)
+        # 获取匹配文本前后的上下文（各200个字符）
+        context_start = max(0, match_start - 200)
+        context_end = min(len(text), match_start + len(matched_text) + 200)
         context = text[context_start:context_end].lower()
+        
+        # 获取完整文本用于全局分析
+        full_context = text.lower()
 
-        # 检查是否在正常对话或学术讨论中
+        # 1. 检查是否在正常对话或学术讨论中
         normal_context_indicators = [
-            "what is", "what are", "can you explain", "help me understand",
-            "tell me about", "describe", "example", "for instance", "such as",
-            "什么是", "你能解释", "帮我理解", "告诉我", "描述", "例如", "比如",
+            # 询问类
+            "what is", "what are", "what does", "can you explain", "help me understand",
+            "tell me about", "describe", "explain", "definition of", "meaning of",
+            "how does", "how do", "how can", "why does", "why do",
+            # 中文询问类
+            "什么是", "你能解释", "帮我理解", "告诉我", "描述一下", "解释一下",
+            "如何", "为什么", "怎么", "怎样", "请说明",
+            # 学术讨论类
             "学习", "研究", "讨论", "分析", "understanding", "research", "study",
+            "analysis", "academic", "scholarly", "educational", "learning",
+            # 引用类
             "in literature", "in movies", "in fiction", "in stories", "in books",
-            "在文学中", "在电影中", "在小说中", "在故事中", "在书中",
-            "hypothetically", "theoretically", "假设", "理论上",
+            "在文学中", "在电影中", "在小说中", "在故事中", "在书中", "在游戏中",
+            "according to", "based on", "references", "citations",
+            # 假设类
+            "hypothetically", "theoretically", "假设", "理论上", "假如", "如果",
+            "suppose", "imagine", "what if", "in theory",
+            # 创作类
             "creative writing", "story", "character", "fiction", "novel",
-            "创意写作", "故事", "角色", "小说", "虚构"
+            "script", "screenplay", "dialogue", "narrative", "creative",
+            "write", "writing", "roleplay", "role-play", "playing", "game",
+            "创意写作", "故事", "角色", "小说", "虚构", "剧本", "对话", "叙述",
+            "写作", "创作", "角色扮演", "扮演", "游戏", "模拟"
         ]
 
+        # 检查上下文指示器
         for indicator in normal_context_indicators:
             if indicator in context:
                 logger.debug(f"JailbreakDetector: 发现正常上下文指示器: {indicator}")
                 return True
 
-        # 特殊规则：STAN检测的优化
+        # 2. 检查是否包含良性意图指示器
+        benign_intent_indicators = [
+            "just curious", "out of curiosity", "wondering", "interested in",
+            "for educational purposes", "for learning", "for research",
+            "只是好奇", "出于好奇", "想知道", "感兴趣", "为了学习", "为了研究",
+            "for fun", "just for fun", "as a joke", "joking", "kidding",
+            "为了好玩", "开玩笑", "开个玩笑", "闹着玩"
+        ]
+        
+        for indicator in benign_intent_indicators:
+            if indicator in full_context:
+                logger.debug(f"JailbreakDetector: 发现良性意图指示器: {indicator}")
+                return True
+
+        # 3. 特殊规则的深度分析
         if rule.id == "jb-002" and "stan" in matched_text.lower():
-            # 检查是否是正常的英文对话中的"stan"或"assistant"
+            # STAN检测的特殊处理
             normal_stan_contexts = [
+                # 包含"stan"的正常英文单词
                 "assistant", "understand", "constant", "standard", "instance",
                 "substantial", "distance", "resistance", "assistance", "stanza",
-                "助手", "理解", "常数", "标准", "实例", "坚持", "距离", "抵抗", "援助"
+                "outstanding", "understanding", "withstand", "grandstand",
+                # 中文相关
+                "助手", "理解", "常数", "标准", "实例", "坚持", "距离", "抵抗", "援助",
+                # 人名相关
+                "stan lee", "stan smith", "stanley"
             ]
             for ctx in normal_stan_contexts:
                 if ctx in context:
                     logger.debug(f"JailbreakDetector: 发现STAN误报上下文: {ctx}")
                     return True
 
-        # 特殊规则：DAN检测的优化
         if rule.id == "jb-001" and "dan" in matched_text.lower():
-            # 检查是否是正常的英文对话中的"dan"
+            # DAN检测的特殊处理
             normal_dan_contexts = [
+                # 包含"dan"的正常英文单词
                 "dance", "danger", "dangling", "understand", "standard",
                 "recommendation", "fundamental", "abundant", "pendant",
-                "跳舞", "危险", "悬挂", "理解", "标准", "建议", "基本", "丰富"
+                "andan", "jordan", "sudan", "guidance", "attendance",
+                # 中文相关
+                "跳舞", "危险", "悬挂", "理解", "标准", "建议", "基本", "丰富",
+                # 人名相关
+                "dan brown", "daniel", "danielle"
             ]
             for ctx in normal_dan_contexts:
                 if ctx in context:
                     logger.debug(f"JailbreakDetector: 发现DAN误报上下文: {ctx}")
                     return True
+
+        # 4. 长度和复杂性检查
+        if len(text) < 100:  # 较短的文本，可能是正常询问
+            simple_patterns = [
+                r"\b(what|how|why|when|where|who)\b",
+                r"\b(什么|如何|为什么|什么时候|哪里|谁)\b"
+            ]
+            for pattern in simple_patterns:
+                if re.search(pattern, text, re.IGNORECASE):
+                    logger.debug(f"JailbreakDetector: 短文本中发现疑问词，可能是正常询问")
+                    return True
+
+        # 5. 检查是否包含明显的攻击模式
+        # 如果包含明显的越狱模式，则不认为是误报
+        attack_patterns = [
+            "do anything now", "developer mode", "jailbreak mode",
+            "evil mode", "unrestricted mode", "bypass", "override",
+            "ignore safety", "disable filter", "remove restrictions"
+        ]
+        
+        for pattern in attack_patterns:
+            if pattern in full_context:
+                logger.debug(f"JailbreakDetector: 发现明显攻击模式: {pattern}")
+                return False  # 不是误报
 
         return False
 
@@ -1175,6 +1537,46 @@ class SecurityDetector:
         # from src.security.model_specific_detector import model_specific_detector
         # self.model_specific_detector = model_specific_detector
 
+    def _process_detection_result(self, result: DetectionResult, conversation_id: str = None) -> DetectionResult:
+        """处理检测结果，根据建议动作调整响应。
+
+        Args:
+            result: 原始检测结果
+            conversation_id: 对话ID
+
+        Returns:
+            处理后的检测结果
+        """
+        if result.is_allowed:
+            return result
+
+        # 根据建议动作调整响应
+        if result.suggested_action == "allow":
+            logger.info(f"SecurityDetector: 建议允许，虽然检测到威胁: {result.reason}")
+            result.is_allowed = True
+            result.status_code = 200
+        elif result.suggested_action == "warn":
+            logger.warning(f"SecurityDetector: 检测到潜在威胁，发出警告: {result.reason}")
+            # 警告模式：记录事件但允许通过
+            result.is_allowed = True
+            result.status_code = 200
+            result.reason = f"[WARNING] {result.reason}"
+            # 记录警告事件
+            from src.audit.event_logger import event_logger
+            event_logger.log_event(result, f"WARNING: {result.reason}")
+        elif result.suggested_action == "block":
+            logger.warning(f"SecurityDetector: 阻止请求: {result.reason}")
+            # 标记对话为已被攻陷（如果适用）
+            if conversation_id and result.risk_level in ["high", "critical"]:
+                self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
+            # 记录安全事件
+            from src.audit.event_logger import event_logger
+            event_logger.log_event(result, result.reason)
+            result.is_allowed = False
+            result.status_code = 403
+
+        return result
+
     async def check_request(self, request: InterceptedRequest) -> DetectionResult:
         """Check a request for security threats.
 
@@ -1195,14 +1597,16 @@ class SecurityDetector:
         # 记录前200个字符的文本，避免日志过长
         logger.info(f"SecurityDetector: 请求文本: {text[:200]}...")
 
-        # 处理对话历史，更新对话上下文
-        conversation_id, conversation = self.conversation_tracker.process_request(request)
-        logger.info(f"SecurityDetector: 处理对话 {conversation_id}，当前消息数: {len(conversation.messages)}")
+        # 获取或创建对话，但先不添加当前消息
+        conversation_id, conversation = self.conversation_tracker.get_or_create_conversation(request)
+        logger.info(f"SecurityDetector: 处理对话 {conversation_id}，历史消息数: {len(conversation.messages)}")
 
-        # 如果对话中有多条消息，则进行上下文感知检测
-        if len(conversation.messages) > 1:
+        # 如果对话中有历史消息，则进行上下文感知检测
+        if len(conversation.messages) > 0:
             logger.info("SecurityDetector: 执行上下文感知检测")
-            result = self.context_aware_detector.detect(conversation)
+            # 临时添加当前消息到对话中进行检测
+            temp_conversation = self._create_temp_conversation_with_current_message(conversation, request)
+            result = self.context_aware_detector.detect(temp_conversation)
             if not result.is_allowed:
                 logger.warning(
                     f"Blocked request due to context-aware detection: {result.reason}"
@@ -1210,8 +1614,11 @@ class SecurityDetector:
                 # 标记对话为已被攻陷
                 self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
                 # 记录安全事件
-                event_logger.log_event(result, conversation.get_full_context())
+                event_logger.log_event(result, temp_conversation.get_full_context())
                 return result
+                
+        # 现在正式添加当前消息到对话历史
+        self.conversation_tracker.add_user_message_to_conversation(conversation_id, self._extract_user_content(request))
 
         # 执行模型特定检测
         # if settings.security.enable_model_specific_detection:
@@ -1229,69 +1636,34 @@ class SecurityDetector:
 
         # Check for prompt injection
         logger.info("SecurityDetector: 检查提示注入")
-        result = self.prompt_injection_detector.detect(text)
+        result = await self.prompt_injection_detector.detect(text)
         if not result.is_allowed:
-            logger.warning(
-                f"Blocked request due to {result.detection_type}: {result.reason}"
-            )
-            # 标记对话为已被攻陷
-            self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
-            # 记录安全事件
-            event_logger.log_event(result, text)
-            return result
+            return self._process_detection_result(result, conversation_id)
 
         # Check for jailbreak attempts
         logger.info("SecurityDetector: 检查越狱尝试")
         result = self.jailbreak_detector.detect(text)
         if not result.is_allowed:
-            logger.warning(
-                f"Blocked request due to {result.detection_type}: {result.reason}"
-            )
-            # 标记对话为已被攻陷
-            self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
-            # 记录安全事件
-            event_logger.log_event(result, text)
-            return result
+            return self._process_detection_result(result, conversation_id)
 
         # Check for harmful content
         logger.info("SecurityDetector: 检查有害内容")
         result = self.harmful_content_detector.detect(text)
         if not result.is_allowed:
-            logger.warning(
-                f"Blocked request due to {result.detection_type}: {result.reason}"
-            )
-            # 标记对话为已被攻陷
-            self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
-            # 记录安全事件
-            event_logger.log_event(result, text)
-            return result
+            return self._process_detection_result(result, conversation_id)
 
         # Check for compliance violations
         logger.info("SecurityDetector: 检查合规违规")
         result = self.compliance_detector.detect(text)
         if not result.is_allowed:
-            logger.warning(
-                f"Blocked request due to {result.detection_type}: {result.reason}"
-            )
-            # 标记对话为已被攻陷
-            self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
-            # 记录安全事件
-            event_logger.log_event(result, text)
-            return result
+            return self._process_detection_result(result, conversation_id)
 
         # Check for sensitive information in request
         logger.info("SecurityDetector: 检查敏感信息")
         sensitive_results = self.sensitive_info_detector.detect(text)
         if sensitive_results:
             result = sensitive_results[0]
-            logger.warning(
-                f"Blocked request due to {result.detection_type}: {result.reason}"
-            )
-            # 标记对话为已被攻陷
-            self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
-            # 记录安全事件
-            event_logger.log_event(result, text)
-            return result
+            return self._process_detection_result(result, conversation_id)
 
         # All checks passed
         logger.info("SecurityDetector: 所有检查通过，允许请求")
@@ -1347,7 +1719,7 @@ class SecurityDetector:
         #     logger.info("SecurityDetector: 模型特定检测已禁用")
 
         # Check for prompt injection
-        result = self.prompt_injection_detector.detect(text)
+        result = await self.prompt_injection_detector.detect(text)
         if not result.is_allowed:
             logger.warning(
                 f"Blocked response due to {result.detection_type}: {result.reason}"

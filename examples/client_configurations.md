@@ -16,7 +16,7 @@
 ```
 API名称: LLM Security Firewall
 API类型: OpenAI Compatible
-Base URL: http://localhost:8082/v1
+Base URL: http://localhost:8081/v1
 API Key: cherry-studio-key
 ```
 
@@ -30,7 +30,7 @@ API Key: cherry-studio-key
 ```
 API名称: LLM Security Firewall (Ollama)
 API类型: Ollama
-Base URL: http://localhost:8082/api/v1/ollama
+Base URL: http://localhost:8081/api/v1/ollama
 API Key: cherry-studio-key
 ```
 
@@ -38,7 +38,7 @@ API Key: cherry-studio-key
 ```
 API名称: LLM Security Firewall (Ollama v1)
 API类型: Ollama
-Base URL: http://localhost:8082/api/v1/ollama/v1
+Base URL: http://localhost:8081/api/v1/ollama/v1
 API Key: cherry-studio-key
 ```
 
@@ -48,17 +48,17 @@ API Key: cherry-studio-key
 **解决方案：**
 1. 确保API密钥正确：`cherry-studio-key`
 2. 尝试不同的Base URL：
-   - `http://localhost:8082/v1`
-   - `http://localhost:8082/api/v1/ollama`
-   - `http://localhost:8082`
+   - `http://localhost:8081/v1`
+   - `http://localhost:8081/api/v1/ollama`
+   - `http://localhost:8081`
 
 #### 问题2：连接被拒绝
 **解决方案：**
 1. 确认防火墙程序正在运行：
    ```bash
-   curl http://localhost:8082/health
+   curl http://localhost:8081/health
    ```
-2. 检查端口8082是否被占用
+2. 检查端口8081是否被占用
 3. 确认API密钥格式正确
 
 #### 问题3：模型无响应
@@ -82,7 +82,7 @@ API Key: cherry-studio-key
 ### 步骤2：配置OpenAI API
 ```
 API Provider: OpenAI API
-API Host: http://localhost:8082/v1
+API Host: http://localhost:8081/v1
 API Key: cherry-studio-key
 Model: tinyllama:latest
 ```
@@ -102,7 +102,7 @@ Model: tinyllama:latest
 ### 步骤2：添加OpenAI API
 ```
 API类型: OpenAI API
-API URL: http://localhost:8082/v1
+API URL: http://localhost:8081/v1
 API密钥: cherry-studio-key
 ```
 
@@ -117,7 +117,7 @@ API密钥: cherry-studio-key
 在`.env`文件中添加：
 ```env
 OPENAI_API_KEY=cherry-studio-key
-OPENAI_REVERSE_PROXY=http://localhost:8082/v1
+OPENAI_REVERSE_PROXY=http://localhost:8081/v1
 ```
 
 ### 步骤2：模型配置
@@ -129,7 +129,7 @@ endpoints:
   custom:
     - name: "LLM Security Firewall"
       apiKey: "cherry-studio-key"
-      baseURL: "http://localhost:8082/v1"
+      baseURL: "http://localhost:8081/v1"
       models:
         default: ["tinyllama:latest"]
 ```
@@ -139,12 +139,12 @@ endpoints:
 ### 测试模型列表
 ```bash
 curl -H "Authorization: Bearer cherry-studio-key" \
-     http://localhost:8082/v1/models | jq .
+     http://localhost:8081/v1/models | jq .
 ```
 
 ### 测试聊天接口
 ```bash
-curl -X POST http://localhost:8082/v1/chat/completions \
+curl -X POST http://localhost:8081/v1/chat/completions \
   -H "Authorization: Bearer cherry-studio-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -162,7 +162,7 @@ curl -X POST http://localhost:8082/v1/chat/completions \
 
 ### 测试流式聊天
 ```bash
-curl -X POST http://localhost:8082/v1/chat/completions \
+curl -X POST http://localhost:8081/v1/chat/completions \
   -H "Authorization: Bearer cherry-studio-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -187,7 +187,7 @@ import openai
 # 配置客户端
 client = openai.OpenAI(
     api_key="cherry-studio-key",
-    base_url="http://localhost:8082/v1"
+    base_url="http://localhost:8081/v1"
 )
 
 # 获取模型列表
@@ -211,7 +211,7 @@ print("AI回复:", response.choices[0].message.content)
 import requests
 import json
 
-BASE_URL = "http://localhost:8082"
+BASE_URL = "http://localhost:8081"
 API_KEY = "cherry-studio-key"
 HEADERS = {
     "Authorization": f"Bearer {API_KEY}",
@@ -277,18 +277,18 @@ else:
 1. **查看服务器日志**：
    ```bash
    # 启动时查看详细日志
-   WEB_PORT=8082 python3 -m src.main
+   WEB_PORT=8081 python3 -m src.main
    ```
 
 2. **测试API连通性**：
    ```bash
-   curl -I http://localhost:8082/v1/models
+   curl -I http://localhost:8081/v1/models
    ```
 
 3. **验证API密钥**：
    ```bash
    curl -H "Authorization: Bearer cherry-studio-key" \
-        http://localhost:8082/v1/models
+        http://localhost:8081/v1/models
    ```
 
 4. **检查安全事件**：
@@ -305,7 +305,7 @@ else:
 - [ ] 至少安装了一个Ollama模型
 - [ ] API密钥配置正确
 - [ ] 网络连接正常
-- [ ] 防火墙端口8082已开放
+- [ ] 防火墙端口8081已开放
 
 ## 🎯 性能优化建议
 

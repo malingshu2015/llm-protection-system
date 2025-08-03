@@ -111,21 +111,21 @@
 
 #### Cherry Studio
 ```
-API地址: http://localhost:8082
+API地址: http://localhost:8081
 API密钥: cherry-studio-key
 模型: tinyllama:latest
 ```
 
 #### ChatBox
 ```
-API Host: http://localhost:8082/v1
+API Host: http://localhost:8081/v1
 API Key: cherry-studio-key
 Model: tinyllama:latest
 ```
 
 #### 通用配置
 ```
-Base URL: http://localhost:8082/v1
+Base URL: http://localhost:8081/v1
 API Key: cherry-studio-key
 Authorization: Bearer cherry-studio-key
 ```
@@ -158,7 +158,7 @@ Authorization: Bearer cherry-studio-key
 ### 快速开始
 1. **启动防火墙系统**:
    ```bash
-   WEB_PORT=8082 python3 -m src.main
+   WEB_PORT=8081 python3 -m src.main
    ```
 
 2. **验证API兼容性**:
@@ -167,12 +167,12 @@ Authorization: Bearer cherry-studio-key
    ```
 
 3. **配置第三方客户端**:
-   - 使用API地址: `http://localhost:8082`
+   - 使用API地址: `http://localhost:8081`
    - 使用API密钥: `cherry-studio-key`
    - 选择可用模型: `tinyllama:latest`
 
 ### 故障排除
-1. **检查服务状态**: `curl http://localhost:8082/health`
+1. **检查服务状态**: `curl http://localhost:8081/health`
 2. **验证API密钥**: 确保使用正确的Bearer Token格式
 3. **查看日志**: 检查服务器日志获取详细错误信息
 

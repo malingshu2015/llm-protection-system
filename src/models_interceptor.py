@@ -61,6 +61,10 @@ class DetectionResult(BaseModel):
     reason: str = ""
     details: Dict[str, Any] = {}
     status_code: int = 403
+    confidence_score: float = Field(default=1.0, ge=0.0, le=1.0, description="检测置信度评分，0.0-1.0之间")
+    risk_level: str = Field(default="unknown", description="风险级别: low, medium, high, critical")
+    suggested_action: str = Field(default="block", description="建议的处理动作: allow, warn, block")
+    context_analysis: Dict[str, Any] = Field(default_factory=dict, description="上下文分析结果")
 
 
 class SecurityRule(BaseModel):

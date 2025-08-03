@@ -32,17 +32,47 @@ class APIKeyManager:
         if not os.path.exists(self.api_keys_file):
             os.makedirs(os.path.dirname(self.api_keys_file), exist_ok=True)
             default_api_keys = {
+                # 管理员密钥（随机生成）
                 "admin_" + str(uuid.uuid4()): {
                     "name": "Admin API Key",
                     "permissions": ["*"],  # 所有权限
                     "created_at": time.time(),
                     "rate_limit": 100,  # 每分钟请求数
                     "models": ["*"]  # 所有模型
+                },
+                # 第三方客户端预设密钥（固定，便于配置）
+                "cherry-studio-key": {
+                    "name": "Cherry Studio Client",
+                    "permissions": ["chat", "models"],
+                    "created_at": time.time(),
+                    "rate_limit": 60,
+                    "models": ["*"],
+                    "description": "预设密钥，供Cherry Studio等第三方客户端使用"
+                },
+                "chatbox-key": {
+                    "name": "ChatBox Client",
+                    "permissions": ["chat", "models"],
+                    "created_at": time.time(),
+                    "rate_limit": 60,
+                    "models": ["*"],
+                    "description": "预设密钥，供ChatBox等第三方客户端使用"
+                },
+                "demo-key-12345": {
+                    "name": "Demo API Key",
+                    "permissions": ["chat", "models"],
+                    "created_at": time.time(),
+                    "rate_limit": 30,
+                    "models": ["*"],
+                    "description": "演示密钥，用于测试和文档示例"
                 }
             }
             with open(self.api_keys_file, "w") as f:
                 json.dump(default_api_keys, f, indent=2)
             logger.info(f"创建了默认API密钥文件: {self.api_keys_file}")
+            logger.info("添加了以下预设API密钥：")
+            logger.info("- cherry-studio-key (Cherry Studio客户端)")
+            logger.info("- chatbox-key (ChatBox客户端)")
+            logger.info("- demo-key-12345 (演示密钥)")
             return default_api_keys
 
         # 从文件加载API密钥
@@ -50,10 +80,68 @@ class APIKeyManager:
             with open(self.api_keys_file, "r") as f:
                 api_keys = json.load(f)
             logger.info(f"成功加载API密钥，数量: {len(api_keys)}")
+            
+            # 确保预设密钥存在
+            api_keys = self._ensure_preset_keys(api_keys)
             return api_keys
         except Exception as e:
             logger.error(f"加载API密钥失败: {e}")
             return {}
+
+    def _ensure_preset_keys(self, api_keys: Dict[str, Dict]) -> Dict[str, Dict]:
+        """确保预设密钥存在。
+        
+        Args:
+            api_keys: 现有的API密钥字典
+            
+        Returns:
+            更新后的API密钥字典
+        """
+        preset_keys = {
+            "cherry-studio-key": {
+                "name": "Cherry Studio Client",
+                "permissions": ["chat", "models"],
+                "created_at": time.time(),
+                "rate_limit": 60,
+                "models": ["*"],
+                "description": "预设密钥，供Cherry Studio等第三方客户端使用"
+            },
+            "chatbox-key": {
+                "name": "ChatBox Client",
+                "permissions": ["chat", "models"],
+                "created_at": time.time(),
+                "rate_limit": 60,
+                "models": ["*"],
+                "description": "预设密钥，供ChatBox等第三方客户端使用"
+            },
+            "demo-key-12345": {
+                "name": "Demo API Key",
+                "permissions": ["chat", "models"],
+                "created_at": time.time(),
+                "rate_limit": 30,
+                "models": ["*"],
+                "description": "演示密钥，用于测试和文档示例"
+            }
+        }
+        
+        # 检查并添加缺失的预设密钥
+        updated = False
+        for key, config in preset_keys.items():
+            if key not in api_keys:
+                api_keys[key] = config
+                updated = True
+                logger.info(f"添加缺失的预设密钥: {key}")
+        
+        # 如果有更新，保存到文件
+        if updated:
+            try:
+                with open(self.api_keys_file, "w") as f:
+                    json.dump(api_keys, f, indent=2)
+                logger.info("已更新API密钥文件，添加了缺失的预设密钥")
+            except Exception as e:
+                logger.error(f"保存更新的API密钥失败: {e}")
+        
+        return api_keys
 
     def save_api_keys(self) -> None:
         """保存API密钥到文件。"""
@@ -264,72 +352,65 @@ def extract_api_key_from_request(request: Request) -> Optional[str]:
     # 从Authorization头部获取 Bearer Token（优先级最高，大多数第三方客户端使用此方式）
     auth_header = request.headers.get("Authorization")
     if auth_header:
-        # 支持 "Bearer " 前缀（标准方式）
-        if auth_header.startswith("Bearer "):
-            api_key = auth_header[7:].strip()  # 移除"Bearer "前缀并去除空格
-            if api_key:
+        auth_header = auth_header.strip()
+        if not auth_header:
+            # 空的Authorization头，继续尝试其他方式
+            pass
+        elif auth_header.startswith("Bearer "):
+            # 标准Bearer Token格式
+            api_key = auth_header[7:].strip()
+            if api_key and len(api_key) >= 3:  # 最小长度检查
                 logger.debug(f"从Authorization头部提取API密钥: Bearer {api_key[:8]}...")
                 return api_key
-        # 支持 "Token " 前缀（一些客户端使用此方式）
         elif auth_header.startswith("Token "):
-            api_key = auth_header[6:].strip()  # 移除"Token "前缀并去除空格
-            if api_key:
+            # Token前缀格式（一些客户端使用）
+            api_key = auth_header[6:].strip()
+            if api_key and len(api_key) >= 3:
                 logger.debug(f"从Authorization头部提取API密钥: Token {api_key[:8]}...")
                 return api_key
-        # 直接使用Authorization头部的值（无前缀）
-        else:
+        elif not auth_header.startswith("Basic ") and not auth_header.startswith("Digest "):
+            # 直接使用Authorization头部的值（排除HTTP Basic和Digest认证）
             api_key = auth_header.strip()
-            if api_key and not api_key.startswith("Basic "):  # 排除HTTP Basic认证
-                logger.debug(f"从Authorization头部提取API密钥: {api_key[:8]}...")
+            if api_key and len(api_key) >= 3:
+                logger.debug(f"从Authorization头部提取API密钥（直接）: {api_key[:8]}...")
                 return api_key
 
-    # 从X-API-Key头部获取（传统方式）
-    api_key = request.headers.get("X-API-Key")
-    if api_key:
-        api_key = api_key.strip()
+    # 定义要检查的头部列表（按优先级排序）
+    header_names = [
+        "X-API-Key",     # 标准API密钥头
+        "x-api-key",     # 小写版本
+        "api-key",       # 简化版本
+        "API-Key",       # 大写版本
+        "openai-api-key", # OpenAI特定
+    ]
+    
+    for header_name in header_names:
+        api_key = request.headers.get(header_name)
         if api_key:
-            logger.debug(f"从X-API-Key头部提取API密钥: {api_key[:8]}...")
-            return api_key
+            api_key = api_key.strip()
+            if api_key and len(api_key) >= 3:
+                logger.debug(f"从{header_name}头部提取API密钥: {api_key[:8]}...")
+                return api_key
 
-    # 从x-api-key头部获取（小写版本，某些客户端使用）
-    api_key = request.headers.get("x-api-key")
-    if api_key:
-        api_key = api_key.strip()
+    # 从查询参数获取（按优先级排序）
+    query_param_names = ["api_key", "token", "key"]
+    for param_name in query_param_names:
+        api_key = request.query_params.get(param_name)
         if api_key:
-            logger.debug(f"从x-api-key头部提取API密钥: {api_key[:8]}...")
-            return api_key
+            api_key = api_key.strip()
+            if api_key and len(api_key) >= 3:
+                logger.debug(f"从{param_name}查询参数提取API密钥: {api_key[:8]}...")
+                return api_key
 
-    # 从api-key头部获取（简化版本）
-    api_key = request.headers.get("api-key")
-    if api_key:
-        api_key = api_key.strip()
+    # 从cookie获取（最低优先级）
+    cookie_names = ["api_key", "token", "auth_token"]
+    for cookie_name in cookie_names:
+        api_key = request.cookies.get(cookie_name)
         if api_key:
-            logger.debug(f"从api-key头部提取API密钥: {api_key[:8]}...")
-            return api_key
+            api_key = api_key.strip()
+            if api_key and len(api_key) >= 3:
+                logger.debug(f"从{cookie_name} cookie提取API密钥: {api_key[:8]}...")
+                return api_key
 
-    # 从查询参数获取
-    api_key = request.query_params.get("api_key")
-    if api_key:
-        api_key = api_key.strip()
-        if api_key:
-            logger.debug(f"从查询参数提取API密钥: {api_key[:8]}...")
-            return api_key
-
-    # 从token查询参数获取
-    api_key = request.query_params.get("token")
-    if api_key:
-        api_key = api_key.strip()
-        if api_key:
-            logger.debug(f"从token查询参数提取API密钥: {api_key[:8]}...")
-            return api_key
-
-    # 从cookie获取
-    api_key = request.cookies.get("api_key")
-    if api_key:
-        api_key = api_key.strip()
-        if api_key:
-            logger.debug(f"从cookie提取API密钥: {api_key[:8]}...")
-            return api_key
-
-    logger.debug("未找到API密钥")
+    logger.debug("未找到有效的API密钥")
     return None

@@ -47,6 +47,50 @@
     "priority": 15
   },
   {
+    "id": "hc-011",
+    "name": "Weapon Making - Knives and Blades",
+    "description": "Detects requests for making knives, blades, and cutting weapons",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:如何|怎么|怎样|教我|告诉我|请问|我想知道|how|ways|methods|instructions|guide|tutorial)[.\\s]*(?:制作|制造|做|打造|锻造|生产|组装|建造|make|create|build|forge|craft|assemble|manufacture)[.\\s]*(?:一把|一个|一支|一件|一副|a|an|some)?[.\\s]*(?:刀|刀具|匕首|剑|刺刀|军刀|小刀|折刀|弹簧刀|butterfly|switchblade|knife|blade|dagger|sword|dirk|stiletto|machete|cleaver)",
+      "(?i)(?:制作|制造|做|打造|锻造|生产|组装|建造|make|create|build|forge|craft|assemble|manufacture)[.\\s]*(?:一把|一个|一支|一件|一副|a|an|some)?[.\\s]*(?:尖锐|锋利|锐利|危险|致命|sharp|pointed|lethal|dangerous)[.\\s]*(?:的|物品|工具|武器|东西|object|tool|weapon|item)",
+      "(?i)(?:详细|具体|精确|分步|step-by-step|detailed|specific|precise)[.\\s]*(?:制作|制造|打造|锻造|make|create|forge)[.\\s]*(?:刀|刀具|匕首|剑|knife|blade|dagger|sword)[.\\s]*(?:的|方法|过程|步骤|教程|指南|process|method|steps|tutorial|guide)",
+      "(?i)(?:自制|DIY|homemade|improvised)[.\\s]*(?:刀|刀具|匕首|武器|knife|blade|weapon)[.\\s]*(?:制作|方法|教程|making|tutorial|guide)",
+      "(?i)(?:磨|磨制|打磨|削尖|sharpen|grind|hone)[.\\s]*(?:刀|刀具|匕首|knife|blade)[.\\s]*(?:使其|让其|变得|to make it|to become)[.\\s]*(?:更|更加|extremely|very)[.\\s]*(?:锋利|尖锐|危险|sharp|pointed|lethal)"
+    ],
+    "keywords": [
+      "刀",
+      "刀具", 
+      "匕首",
+      "剑",
+      "刺刀",
+      "军刀",
+      "小刀",
+      "折刀",
+      "弹簧刀",
+      "butterfly knife",
+      "switchblade",
+      "knife",
+      "blade", 
+      "dagger",
+      "sword",
+      "dirk",
+      "stiletto",
+      "machete",
+      "cleaver",
+      "shiv",
+      "shank"
+    ],
+    "categories": [
+      "weapon_making",
+      "violence"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 16
+  },
+  {
     "id": "hc-002",
     "name": "Hate Speech",
     "description": "Detects hate speech and discriminatory content",

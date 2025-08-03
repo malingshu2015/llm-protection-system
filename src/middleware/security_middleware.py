@@ -99,9 +99,20 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
         # 内容脱敏
         if settings.security.enable_content_masking and isinstance(response, Response):
+            # 跳过StreamingResponse，因为它没有body属性
+            from fastapi.responses import StreamingResponse
+            if isinstance(response, StreamingResponse):
+                logger.debug("跳过StreamingResponse的内容脱敏处理")
+                return response
+                
             # 只处理JSON响应
             if response.headers.get("content-type", "").startswith("application/json"):
                 try:
+                    # 检查response是否有body属性
+                    if not hasattr(response, 'body'):
+                        logger.debug("响应对象没有body属性，跳过内容脱敏")
+                        return response
+                        
                     # 将响应转换为InterceptedResponse
                     from src.models_interceptor import InterceptedResponse
                     import json

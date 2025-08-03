@@ -8,12 +8,12 @@
 
 1. **LLM安全防火墙已启动**
    ```bash
-   WEB_PORT=8082 python3 -m src.main
+   WEB_PORT=8081 python3 -m src.main
    ```
 
 2. **验证服务状态**
    ```bash
-   curl http://localhost:8082/health
+   curl http://localhost:8081/health
    # 应该返回: {"status":"healthy",...}
    ```
 
@@ -40,7 +40,7 @@
 ```
 API名称: LLM Security Firewall
 API类型: OpenAI Compatible
-Base URL: http://localhost:8082/v1
+Base URL: http://localhost:8081/v1
 API Key: cherry-studio-key
 ```
 
@@ -48,7 +48,7 @@ API Key: cherry-studio-key
 ```
 API名称: LLM Security Firewall (Ollama)
 API类型: Ollama
-Base URL: http://localhost:8082/api/v1/ollama/v1
+Base URL: http://localhost:8081/api/v1/ollama/v1
 API Key: cherry-studio-key
 ```
 
@@ -91,12 +91,12 @@ API Key: cherry-studio-key
 **解决方案：**
 1. 确认防火墙程序正在运行：
    ```bash
-   curl http://localhost:8082/health
+   curl http://localhost:8081/health
    ```
 
 2. 检查端口是否被占用：
    ```bash
-   lsof -i :8082
+   lsof -i :8081
    ```
 
 3. 尝试重启防火墙程序
@@ -123,8 +123,8 @@ API Key: cherry-studio-key
 2. 检查防火墙日志是否有错误信息
 
 3. 尝试不同的Base URL配置：
-   - `http://localhost:8082/v1`
-   - `http://localhost:8082/api/v1/ollama`
+   - `http://localhost:8081/v1`
+   - `http://localhost:8081/api/v1/ollama`
 
 ### 问题4：模型无响应
 
@@ -162,7 +162,7 @@ python3 tools/api_tester.py --test all
 ```
 API名称: LLM Security Firewall
 API类型: OpenAI Compatible
-Base URL: http://localhost:8082/v1
+Base URL: http://localhost:8081/v1
 API Key: cherry-studio-key
 ```
 
@@ -170,7 +170,7 @@ API Key: cherry-studio-key
 ```
 API名称: LLM Security Firewall (Ollama)
 API类型: Ollama
-Base URL: http://localhost:8082/api/v1/ollama
+Base URL: http://localhost:8081/api/v1/ollama
 API Key: cherry-studio-key
 ```
 

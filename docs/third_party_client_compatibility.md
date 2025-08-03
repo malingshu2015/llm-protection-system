@@ -133,21 +133,21 @@ API密钥配置文件位于：`data/security/api_keys.json`
 #### Cherry Studio配置
 1. 打开Cherry Studio设置
 2. 选择"自定义API"
-3. 设置API地址：`http://localhost:8082`
+3. 设置API地址：`http://localhost:8081`
 4. 设置API密钥：`cherry-studio-key`
 5. 选择模型：`tinyllama:latest`（或其他可用模型）
 
 #### ChatBox配置
 1. 打开ChatBox设置
 2. 选择"OpenAI API"
-3. 设置API地址：`http://localhost:8082/v1`
+3. 设置API地址：`http://localhost:8081/v1`
 4. 设置API密钥：`cherry-studio-key`
 5. 选择模型：`tinyllama:latest`
 
 #### Open WebUI配置
 1. 打开Open WebUI管理界面
 2. 进入"设置" -> "连接"
-3. 设置OpenAI API URL：`http://localhost:8082/v1`
+3. 设置OpenAI API URL：`http://localhost:8081/v1`
 4. 设置API密钥：`cherry-studio-key`
 5. 测试连接并选择模型
 
@@ -191,12 +191,12 @@ python3 quick_test.py
 #### 1. 测试模型列表
 ```bash
 curl -H "Authorization: Bearer cherry-studio-key" \
-     http://localhost:8082/v1/models
+     http://localhost:8081/v1/models
 ```
 
 #### 2. 测试聊天接口
 ```bash
-curl -X POST http://localhost:8082/v1/chat/completions \
+curl -X POST http://localhost:8081/v1/chat/completions \
   -H "Authorization: Bearer cherry-studio-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -208,7 +208,7 @@ curl -X POST http://localhost:8082/v1/chat/completions \
 
 #### 3. 测试安全拦截
 ```bash
-curl -X POST http://localhost:8082/v1/chat/completions \
+curl -X POST http://localhost:8081/v1/chat/completions \
   -H "Authorization: Bearer cherry-studio-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -243,7 +243,7 @@ curl -X POST http://localhost:8082/v1/chat/completions \
 查看详细日志信息：
 ```bash
 # 启动时查看日志
-WEB_PORT=8082 python3 -m src.main
+WEB_PORT=8081 python3 -m src.main
 
 # 查看安全事件日志
 cat data/security/security_events.json
@@ -251,7 +251,7 @@ cat data/security/security_events.json
 
 ## 📝 注意事项
 
-1. **端口配置**：默认端口为8082，可通过环境变量`WEB_PORT`修改
+1. **端口配置**：默认端口为8081，可通过环境变量`WEB_PORT`修改
 2. **模型支持**：支持所有Ollama安装的模型
 3. **并发限制**：系统支持多客户端并发访问
 4. **安全优先**：所有请求都会经过安全检测，可能影响响应速度
