@@ -29,6 +29,13 @@
   - 聊天演示界面：用于测试和演示
   - 暗色模式支持：Apple风格界面设计
 
+- **第三方客户端支持**
+  - OpenAI API兼容：完全兼容OpenAI API格式
+  - Cherry Studio：专门优化支持
+  - ChatBox、Open WebUI等：支持主流AI聊天客户端
+  - 流式响应：支持实时流式对话
+  - API密钥认证：安全的访问控制
+
 ## 安装
 
 ### 使用pip安装
@@ -108,6 +115,32 @@ http://localhost:8080/static/admin/index.html
 ```
 http://localhost:8080/static/chat/index.html
 ```
+
+### 第三方客户端配置
+
+系统完全兼容OpenAI API格式，支持主流AI聊天客户端：
+
+#### Cherry Studio 配置
+```
+API地址: http://localhost:8082
+API密钥: cherry-studio-key
+模型: tinyllama:latest
+```
+
+#### ChatBox 配置
+```
+API Host: http://localhost:8082/v1
+API Key: cherry-studio-key
+Model: tinyllama:latest
+```
+
+#### 通用OpenAI兼容客户端
+```
+Base URL: http://localhost:8082/v1
+API Key: cherry-studio-key
+```
+
+详细配置指南请参考：[第三方客户端兼容性指南](docs/third_party_client_compatibility.md)
 
 ## 开发
 

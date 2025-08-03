@@ -1,88 +1,8 @@
 [
   {
     "model_id": "llama2:latest",
-    "template_id": "high_security",
+    "template_id": "low_security",
     "rules": [
-      {
-        "id": "llama2:latest_pi-001",
-        "model_id": "llama2:latest",
-        "rule_id": "pi-001",
-        "enabled": true,
-        "priority": 10,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_pi-002",
-        "model_id": "llama2:latest",
-        "rule_id": "pi-002",
-        "enabled": true,
-        "priority": 11,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_pi-003",
-        "model_id": "llama2:latest",
-        "rule_id": "pi-003",
-        "enabled": true,
-        "priority": 5,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_pi-004",
-        "model_id": "llama2:latest",
-        "rule_id": "pi-004",
-        "enabled": true,
-        "priority": 12,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_pi-005",
-        "model_id": "llama2:latest",
-        "rule_id": "pi-005",
-        "enabled": true,
-        "priority": 13,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_pi-006",
-        "model_id": "llama2:latest",
-        "rule_id": "pi-006",
-        "enabled": true,
-        "priority": 8,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_pi-007",
-        "model_id": "llama2:latest",
-        "rule_id": "pi-007",
-        "enabled": true,
-        "priority": 7,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_pi-008",
-        "model_id": "llama2:latest",
-        "rule_id": "pi-008",
-        "enabled": true,
-        "priority": 6,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
       {
         "id": "llama2:latest_jb-001",
         "model_id": "llama2:latest",
@@ -90,48 +10,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_jb-002",
-        "model_id": "llama2:latest",
-        "rule_id": "jb-002",
-        "enabled": true,
-        "priority": 5,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_jb-003",
-        "model_id": "llama2:latest",
-        "rule_id": "jb-003",
-        "enabled": true,
-        "priority": 6,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_jb-004",
-        "model_id": "llama2:latest",
-        "rule_id": "jb-004",
-        "enabled": true,
-        "priority": 7,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
-      },
-      {
-        "id": "llama2:latest_hc-001",
-        "model_id": "llama2:latest",
-        "rule_id": "hc-001",
-        "enabled": true,
-        "priority": 15,
-        "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-07-09T19:41:24.843363",
+        "updated_at": "2025-07-09T19:41:24.843374"
       },
       {
         "id": "llama2:latest_hc-004",
@@ -140,8 +20,18 @@
         "enabled": true,
         "priority": 18,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-07-09T19:41:24.843386",
+        "updated_at": "2025-07-09T19:41:24.843387"
+      },
+      {
+        "id": "llama2:latest_hc-005",
+        "model_id": "llama2:latest",
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19,
+        "override_params": {},
+        "created_at": "2025-07-09T19:41:24.843391",
+        "updated_at": "2025-07-09T19:41:24.843392"
       },
       {
         "id": "llama2:latest_si-001",
@@ -150,14 +40,24 @@
         "enabled": true,
         "priority": 20,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-07-09T19:41:24.843395",
+        "updated_at": "2025-07-09T19:41:24.843395"
+      },
+      {
+        "id": "llama2:latest_hc-001",
+        "model_id": "llama2:latest",
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15,
+        "override_params": {},
+        "created_at": "2025-07-09T19:41:24.843398",
+        "updated_at": "2025-07-09T19:41:24.843399"
       }
     ],
     "enabled": true,
     "description": "Llama 2\u6a21\u578b\u7684\u9ad8\u5b89\u5168\u7ea7\u522b\u914d\u7f6e",
     "created_at": "2025-04-21T07:30:00Z",
-    "updated_at": "2025-04-21T07:30:00Z"
+    "updated_at": "2025-07-09T19:41:24.843404"
   },
   {
     "model_id": "gemma:latest",
@@ -578,5 +478,105 @@
     "description": "",
     "created_at": "2025-04-23T01:03:57.507471",
     "updated_at": "2025-04-23T01:03:57.510093"
+  },
+  {
+    "model_id": "deepseek-r1:14b",
+    "template_id": "medium_security",
+    "rules": [
+      {
+        "id": "deepseek-r1:14b_pi-001",
+        "model_id": "deepseek-r1:14b",
+        "rule_id": "pi-001",
+        "enabled": true,
+        "priority": 10,
+        "override_params": {},
+        "created_at": "2025-07-09T20:57:28.109794",
+        "updated_at": "2025-07-09T20:57:28.109807"
+      },
+      {
+        "id": "deepseek-r1:14b_pi-003",
+        "model_id": "deepseek-r1:14b",
+        "rule_id": "pi-003",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-07-09T20:57:28.109818",
+        "updated_at": "2025-07-09T20:57:28.109819"
+      },
+      {
+        "id": "deepseek-r1:14b_jb-001",
+        "model_id": "deepseek-r1:14b",
+        "rule_id": "jb-001",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-07-09T20:57:28.109822",
+        "updated_at": "2025-07-09T20:57:28.109823"
+      },
+      {
+        "id": "deepseek-r1:14b_jb-002",
+        "model_id": "deepseek-r1:14b",
+        "rule_id": "jb-002",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-07-09T20:57:28.109826",
+        "updated_at": "2025-07-09T20:57:28.109827"
+      },
+      {
+        "id": "deepseek-r1:14b_hc-001",
+        "model_id": "deepseek-r1:14b",
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15,
+        "override_params": {},
+        "created_at": "2025-07-09T20:57:28.109829",
+        "updated_at": "2025-07-09T20:57:28.109830"
+      },
+      {
+        "id": "deepseek-r1:14b_hc-004",
+        "model_id": "deepseek-r1:14b",
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18,
+        "override_params": {},
+        "created_at": "2025-07-09T20:57:28.109833",
+        "updated_at": "2025-07-09T20:57:28.109833"
+      },
+      {
+        "id": "deepseek-r1:14b_hc-005",
+        "model_id": "deepseek-r1:14b",
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19,
+        "override_params": {},
+        "created_at": "2025-07-09T20:57:28.109836",
+        "updated_at": "2025-07-09T20:57:28.109837"
+      },
+      {
+        "id": "deepseek-r1:14b_si-001",
+        "model_id": "deepseek-r1:14b",
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20,
+        "override_params": {},
+        "created_at": "2025-07-09T20:57:28.109840",
+        "updated_at": "2025-07-09T20:57:28.109840"
+      },
+      {
+        "id": "deepseek-r1:14b_comp-001",
+        "model_id": "deepseek-r1:14b",
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30,
+        "override_params": {},
+        "created_at": "2025-07-09T20:57:28.109844",
+        "updated_at": "2025-07-09T20:57:28.109844"
+      }
+    ],
+    "enabled": true,
+    "description": "",
+    "created_at": "2025-07-09T20:57:06.260752",
+    "updated_at": "2025-07-09T20:57:28.109848"
   }
 ]

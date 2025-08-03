@@ -261,24 +261,75 @@ def extract_api_key_from_request(request: Request) -> Optional[str]:
     Returns:
         API密钥，如果不存在则返回None。
     """
-    # 从头部获取
+    # 从Authorization头部获取 Bearer Token（优先级最高，大多数第三方客户端使用此方式）
+    auth_header = request.headers.get("Authorization")
+    if auth_header:
+        # 支持 "Bearer " 前缀（标准方式）
+        if auth_header.startswith("Bearer "):
+            api_key = auth_header[7:].strip()  # 移除"Bearer "前缀并去除空格
+            if api_key:
+                logger.debug(f"从Authorization头部提取API密钥: Bearer {api_key[:8]}...")
+                return api_key
+        # 支持 "Token " 前缀（一些客户端使用此方式）
+        elif auth_header.startswith("Token "):
+            api_key = auth_header[6:].strip()  # 移除"Token "前缀并去除空格
+            if api_key:
+                logger.debug(f"从Authorization头部提取API密钥: Token {api_key[:8]}...")
+                return api_key
+        # 直接使用Authorization头部的值（无前缀）
+        else:
+            api_key = auth_header.strip()
+            if api_key and not api_key.startswith("Basic "):  # 排除HTTP Basic认证
+                logger.debug(f"从Authorization头部提取API密钥: {api_key[:8]}...")
+                return api_key
+
+    # 从X-API-Key头部获取（传统方式）
     api_key = request.headers.get("X-API-Key")
     if api_key:
-        return api_key
+        api_key = api_key.strip()
+        if api_key:
+            logger.debug(f"从X-API-Key头部提取API密钥: {api_key[:8]}...")
+            return api_key
 
-    # 从Authorization头部获取
-    auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        return auth_header[7:]  # 移除"Bearer "前缀
+    # 从x-api-key头部获取（小写版本，某些客户端使用）
+    api_key = request.headers.get("x-api-key")
+    if api_key:
+        api_key = api_key.strip()
+        if api_key:
+            logger.debug(f"从x-api-key头部提取API密钥: {api_key[:8]}...")
+            return api_key
+
+    # 从api-key头部获取（简化版本）
+    api_key = request.headers.get("api-key")
+    if api_key:
+        api_key = api_key.strip()
+        if api_key:
+            logger.debug(f"从api-key头部提取API密钥: {api_key[:8]}...")
+            return api_key
 
     # 从查询参数获取
     api_key = request.query_params.get("api_key")
     if api_key:
-        return api_key
+        api_key = api_key.strip()
+        if api_key:
+            logger.debug(f"从查询参数提取API密钥: {api_key[:8]}...")
+            return api_key
+
+    # 从token查询参数获取
+    api_key = request.query_params.get("token")
+    if api_key:
+        api_key = api_key.strip()
+        if api_key:
+            logger.debug(f"从token查询参数提取API密钥: {api_key[:8]}...")
+            return api_key
 
     # 从cookie获取
     api_key = request.cookies.get("api_key")
     if api_key:
-        return api_key
+        api_key = api_key.strip()
+        if api_key:
+            logger.debug(f"从cookie提取API密钥: {api_key[:8]}...")
+            return api_key
 
+    logger.debug("未找到API密钥")
     return None

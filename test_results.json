@@ -1,0 +1,88 @@
+{
+  "summary": {
+    "passed": 5,
+    "total": 5,
+    "success_rate": 1.0
+  },
+  "results": [
+    {
+      "name": "models_endpoint",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "model_count": 7,
+        "models": [
+          "phi3:latest",
+          "qwen3:latest",
+          "llama3.2:latest"
+        ],
+        "response_format": "OpenAI compatible"
+      }
+    },
+    {
+      "name": "chat_completion",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "response_format": "OpenAI compatible",
+        "has_choices": true,
+        "has_usage": true,
+        "content_preview": "Sure, here's your response with \"Hi there!\": Hi there!",
+        "finish_reason": "stop",
+        "response_time": 1.151079
+      }
+    },
+    {
+      "name": "streaming_chat",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "chunk_count": 5,
+        "sample_chunks": [
+          "data: {\"model\":\"tinyllama:latest\",\"created_at\":\"2025-07-22T23:50:05.142756Z\",\"message\":{\"role\":\"assistant\",\"content\":\"S\"},\"done\":false}",
+          "data: {\"model\":\"tinyllama:latest\",\"created_at\":\"2025-07-22T23:50:05.14977Z\",\"message\":{\"role\":\"assistant\",\"content\":\"ure\"},\"done\":false}",
+          "data: {\"model\":\"tinyllama:latest\",\"created_at\":\"2025-07-22T23:50:05.156802Z\",\"message\":{\"role\":\"assistant\",\"content\":\"!\"},\"done\":false}"
+        ],
+        "streaming_format": "SSE"
+      }
+    },
+    {
+      "name": "security_blocking",
+      "success": true,
+      "details": {
+        "status_code": 403,
+        "blocked": true,
+        "security_response": "Correctly blocked malicious request"
+      }
+    },
+    {
+      "name": "api_key_validation",
+      "success": true,
+      "details": {
+        "tests": [
+          {
+            "test": "no_api_key",
+            "status_code": 403,
+            "expected": 403,
+            "passed": true
+          },
+          {
+            "test": "invalid_api_key",
+            "status_code": 403,
+            "expected": 403,
+            "passed": true
+          },
+          {
+            "test": "valid_api_key",
+            "status_code": 200,
+            "expected": 200,
+            "passed": true
+          }
+        ],
+        "passed": 3,
+        "total": 3
+      }
+    }
+  ],
+  "timestamp": "2025-07-23T07:50:08.284013"
+}

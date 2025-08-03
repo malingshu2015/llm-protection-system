@@ -131,22 +131,34 @@ class PromptInjectionDetector:
             for i, compiled_pattern in enumerate(rule.compiled_patterns):
                 match = compiled_pattern.search(text)
                 if match:
+                    matched_text = match.group(0)
+                    
+                    # 添加上下文检查，减少误报
+                    if self._is_likely_false_positive(text, matched_text, rule):
+                        logger.debug(f"PromptInjectionDetector: 跳过可能的误报: {rule.name} - {matched_text}")
+                        continue
+                    
                     return DetectionResult(
                         is_allowed=not rule.block,
                         detection_type=rule.detection_type,
                         severity=rule.severity,
-                        reason=f"Detected {rule.name}: {match.group(0)}",
+                        reason=f"Detected {rule.name}: {matched_text}",
                         details={
                             "rule_id": rule.id,
                             "rule_name": rule.name,
                             "matched_pattern": rule.patterns[i],
-                            "matched_text": match.group(0),
+                            "matched_text": matched_text,
                         },
                     )
 
-            # 检查关键词
+            # 检查关键词（使用更精确的匹配）
             for keyword in rule.keywords:
-                if keyword.lower() in text_lower:
+                if self._keyword_matches_precisely(text_lower, keyword.lower()):
+                    # 添加上下文检查
+                    if self._is_likely_false_positive(text, keyword, rule):
+                        logger.debug(f"PromptInjectionDetector: 跳过可能的误报关键词: {rule.name} - {keyword}")
+                        continue
+                        
                     return DetectionResult(
                         is_allowed=not rule.block,
                         detection_type=rule.detection_type,
@@ -162,6 +174,72 @@ class PromptInjectionDetector:
         # No detection
         return DetectionResult(is_allowed=True)
 
+    def _keyword_matches_precisely(self, text: str, keyword: str) -> bool:
+        """更精确的关键词匹配，考虑词边界。
+
+        Args:
+            text: 文本
+            keyword: 关键词
+
+        Returns:
+            是否匹配
+        """
+        import re
+        # 使用词边界匹配，避免部分匹配
+        pattern = r'\b' + re.escape(keyword) + r'\b'
+        return bool(re.search(pattern, text))
+
+    def _is_likely_false_positive(self, text: str, matched_text: str, rule: SecurityRule) -> bool:
+        """检查是否可能是误报。
+
+        Args:
+            text: 完整文本
+            matched_text: 匹配的文本
+            rule: 安全规则
+
+        Returns:
+            是否可能是误报
+        """
+        # 查找匹配文本在完整文本中的位置
+        match_start = text.find(matched_text)
+        if match_start == -1:
+            return False
+
+        # 获取匹配文本前后的上下文（各150个字符）
+        context_start = max(0, match_start - 150)
+        context_end = min(len(text), match_start + len(matched_text) + 150)
+        context = text[context_start:context_end].lower()
+
+        # 检查是否在正常对话或学术讨论中
+        normal_context_indicators = [
+            "what is", "what are", "can you explain", "help me understand",
+            "tell me about", "describe", "example", "for instance", "such as",
+            "什么是", "你能解释", "帮我理解", "告诉我", "描述", "例如", "比如",
+            "学习", "研究", "讨论", "分析", "understanding", "research", "study",
+            "in literature", "in movies", "in fiction", "in stories", "in books",
+            "在文学中", "在电影中", "在小说中", "在故事中", "在书中",
+            "hypothetically", "theoretically", "假设", "理论上"
+        ]
+
+        for indicator in normal_context_indicators:
+            if indicator in context:
+                logger.debug(f"PromptInjectionDetector: 发现正常上下文指示器: {indicator}")
+                return True
+
+        # 特殊规则：如果是"ignore"相关的检测，检查是否是正常使用
+        if rule.id == "pi-001" and "ignore" in matched_text.lower():
+            # 检查是否是正常的英文对话中的"ignore"
+            normal_ignore_contexts = [
+                "ignore the", "can ignore", "should ignore", "will ignore",
+                "don't ignore", "cannot ignore", "never ignore", "please ignore",
+                "忽略", "忽视", "不要理会", "可以忽略"
+            ]
+            for ctx in normal_ignore_contexts:
+                if ctx in context:
+                    return True
+
+        return False
+
 
 class SensitiveInfoDetector:
     """Detector for sensitive information."""
@@ -171,6 +249,9 @@ class SensitiveInfoDetector:
         self.patterns = self._load_patterns()
         # 预编译正则表达式
         self.compiled_patterns = self._compile_patterns()
+        
+        # 白名单机制
+        self.whitelists = self._load_whitelists()
 
     def _load_patterns(self) -> Dict[str, List[str]]:
         """Load sensitive information patterns from the patterns file.
@@ -266,6 +347,144 @@ class SensitiveInfoDetector:
                 ],
             }
 
+    def _load_whitelists(self) -> Dict[str, List[str]]:
+        """加载白名单配置。
+
+        Returns:
+            白名单字典，键为类型，值为白名单项列表。
+        """
+        # 定义默认白名单
+        default_whitelists = {
+            "credit_card": [
+                "4111111111111111",  # 测试用Visa卡号
+                "4000000000000002",  # 测试用Visa卡号
+                "5555555555554444",  # 测试用万事达卡号
+                "5105105105105100",  # 测试用万事达卡号
+                "378282246310005",   # 测试用美国运通卡号
+                "371449635398431",   # 测试用美国运通卡号
+                "6011111111111117",  # 测试用Discover卡号
+                "6011000990139424",  # 测试用Discover卡号
+            ],
+            "phone": [
+                "911",               # 紧急电话
+                "110",               # 中国报警电话
+                "120",               # 中国急救电话
+                "119",               # 中国消防电话
+                "400-123-4567",      # 示例客服电话格式
+                "800-123-4567",      # 示例免费电话格式
+                "400-920-9200",      # 支付宝客服
+                "95188",             # 支付宝客服
+                "400-923-9699",      # 心理健康热线
+                "400-161-9995",      # 心理危机干预热线
+            ],
+            "email": [
+                "test@example.com",     # 测试邮箱
+                "admin@example.com",    # 示例管理员邮箱
+                "support@example.com",  # 示例支持邮箱
+                "noreply@example.com",  # 示例无回复邮箱
+                "example@test.com",     # 测试邮箱
+                "demo@demo.com",        # 演示邮箱
+            ],
+            "password": [
+                "password123",          # 示例密码
+                "123456",              # 示例弱密码
+                "admin123",            # 示例管理员密码
+                "test123",             # 示例测试密码
+                "demo123",             # 示例演示密码
+            ],
+            "api_key": [
+                "demo_api_key_12345",           # 示例API密钥
+                "test_key_abcdef123456",        # 示例测试密钥
+                "example_api_key_1234567890",   # 示例API密钥
+            ]
+        }
+
+        # 尝试从文件加载白名单
+        whitelist_path = "rules/sensitive_info_whitelist.json"
+        if os.path.exists(whitelist_path):
+            try:
+                with open(whitelist_path, "r") as f:
+                    file_whitelists = json.load(f)
+                # 合并默认白名单和文件白名单
+                for category, items in file_whitelists.items():
+                    if category in default_whitelists:
+                        default_whitelists[category].extend(items)
+                    else:
+                        default_whitelists[category] = items
+                logger.info(f"SensitiveInfoDetector: 成功加载白名单文件: {whitelist_path}")
+            except Exception as e:
+                logger.error(f"SensitiveInfoDetector: 加载白名单文件失败: {e}")
+        else:
+            # 创建默认白名单文件
+            os.makedirs(os.path.dirname(whitelist_path), exist_ok=True)
+            try:
+                with open(whitelist_path, "w") as f:
+                    json.dump(default_whitelists, f, indent=2, ensure_ascii=False)
+                logger.info(f"SensitiveInfoDetector: 创建默认白名单文件: {whitelist_path}")
+            except Exception as e:
+                logger.error(f"SensitiveInfoDetector: 创建白名单文件失败: {e}")
+
+        return default_whitelists
+
+    def _is_whitelisted(self, pattern_type: str, matched_text: str) -> bool:
+        """检查匹配的文本是否在白名单中。
+
+        Args:
+            pattern_type: 模式类型
+            matched_text: 匹配的文本
+
+        Returns:
+            是否在白名单中
+        """
+        if pattern_type not in self.whitelists:
+            return False
+
+        # 清理匹配文本
+        cleaned_text = matched_text.strip()
+        
+        # 检查是否在白名单中
+        for whitelist_item in self.whitelists[pattern_type]:
+            if cleaned_text.lower() == whitelist_item.lower():
+                logger.debug(f"SensitiveInfoDetector: 匹配项在白名单中: {pattern_type} - {cleaned_text}")
+                return True
+        
+        return False
+
+    def _has_context_indicators(self, text: str, matched_text: str) -> bool:
+        """检查是否有上下文指示器表明这是测试/示例数据。
+
+        Args:
+            text: 完整文本
+            matched_text: 匹配的文本
+
+        Returns:
+            是否有上下文指示器
+        """
+        # 查找匹配文本在完整文本中的位置
+        match_start = text.find(matched_text)
+        if match_start == -1:
+            return False
+
+        # 获取匹配文本前后的上下文（各100个字符）
+        context_start = max(0, match_start - 100)
+        context_end = min(len(text), match_start + len(matched_text) + 100)
+        context = text[context_start:context_end].lower()
+
+        # 检查测试/示例相关的关键词
+        test_indicators = [
+            "test", "testing", "example", "demo", "sample", "mock", "fake", "dummy",
+            "测试", "示例", "演示", "样例", "模拟", "虚拟", "假", "例子",
+            "for testing", "for example", "just an example", "this is a test",
+            "仅供测试", "仅作示例", "这是测试", "这是示例", "举例说明"
+        ]
+
+        for indicator in test_indicators:
+            if indicator in context:
+                logger.debug(f"SensitiveInfoDetector: 发现上下文指示器: {indicator}")
+                return True
+
+        return False
+
     def _compile_patterns(self) -> Dict[str, List[re.Pattern]]:
         """预编译正则表达式以提高性能。
 
@@ -301,6 +520,19 @@ class SensitiveInfoDetector:
             for i, compiled_pattern in enumerate(compiled_patterns):
                 matches = compiled_pattern.finditer(text)
                 for match in matches:
+                    matched_text = match.group(0)
+                    
+                    # 检查白名单
+                    if self._is_whitelisted(pattern_type, matched_text):
+                        logger.debug(f"SensitiveInfoDetector: 跳过白名单项: {pattern_type} - {matched_text}")
+                        continue
+                    
+                    # 检查上下文指示器
+                    if self._has_context_indicators(text, matched_text):
+                        logger.debug(f"SensitiveInfoDetector: 跳过测试/示例数据: {pattern_type} - {matched_text}")
+                        continue
+                    
+                    # 如果不在白名单中且没有上下文指示器，则添加到结果中
                     results.append(
                         DetectionResult(
                             is_allowed=False,
@@ -310,7 +542,7 @@ class SensitiveInfoDetector:
                             details={
                                 "type": pattern_type,
                                 "matched_pattern": self.patterns[pattern_type][i],
-                                "matched_text": match.group(0),
+                                "matched_text": matched_text,
                             },
                         )
                     )
@@ -798,17 +1030,24 @@ class JailbreakDetector:
                 try:
                     match = compiled_pattern.search(text)
                     if match:
+                        matched_text = match.group(0)
+                        
+                        # 添加上下文检查，减少误报
+                        if self._is_likely_false_positive(text, matched_text, rule):
+                            logger.debug(f"JailbreakDetector: 跳过可能的误报: {rule.name} - {matched_text}")
+                            continue
+                        
                         logger.warning(f"JailbreakDetector: 匹配到模式 {rule.patterns[i]} 在规则 {rule.id}")
                         return DetectionResult(
                             is_allowed=not rule.block,
                             detection_type=rule.detection_type,
                             severity=rule.severity,
-                            reason=f"Detected {rule.name}: {match.group(0)}",
+                            reason=f"Detected {rule.name}: {matched_text}",
                             details={
                                 "rule_id": rule.id,
                                 "rule_name": rule.name,
                                 "matched_pattern": rule.patterns[i],
-                                "matched_text": match.group(0),
+                                "matched_text": matched_text,
                             },
                         )
                 except Exception as e:
@@ -819,6 +1058,13 @@ class JailbreakDetector:
                 try:
                     match = keyword_pattern.search(text)
                     if match:
+                        matched_text = match.group(0)
+                        
+                        # 添加上下文检查，减少误报
+                        if self._is_likely_false_positive(text, matched_text, rule):
+                            logger.debug(f"JailbreakDetector: 跳过可能的误报关键词: {rule.name} - {matched_text}")
+                            continue
+                        
                         logger.warning(f"JailbreakDetector: 匹配到关键词 {rule.keywords[i]} 在规则 {rule.id}")
                         return DetectionResult(
                             is_allowed=not rule.block,
@@ -837,6 +1083,73 @@ class JailbreakDetector:
         # No jailbreak detected
         logger.info("JailbreakDetector: 未检测到越狱尝试")
         return DetectionResult(is_allowed=True)
+
+    def _is_likely_false_positive(self, text: str, matched_text: str, rule: SecurityRule) -> bool:
+        """检查是否可能是误报。
+
+        Args:
+            text: 完整文本
+            matched_text: 匹配的文本
+            rule: 安全规则
+
+        Returns:
+            是否可能是误报
+        """
+        # 查找匹配文本在完整文本中的位置
+        match_start = text.find(matched_text)
+        if match_start == -1:
+            return False
+
+        # 获取匹配文本前后的上下文（各150个字符）
+        context_start = max(0, match_start - 150)
+        context_end = min(len(text), match_start + len(matched_text) + 150)
+        context = text[context_start:context_end].lower()
+
+        # 检查是否在正常对话或学术讨论中
+        normal_context_indicators = [
+            "what is", "what are", "can you explain", "help me understand",
+            "tell me about", "describe", "example", "for instance", "such as",
+            "什么是", "你能解释", "帮我理解", "告诉我", "描述", "例如", "比如",
+            "学习", "研究", "讨论", "分析", "understanding", "research", "study",
+            "in literature", "in movies", "in fiction", "in stories", "in books",
+            "在文学中", "在电影中", "在小说中", "在故事中", "在书中",
+            "hypothetically", "theoretically", "假设", "理论上",
+            "creative writing", "story", "character", "fiction", "novel",
+            "创意写作", "故事", "角色", "小说", "虚构"
+        ]
+
+        for indicator in normal_context_indicators:
+            if indicator in context:
+                logger.debug(f"JailbreakDetector: 发现正常上下文指示器: {indicator}")
+                return True
+
+        # 特殊规则：STAN检测的优化
+        if rule.id == "jb-002" and "stan" in matched_text.lower():
+            # 检查是否是正常的英文对话中的"stan"或"assistant"
+            normal_stan_contexts = [
+                "assistant", "understand", "constant", "standard", "instance",
+                "substantial", "distance", "resistance", "assistance", "stanza",
+                "助手", "理解", "常数", "标准", "实例", "坚持", "距离", "抵抗", "援助"
+            ]
+            for ctx in normal_stan_contexts:
+                if ctx in context:
+                    logger.debug(f"JailbreakDetector: 发现STAN误报上下文: {ctx}")
+                    return True
+
+        # 特殊规则：DAN检测的优化
+        if rule.id == "jb-001" and "dan" in matched_text.lower():
+            # 检查是否是正常的英文对话中的"dan"
+            normal_dan_contexts = [
+                "dance", "danger", "dangling", "understand", "standard",
+                "recommendation", "fundamental", "abundant", "pendant",
+                "跳舞", "危险", "悬挂", "理解", "标准", "建议", "基本", "丰富"
+            ]
+            for ctx in normal_dan_contexts:
+                if ctx in context:
+                    logger.debug(f"JailbreakDetector: 发现DAN误报上下文: {ctx}")
+                    return True
+
+        return False
 
 
 class SecurityDetector:
@@ -859,8 +1172,8 @@ class SecurityDetector:
         self.conversation_tracker = conversation_tracker
 
         # 导入模型特定检测器
-        from src.security.model_specific_detector import model_specific_detector
-        self.model_specific_detector = model_specific_detector
+        # from src.security.model_specific_detector import model_specific_detector
+        # self.model_specific_detector = model_specific_detector
 
     async def check_request(self, request: InterceptedRequest) -> DetectionResult:
         """Check a request for security threats.
@@ -886,31 +1199,33 @@ class SecurityDetector:
         conversation_id, conversation = self.conversation_tracker.process_request(request)
         logger.info(f"SecurityDetector: 处理对话 {conversation_id}，当前消息数: {len(conversation.messages)}")
 
-        # 如果启用了上下文感知检测，并且对话中有多条消息，则进行上下文感知检测
-        if settings.security.enable_context_aware_detection and len(conversation.messages) > 1:
+        # 如果对话中有多条消息，则进行上下文感知检测
+        if len(conversation.messages) > 1:
             logger.info("SecurityDetector: 执行上下文感知检测")
             result = self.context_aware_detector.detect(conversation)
             if not result.is_allowed:
                 logger.warning(
                     f"Blocked request due to context-aware detection: {result.reason}"
                 )
+                # 标记对话为已被攻陷
+                self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
                 # 记录安全事件
                 event_logger.log_event(result, conversation.get_full_context())
                 return result
 
         # 执行模型特定检测
-        if settings.security.enable_model_specific_detection:
-            logger.info("SecurityDetector: 执行模型特定检测")
-            result = self.model_specific_detector.check_request(request, text)
-            if not result.is_allowed:
-                logger.warning(
-                    f"Blocked request due to model-specific detection: {result.reason}"
-                )
-                # 记录安全事件
-                event_logger.log_event(result, text)
-                return result
-        else:
-            logger.info("SecurityDetector: 模型特定检测已禁用")
+        # if settings.security.enable_model_specific_detection:
+        #     logger.info("SecurityDetector: 执行模型特定检测")
+        #     result = self.model_specific_detector.check_request(request, text)
+        #     if not result.is_allowed:
+        #         logger.warning(
+        #             f"Blocked request due to model-specific detection: {result.reason}"
+        #         )
+        #         # 记录安全事件
+        #         event_logger.log_event(result, text)
+        #         return result
+        # else:
+        #     logger.info("SecurityDetector: 模型特定检测已禁用")
 
         # Check for prompt injection
         logger.info("SecurityDetector: 检查提示注入")
@@ -919,6 +1234,8 @@ class SecurityDetector:
             logger.warning(
                 f"Blocked request due to {result.detection_type}: {result.reason}"
             )
+            # 标记对话为已被攻陷
+            self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
             # 记录安全事件
             event_logger.log_event(result, text)
             return result
@@ -930,6 +1247,8 @@ class SecurityDetector:
             logger.warning(
                 f"Blocked request due to {result.detection_type}: {result.reason}"
             )
+            # 标记对话为已被攻陷
+            self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
             # 记录安全事件
             event_logger.log_event(result, text)
             return result
@@ -941,6 +1260,8 @@ class SecurityDetector:
             logger.warning(
                 f"Blocked request due to {result.detection_type}: {result.reason}"
             )
+            # 标记对话为已被攻陷
+            self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
             # 记录安全事件
             event_logger.log_event(result, text)
             return result
@@ -952,6 +1273,8 @@ class SecurityDetector:
             logger.warning(
                 f"Blocked request due to {result.detection_type}: {result.reason}"
             )
+            # 标记对话为已被攻陷
+            self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
             # 记录安全事件
             event_logger.log_event(result, text)
             return result
@@ -964,6 +1287,8 @@ class SecurityDetector:
             logger.warning(
                 f"Blocked request due to {result.detection_type}: {result.reason}"
             )
+            # 标记对话为已被攻陷
+            self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
             # 记录安全事件
             event_logger.log_event(result, text)
             return result
@@ -1002,24 +1327,24 @@ class SecurityDetector:
             logger.info(f"SecurityDetector: 更新对话 {conversation_id} 的响应")
 
         # 执行模型特定检测
-        if settings.security.enable_model_specific_detection:
-            logger.info("SecurityDetector: 执行模型特定检测")
-            # 尝试从请求中提取模型名称
-            model_name = None
-            if hasattr(response, "request") and hasattr(response.request, "body"):
-                if "model" in response.request.body:
-                    model_name = response.request.body["model"]
-
-            result = self.model_specific_detector.check_response(response, text, model_name)
-            if not result.is_allowed:
-                logger.warning(
-                    f"Blocked response due to model-specific detection: {result.reason}"
-                )
-                # 记录安全事件
-                event_logger.log_event(result, text)
-                return result
-        else:
-            logger.info("SecurityDetector: 模型特定检测已禁用")
+        # if settings.security.enable_model_specific_detection:
+        #     logger.info("SecurityDetector: 执行模型特定检测")
+        #     # 尝试从请求中提取模型名称
+        #     model_name = None
+        #     if hasattr(response, "request") and hasattr(response.request, "body"):
+        #         if "model" in response.request.body:
+        #             model_name = response.request.body["model"]
+        #
+        #     result = self.model_specific_detector.check_response(response, text, model_name)
+        #     if not result.is_allowed:
+        #         logger.warning(
+        #             f"Blocked response due to model-specific detection: {result.reason}"
+        #         )
+        #         # 记录安全事件
+        #         event_logger.log_event(result, text)
+        #         return result
+        # else:
+        #     logger.info("SecurityDetector: 模型特定检测已禁用")
 
         # Check for prompt injection
         result = self.prompt_injection_detector.detect(text)

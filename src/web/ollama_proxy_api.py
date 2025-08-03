@@ -129,7 +129,7 @@ async def ollama_proxy(request: Request, path: str):
             ollama_request = {
                 "model": body.get("model", "tinyllama:latest"),
                 "messages": body.get("messages", []),
-                "stream": False  # 强制使用非流式响应，避免流式响应处理问题
+                "stream": body.get("stream", False)  # 支持流式响应，根据客户端请求决定
             }
 
             # 添加其他可选参数
@@ -155,38 +155,133 @@ async def ollama_proxy(request: Request, path: str):
                                 status_code=response.status
                             )
 
-                        # 由于我们已经强制使用非流式响应，这里直接处理非流式响应
-                        # 获取响应内容
-                        ollama_response = await response.json()
+                        # 检查是否为流式响应
+                        if ollama_request.get("stream", False):
+                            # 处理流式响应
+                            async def stream_openai_format():
+                                """将Ollama流式响应转换为OpenAI格式"""
+                                try:
+                                    # 发送流式响应开始标记
+                                    chunk_id = f"chatcmpl-{int(time.time())}"
+                                    
+                                    # 发送初始chunk
+                                    initial_chunk = {
+                                        "id": chunk_id,
+                                        "object": "chat.completion.chunk",
+                                        "created": int(time.time()),
+                                        "model": body.get('model', 'unknown'),
+                                        "choices": [
+                                            {
+                                                "index": 0,
+                                                "delta": {"role": "assistant", "content": ""},
+                                                "finish_reason": None
+                                            }
+                                        ]
+                                    }
+                                    yield f"data: {json.dumps(initial_chunk)}\n\n"
+                                    
+                                    # 处理流式数据
+                                    async for line in response.content:
+                                        if line:
+                                            try:
+                                                line_str = line.decode('utf-8').strip()
+                                                if line_str:
+                                                    ollama_chunk = json.loads(line_str)
+                                                    
+                                                    # 提取内容
+                                                    content = ""
+                                                    if "message" in ollama_chunk and "content" in ollama_chunk["message"]:
+                                                        content = ollama_chunk["message"]["content"]
+                                                    
+                                                    # 构建OpenAI格式的chunk
+                                                    openai_chunk = {
+                                                        "id": chunk_id,
+                                                        "object": "chat.completion.chunk",
+                                                        "created": int(time.time()),
+                                                        "model": body.get('model', 'unknown'),
+                                                        "choices": [
+                                                            {
+                                                                "index": 0,
+                                                                "delta": {"content": content},
+                                                                "finish_reason": "stop" if ollama_chunk.get("done", False) else None
+                                                            }
+                                                        ]
+                                                    }
+                                                    
+                                                    yield f"data: {json.dumps(openai_chunk)}\n\n"
+                                                    
+                                                    # 如果完成，发送结束标记
+                                                    if ollama_chunk.get("done", False):
+                                                        yield "data: [DONE]\n\n"
+                                                        break
+                                                        
+                                            except json.JSONDecodeError:
+                                                continue
+                                            except Exception as e:
+                                                logger.error(f"处理流式响应块时出错: {e}")
+                                                continue
+                                                
+                                except Exception as e:
+                                    logger.error(f"流式响应处理出错: {e}")
+                                    # 发送错误响应
+                                    error_chunk = {
+                                        "id": chunk_id,
+                                        "object": "chat.completion.chunk",
+                                        "created": int(time.time()),
+                                        "model": body.get('model', 'unknown'),
+                                        "choices": [
+                                            {
+                                                "index": 0,
+                                                "delta": {},
+                                                "finish_reason": "stop"
+                                            }
+                                        ]
+                                    }
+                                    yield f"data: {json.dumps(error_chunk)}\n\n"
+                                    yield "data: [DONE]\n\n"
 
-                        # 构建OpenAI格式的响应
-                        openai_format_response = {
-                            "id": f"chatcmpl-{int(time.time())}",
-                            "object": "chat.completion",
-                            "created": int(time.time()),
-                            "model": body.get('model', 'unknown'),
-                            "choices": [
-                                {
-                                    "index": 0,
-                                    "message": {
-                                        "role": "assistant",
-                                        "content": ollama_response.get("message", {}).get("content", "")
-                                    },
-                                    "finish_reason": "stop"
+                            # 返回流式响应
+                            return StreamingResponse(
+                                stream_openai_format(),
+                                media_type="text/plain",
+                                headers={
+                                    "Cache-Control": "no-cache",
+                                    "Connection": "keep-alive",
+                                    "Content-Type": "text/plain; charset=utf-8"
                                 }
-                            ],
-                            "usage": {
-                                "prompt_tokens": ollama_response.get('prompt_eval_count', 0),
-                                "completion_tokens": ollama_response.get('eval_count', 0),
-                                "total_tokens": (ollama_response.get('prompt_eval_count', 0) + ollama_response.get('eval_count', 0))
-                            }
-                        }
+                            )
+                        else:
+                            # 处理非流式响应
+                            ollama_response = await response.json()
 
-                        # 返回OpenAI格式的响应
-                        return JSONResponse(
-                            content=openai_format_response,
-                            status_code=200
-                        )
+                            # 构建OpenAI格式的响应
+                            openai_format_response = {
+                                "id": f"chatcmpl-{int(time.time())}",
+                                "object": "chat.completion",
+                                "created": int(time.time()),
+                                "model": body.get('model', 'unknown'),
+                                "choices": [
+                                    {
+                                        "index": 0,
+                                        "message": {
+                                            "role": "assistant",
+                                            "content": ollama_response.get("message", {}).get("content", "")
+                                        },
+                                        "finish_reason": "stop"
+                                    }
+                                ],
+                                "usage": {
+                                    "prompt_tokens": ollama_response.get('prompt_eval_count', 0),
+                                    "completion_tokens": ollama_response.get('eval_count', 0),
+                                    "total_tokens": (ollama_response.get('prompt_eval_count', 0) + ollama_response.get('eval_count', 0))
+                                }
+                            }
+
+                            # 返回OpenAI格式的响应
+                            return JSONResponse(
+                                content=openai_format_response,
+                                status_code=200
+                            )
 
             except Exception as e:
                 logger.exception(f"与Ollama通信时出错: {str(e)}")

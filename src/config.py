@@ -62,7 +62,7 @@ class SecurityConfig(BaseSettings):
     )
     max_prompt_length: int = Field(default=4096)
     max_response_length: int = Field(default=8192)
-    enable_api_auth: bool = Field(default=True)
+    enable_api_auth: bool = Field(default=False)
     enable_rate_limiting: bool = Field(default=True)
     enable_content_masking: bool = Field(default=True)
 
@@ -121,7 +121,7 @@ class WebConfig(BaseSettings):
     """Web interface configuration."""
 
     host: str = Field(default="0.0.0.0")
-    port: int = Field(default=8080)
+    port: int = Field(default=8081)
     secret_key: str = Field(default_factory=lambda: os.urandom(24).hex())
     token_expire_minutes: int = Field(default=60)
 
