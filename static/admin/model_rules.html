@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>模型安全规则配置 - 本地大模型防护系统</title>
     <link rel="stylesheet" href="/static/admin/css/apple-main.css">
-    <link rel="stylesheet" href="/static/admin/css/apple-model-rules.css">
+    <link rel="stylesheet" href="/static/admin/css/model-rules-enhanced.css">
     <script src="/static/admin/js/apple-ui.js" defer></script>
     <!-- 保留旧样式以防万一，但不使用 -->
     <link rel="stylesheet" href="css/admin.css" media="none">
@@ -30,13 +30,13 @@
 
             <ul class="sidebar-menu">
                 <li class="sidebar-menu-item">
-                    <a href="index.html" class="sidebar-menu-link">
-                        <span class="sidebar-menu-icon"><i class="fas fa-chart-line"></i></span>
+                    <a href="monitor_v2.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
                         <span class="sidebar-menu-text">监控中心</span>
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="rules.html" class="sidebar-menu-link">
+                    <a href="rules_v2.html" class="sidebar-menu-link">
                         <span class="sidebar-menu-icon"><i class="fas fa-shield-alt"></i></span>
                         <span class="sidebar-menu-text">规则管理</span>
                     </a>
@@ -54,23 +54,26 @@
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="monitor.html" class="sidebar-menu-link">
+                    <a href="monitor_v2.html" class="sidebar-menu-link">
                         <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
                         <span class="sidebar-menu-text">实时监控</span>
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="models.html" class="sidebar-menu-link">
+                    <a href="models_v2.html" class="sidebar-menu-link">
                         <span class="sidebar-menu-icon"><i class="fas fa-brain"></i></span>
                         <span class="sidebar-menu-text">模型管理</span>
                     </a>
                 </li>
+                <!-- 聊天演示暂时隐藏 -->
+                <!--
                 <li class="sidebar-menu-item">
                     <a href="/static/index.html" class="sidebar-menu-link">
                         <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
-                        <span class="sidebar-menu-text">聊天演示</span>
+                        <span class="sidebar-menu-text">模型测试</span>
                     </a>
                 </li>
+                -->
             </ul>
 
             <div class="sidebar-footer">
@@ -104,33 +107,170 @@
             <header class="page-header">
                 <h1 class="page-title">规则配置</h1>
                 <div class="page-actions">
-                    <button class="button" id="refresh-btn">
+                    <button class="btn btn-secondary" id="refresh-btn">
                         <i class="fas fa-sync-alt"></i> 刷新数据
                     </button>
-                    <button class="button primary" id="batch-apply-template-btn">
+                    <button class="btn btn-primary" id="create-template-btn">
+                        <i class="fas fa-plus"></i> 创建模板
+                    </button>
+                    <button class="btn btn-primary" id="batch-apply-template-btn">
                         <i class="fas fa-layer-group"></i> 批量应用模板
                     </button>
                 </div>
             </header>
 
+            <!-- 统计卡片 -->
+            <div class="stats-grid mb-4">
+                <div class="stat-card">
+                    <div class="stat-card-icon primary">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <h3 class="stat-card-title">已配置模型</h3>
+                        <div class="stat-card-value" id="configured-models-count">0</div>
+                        <p class="stat-card-subtitle">个模型已配置</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon success">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <h3 class="stat-card-title">规则模板数</h3>
+                        <div class="stat-card-value" id="templates-count">0</div>
+                        <p class="stat-card-subtitle">个可用模板</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <h3 class="stat-card-title">平均安全评分</h3>
+                        <div class="stat-card-value" id="avg-security-score">60</div>
+                        <p class="stat-card-subtitle">分</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon danger">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <h3 class="stat-card-title">待配置模型</h3>
+                        <div class="stat-card-value" id="unconfigured-models-count">0</div>
+                        <p class="stat-card-subtitle">个模型待配置</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快速操作面板 -->
+            <div class="quick-actions mb-4">
+                <div class="quick-action-card">
+                    <div class="quick-action-header">
+                        <div class="quick-action-icon primary">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3 class="quick-action-title">智能推荐配置</h3>
+                    </div>
+                    <p class="quick-action-description">基于模型特性自动推荐最适合的安全规则配置</p>
+                    <button class="btn btn-primary" id="auto-recommend-btn">
+                        <i class="fas fa-arrow-right"></i> 开始推荐
+                    </button>
+                </div>
+                <div class="quick-action-card">
+                    <div class="quick-action-header">
+                        <div class="quick-action-icon success">
+                            <i class="fas fa-copy"></i>
+                        </div>
+                        <h3 class="quick-action-title">批量配置模板</h3>
+                    </div>
+                    <p class="quick-action-description">为多个模型快速应用相同的规则模板</p>
+                    <button class="btn btn-secondary" id="batch-config-btn">
+                        <i class="fas fa-layer-group"></i> 批量配置
+                    </button>
+                </div>
+                <div class="quick-action-card">
+                    <div class="quick-action-header">
+                        <div class="quick-action-icon warning">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 class="quick-action-title">配置检查</h3>
+                    </div>
+                    <p class="quick-action-description">检查所有模型的配置完整性和潜在冲突</p>
+                    <button class="btn btn-secondary" id="check-all-btn">
+                        <i class="fas fa-check-double"></i> 全面检查
+                    </button>
+                </div>
+            </div>
+
+            <!-- 工具栏 -->
+            <div class="toolbar mb-4">
+                <div class="toolbar-left">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all">全部模型</button>
+                        <button class="filter-tab" data-filter="configured">已配置</button>
+                        <button class="filter-tab" data-filter="unconfigured">未配置</button>
+                        <button class="filter-tab" data-filter="high-risk">高风险</button>
+                    </div>
+                </div>
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="搜索模型..." id="model-search">
+                    </div>
+                    <button class="btn btn-secondary" id="view-toggle">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                </div>
+            </div>
+
             <!-- 模型规则摘要列表 -->
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">
-                        <i class="fas fa-list-alt"></i>
-                        模型规则摘要
+                        <i class="fas fa-cogs"></i>
+                        模型规则配置
                     </h2>
                     <div class="card-actions">
-                        <div class="search-control">
-                            <input type="text" id="model-search" class="input-control" placeholder="搜索模型...">
-                            <button class="search-button">
-                                <i class="fas fa-search"></i>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary btn-sm" id="export-config-btn">
+                                <i class="fas fa-download"></i> 导出配置
+                            </button>
+                            <button class="btn btn-secondary btn-sm" id="import-config-btn">
+                                <i class="fas fa-upload"></i> 导入配置
                             </button>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
+                    <!-- 批量操作工具栏 -->
+                    <div class="batch-toolbar" id="batch-toolbar" style="display: none;">
+                        <div class="batch-info">
+                            <span class="batch-count">已选择 <strong id="selected-models-count">0</strong> 个模型</span>
+                        </div>
+                        <div class="batch-actions">
+                            <button class="btn btn-secondary" id="batch-apply-template">
+                                <i class="fas fa-layer-group"></i> 批量应用模板
+                            </button>
+                            <button class="btn btn-secondary" id="batch-enable-rules">
+                                <i class="fas fa-toggle-on"></i> 批量启用规则
+                            </button>
+                            <button class="btn btn-secondary" id="batch-disable-rules">
+                                <i class="fas fa-toggle-off"></i> 批量禁用规则
+                            </button>
+                            <button class="btn btn-outline" id="clear-selection">
+                                <i class="fas fa-times"></i> 取消选择
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 模型网格视图 -->
+                    <div class="models-grid" id="models-grid">
+                        <!-- 模型卡片将动态生成 -->
+                    </div>
+
+                    <!-- 表格视图（作为备选） -->
+                    <div class="table-responsive" id="models-table" style="display: none;">
                         <table class="data-table" id="model-rules-table">
                             <thead>
                                 <tr>
@@ -149,6 +289,18 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- 空状态 -->
+                    <div class="empty-state" id="empty-state" style="display: none;">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 class="empty-state-title">暂无模型配置</h3>
+                        <p class="empty-state-description">开始为您的模型配置安全规则，确保系统安全运行</p>
+                        <button class="btn btn-primary" id="add-first-config">
+                            <i class="fas fa-plus"></i> 创建第一个配置
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -160,13 +312,24 @@
                         规则集模板
                     </h2>
                     <div class="card-actions">
-                        <button class="button" id="create-template-btn">
-                            <i class="fas fa-plus"></i> 创建模板
-                        </button>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="create-new-template-btn">
+                                <i class="fas fa-plus"></i> 创建模板
+                            </button>
+                            <button class="btn btn-secondary" id="import-template-btn">
+                                <i class="fas fa-upload"></i> 导入模板
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
+                    <!-- 模板卡片网格 -->
+                    <div class="templates-grid" id="templates-grid">
+                        <!-- 模板卡片将动态生成 -->
+                    </div>
+
+                    <!-- 表格视图（作为备选） -->
+                    <div class="table-responsive" id="templates-table-view" style="display: none;">
                         <table class="data-table" id="templates-table">
                             <thead>
                                 <tr>
@@ -497,7 +660,7 @@
         </div>
     </div>
 
-    <script src="/static/admin/js/model_rules.js"></script>
+    <script src="/static/admin/js/model-rules-enhanced.js"></script>
 </body>
 
 </html>

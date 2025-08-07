@@ -171,6 +171,19 @@ class ConversationTracker:
         """
         return self.conversations.get(conversation_id)
     
+    def add_user_message_to_conversation(self, conversation_id: str, content: str) -> None:
+        """向指定对话添加用户消息。
+        
+        Args:
+            conversation_id: 对话ID
+            content: 用户消息内容
+        """
+        if conversation_id in self.conversations:
+            self.conversations[conversation_id].add_message("user", content)
+            logger.debug(f"向对话 {conversation_id} 添加用户消息")
+        else:
+            logger.warning(f"尝试向不存在的对话 {conversation_id} 添加消息")
+    
     def _extract_conversation_id(self, request: InterceptedRequest) -> Optional[str]:
         """从请求中提取对话ID。"""
         # 可以从请求头或查询参数中提取

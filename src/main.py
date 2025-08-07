@@ -32,6 +32,7 @@ from src.web.metrics_api import router as metrics_router
 from src.web.health_api import router as health_router
 from src.web.model_rules_api import router as model_rules_router
 from src.web.events_api import router as events_router
+from src.web.enhanced_models_api import router as enhanced_models_router
 # from src.web.new_providers_api import router as new_providers_router
 # from src.web.models_api import router as models_router
 from src.web.ollama_proxy_api import router as ollama_proxy_router
@@ -66,6 +67,7 @@ app.include_router(metrics_router)
 app.include_router(health_router)
 app.include_router(model_rules_router)
 app.include_router(events_router)
+app.include_router(enhanced_models_router)
 # app.include_router(new_providers_router)
 # app.include_router(models_router)
 app.include_router(ollama_proxy_router)

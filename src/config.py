@@ -69,7 +69,7 @@ class SecurityConfig(BaseSettings):
     # 开发模式配置
     development_mode: bool = Field(default=False, description="开发模式，降低安全检测严格性")
     bypass_detection_for_dev: bool = Field(default=False, description="开发模式下绕过安全检测")
-    confidence_threshold: float = Field(default=0.7, description="安全检测置信度阈值")
+    confidence_threshold: float = Field(default=0.6, description="安全检测置信度阈值（降低以减少误报）")
     enable_detection_cache: bool = Field(default=True, description="启用检测结果缓存")
     log_all_requests: bool = Field(default=False, description="记录所有请求详情")
 

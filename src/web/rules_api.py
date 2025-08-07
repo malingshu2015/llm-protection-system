@@ -114,8 +114,9 @@ async def get_rules(
     if category:
         rules = [rule for rule in rules if "categories" in rule and category in rule.get("categories", [])]
 
-    # 返回加载的规则
-    return rules
+    # 如果成功加载了规则，返回加载的规则
+    if rules:
+        return rules
 
     # 以下是模拟规则数据，仅在无法加载规则文件时使用
     mock_rules = [
@@ -941,9 +942,14 @@ async def create_rule(rule: SecurityRule = Body(...)):
         创建的规则
     """
     try:
+        logger.info(f"创建规则请求: rule.id={rule.id}, rule类型={type(rule)}")
+        
         # 检查规则ID是否已存在
-        rules = await get_rules()
-        if any(r.id == rule.id for r in rules):
+        rules_data = await get_rules()
+        logger.info(f"获取到 {len(rules_data)} 个规则，第一个规则类型: {type(rules_data[0]) if rules_data else 'None'}")
+        
+        # 修复：正确处理字典格式的规则数据
+        if any(r.get("id") == rule.id if isinstance(r, dict) else r.id == rule.id for r in rules_data):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"规则ID {rule.id} 已存在"
@@ -954,6 +960,8 @@ async def create_rule(rule: SecurityRule = Body(...)):
         return rule
     except Exception as e:
         logger.error(f"创建规则失败: {e}")
+        import traceback
+        logger.error(f"错误堆栈: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"创建规则失败: {str(e)}"
@@ -1183,4 +1191,237 @@ async def update_rule_priority(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"更新规则优先级失败: {str(e)}"
+        )
+
+
+class RuleTestRequest(BaseModel):
+    """规则测试请求。"""
+    test_text: str
+    rule_id: Optional[str] = None
+
+
+@router.post("/api/v1/rules/test")
+async def test_rule(request: RuleTestRequest):
+    """
+    测试规则对特定文本的匹配效果。
+    
+    Args:
+        request: 包含测试文本和可选的规则ID
+        
+    Returns:
+        测试结果
+    """
+    try:
+        import re
+        from datetime import datetime
+        
+        # 获取所有规则
+        rules = await get_rules()
+        
+        test_results = []
+        test_text = request.test_text.strip()
+        
+        if not test_text:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="测试文本不能为空"
+            )
+        
+        # 如果指定了规则ID，只测试特定规则
+        if request.rule_id:
+            target_rule = None
+            for rule in rules:
+                if rule.id == request.rule_id:
+                    target_rule = rule
+                    break
+            
+            if not target_rule:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"规则 {request.rule_id} 不存在"
+                )
+            
+            rules = [target_rule]
+        
+        # 测试每个规则
+        for rule in rules:
+            # 处理字典格式的规则
+            if isinstance(rule, dict):
+                if not rule.get('enabled', True):
+                    continue
+                
+                rule_matched = False
+                match_details = []
+                
+                # 测试正则表达式模式
+                for i, pattern in enumerate(rule.get('patterns', [])):
+                    try:
+                        compiled_pattern = re.compile(pattern, re.IGNORECASE | re.MULTILINE)
+                        matches = list(compiled_pattern.finditer(test_text))
+                        
+                        if matches:
+                            rule_matched = True
+                            for match in matches:
+                                match_details.append({
+                                    "type": "pattern",
+                                    "index": i,
+                                    "pattern": pattern,
+                                    "matched_text": match.group(0),
+                                    "start": match.start(),
+                                    "end": match.end()
+                                })
+                    except re.error as e:
+                        match_details.append({
+                            "type": "pattern_error",
+                            "index": i,
+                            "pattern": pattern,
+                            "error": str(e)
+                        })
+                
+                # 测试关键词
+                for i, keyword in enumerate(rule.get('keywords', [])):
+                    if keyword.lower() in test_text.lower():
+                        rule_matched = True
+                        # 找到关键词的所有位置
+                        text_lower = test_text.lower()
+                        keyword_lower = keyword.lower()
+                        start = 0
+                        while True:
+                            pos = text_lower.find(keyword_lower, start)
+                            if pos == -1:
+                                break
+                            match_details.append({
+                                "type": "keyword",
+                                "index": i,
+                                "keyword": keyword,
+                                "matched_text": test_text[pos:pos + len(keyword)],
+                                "start": pos,
+                                "end": pos + len(keyword)
+                            })
+                            start = pos + 1
+                
+                # 添加测试结果
+                if rule_matched or request.rule_id:  # 如果指定了规则ID，即使不匹配也显示结果
+                    test_results.append({
+                        "rule_id": rule.get('id'),
+                        "rule_name": rule.get('name'),
+                        "detection_type": rule.get('detection_type'),
+                        "severity": rule.get('severity', 'medium'),
+                        "matched": rule_matched,
+                        "match_details": match_details,
+                        "action": "block" if rule.get('block', True) and rule_matched else "allow",
+                        "priority": rule.get('priority', 5)
+                    })
+            else:
+                # 处理对象格式的规则（保持原有逻辑以向后兼容）
+                if not rule.enabled:
+                    continue
+                    
+                rule_matched = False
+                match_details = []
+                
+                # 测试正则表达式模式
+                for i, pattern in enumerate(rule.patterns or []):
+                    try:
+                        compiled_pattern = re.compile(pattern, re.IGNORECASE | re.MULTILINE)
+                        matches = list(compiled_pattern.finditer(test_text))
+                        
+                        if matches:
+                            rule_matched = True
+                            for match in matches:
+                                match_details.append({
+                                    "type": "pattern",
+                                    "index": i,
+                                    "pattern": pattern,
+                                    "matched_text": match.group(0),
+                                    "start": match.start(),
+                                    "end": match.end()
+                                })
+                    except re.error as e:
+                        match_details.append({
+                            "type": "pattern_error",
+                            "index": i,
+                            "pattern": pattern,
+                            "error": str(e)
+                        })
+                
+                # 测试关键词
+                for i, keyword in enumerate(rule.keywords or []):
+                    if keyword.lower() in test_text.lower():
+                        rule_matched = True
+                        # 找到关键词的所有位置
+                        text_lower = test_text.lower()
+                        keyword_lower = keyword.lower()
+                        start = 0
+                        while True:
+                            pos = text_lower.find(keyword_lower, start)
+                            if pos == -1:
+                                break
+                            match_details.append({
+                                "type": "keyword",
+                                "index": i,
+                                "keyword": keyword,
+                                "matched_text": test_text[pos:pos + len(keyword)],
+                                "start": pos,
+                                "end": pos + len(keyword)
+                            })
+                            start = pos + 1
+                
+                # 添加测试结果
+                if rule_matched or request.rule_id:  # 如果指定了规则ID，即使不匹配也显示结果
+                    test_results.append({
+                        "rule_id": rule.id,
+                        "rule_name": rule.name,
+                        "detection_type": rule.detection_type,
+                        "severity": rule.severity,
+                        "matched": rule_matched,
+                        "match_details": match_details,
+                        "action": "block" if rule.block and rule_matched else "allow",
+                        "priority": rule.priority
+                    })
+        
+        # 按优先级排序
+        test_results.sort(key=lambda x: x["priority"])
+        
+        # 确定最终操作
+        final_action = "allow"
+        highest_severity = "info"
+        total_matches = len([r for r in test_results if r["matched"]])
+        
+        if total_matches > 0:
+            # 如果有任何规则匹配且设置为阻止，则最终操作为阻止
+            for result in test_results:
+                if result["matched"] and result["action"] == "block":
+                    final_action = "block"
+                    break
+            
+            # 找出最高严重级别
+            severity_levels = {"info": 1, "low": 2, "medium": 3, "high": 4, "critical": 5}
+            for result in test_results:
+                if result["matched"] and severity_levels.get(result["severity"], 0) > severity_levels.get(highest_severity, 0):
+                    highest_severity = result["severity"]
+        
+        return {
+            "test_text": test_text,
+            "test_time": datetime.now().isoformat(),
+            "total_rules_tested": len(rules),
+            "total_matches": total_matches,
+            "final_action": final_action,
+            "highest_severity": highest_severity,
+            "results": test_results,
+            "summary": {
+                "would_block": final_action == "block",
+                "matched_rules": [r["rule_name"] for r in test_results if r["matched"]],
+                "match_count_by_type": {
+                    "patterns": sum(len([d for d in r["match_details"] if d["type"] == "pattern"]) for r in test_results),
+                    "keywords": sum(len([d for d in r["match_details"] if d["type"] == "keyword"]) for r in test_results)
+                }
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"规则测试失败: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"规则测试失败: {str(e)}"
         )

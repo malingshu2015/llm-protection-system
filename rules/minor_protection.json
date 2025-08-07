@@ -1,0 +1,64 @@
+[
+  {
+    "id": "mp-001",
+    "name": "Child Safety Priority",
+    "description": "未成年人安全最高优先级检测",
+    "detection_type": "minor_protection",
+    "severity": "critical",
+    "patterns": [
+      "(?i)(?:child|儿童|kid|孩子|minor|未成年人|teenager|青少年)[.\\s]*(?:in|在)[.\\s]*(?:inappropriate|不当|sexual|性的|adult|成人)[.\\s]*(?:context|语境|situation|情况|scenario|场景)",
+      "(?i)(?:grooming|诱导|luring|引诱)[.\\s]*(?:children|儿童|minors|未成年人|kids|孩子)",
+      "(?i)(?:predatory|掠夺性|inappropriate|不当)[.\\s]*(?:behavior|行为|contact|接触)[.\\s]*(?:with|与)[.\\s]*(?:children|儿童|minors|未成年人)",
+      "(?i)(?:online|网上|internet|互联网)[.\\s]*(?:safety|安全|protection|保护)[.\\s]*(?:for|对于)[.\\s]*(?:children|儿童|kids|孩子|minors|未成年人)",
+      "(?i)(?:age|年龄)[.\\s]*(?:verification|验证|appropriate|适宜)[.\\s]*(?:content|内容|material|材料)[.\\s]*(?:for|对于)[.\\s]*(?:children|儿童|minors|未成年人)"
+    ],
+    "keywords": [
+      "child safety",
+      "minor protection",
+      "child grooming",
+      "predatory behavior",
+      "age appropriate",
+      "online safety",
+      "儿童安全",
+      "未成年人保护",
+      "儿童诱导",
+      "掠夺行为",
+      "年龄适宜",
+      "网络安全"
+    ],
+    "priority": 1,
+    "categories": ["minor_protection", "safety"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "mp-002",
+    "name": "Educational Content Filter",
+    "description": "教育内容过滤确保未成年人适宜",
+    "detection_type": "minor_protection",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:educational|教育)[.\\s]*(?:content|内容|material|材料)[.\\s]*(?:for|对于|suitable for|适合)[.\\s]*(?:children|儿童|kids|孩子|students|学生)",
+      "(?i)(?:age|年龄)[.\\s]*(?:restriction|限制|rating|评级|classification|分类)[.\\s]*(?:for|对于)[.\\s]*(?:content|内容|media|媒体)",
+      "(?i)(?:parental|父母|family|家庭)[.\\s]*(?:control|控制|supervision|监督|guidance|指导)[.\\s]*(?:settings|设置|features|功能)",
+      "(?i)(?:child|儿童)[.\\s]*(?:friendly|友好|safe|安全|appropriate|适宜)[.\\s]*(?:environment|环境|interface|界面|content|内容)",
+      "(?i)(?:blocking|阻止|filtering|过滤)[.\\s]*(?:inappropriate|不当|harmful|有害)[.\\s]*(?:content|内容)[.\\s]*(?:for|对于)[.\\s]*(?:minors|未成年人|children|儿童)"
+    ],
+    "keywords": [
+      "educational content",
+      "age restriction",
+      "parental control",
+      "child friendly",
+      "content filtering",
+      "教育内容",
+      "年龄限制",
+      "家长控制",
+      "儿童友好",
+      "内容过滤"
+    ],
+    "priority": 2,
+    "categories": ["minor_protection", "education"],
+    "block": false,
+    "enabled": true
+  }
+]

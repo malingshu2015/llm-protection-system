@@ -1,8 +1,28 @@
 [
   {
     "model_id": "llama2:latest",
-    "template_id": "low_security",
+    "template_id": "medium_security",
     "rules": [
+      {
+        "id": "llama2:latest_pi-001",
+        "model_id": "llama2:latest",
+        "rule_id": "pi-001",
+        "enabled": true,
+        "priority": 10,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.785932",
+        "updated_at": "2025-08-03T22:55:19.785934"
+      },
+      {
+        "id": "llama2:latest_pi-003",
+        "model_id": "llama2:latest",
+        "rule_id": "pi-003",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.785938",
+        "updated_at": "2025-08-03T22:55:19.785939"
+      },
       {
         "id": "llama2:latest_jb-001",
         "model_id": "llama2:latest",
@@ -10,38 +30,18 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-07-09T19:41:24.843363",
-        "updated_at": "2025-07-09T19:41:24.843374"
+        "created_at": "2025-08-03T22:55:19.785941",
+        "updated_at": "2025-08-03T22:55:19.785941"
       },
       {
-        "id": "llama2:latest_hc-004",
+        "id": "llama2:latest_jb-002",
         "model_id": "llama2:latest",
-        "rule_id": "hc-004",
+        "rule_id": "jb-002",
         "enabled": true,
-        "priority": 18,
+        "priority": 5,
         "override_params": {},
-        "created_at": "2025-07-09T19:41:24.843386",
-        "updated_at": "2025-07-09T19:41:24.843387"
-      },
-      {
-        "id": "llama2:latest_hc-005",
-        "model_id": "llama2:latest",
-        "rule_id": "hc-005",
-        "enabled": true,
-        "priority": 19,
-        "override_params": {},
-        "created_at": "2025-07-09T19:41:24.843391",
-        "updated_at": "2025-07-09T19:41:24.843392"
-      },
-      {
-        "id": "llama2:latest_si-001",
-        "model_id": "llama2:latest",
-        "rule_id": "si-001",
-        "enabled": true,
-        "priority": 20,
-        "override_params": {},
-        "created_at": "2025-07-09T19:41:24.843395",
-        "updated_at": "2025-07-09T19:41:24.843395"
+        "created_at": "2025-08-03T22:55:19.785943",
+        "updated_at": "2025-08-03T22:55:19.785943"
       },
       {
         "id": "llama2:latest_hc-001",
@@ -50,14 +50,54 @@
         "enabled": true,
         "priority": 15,
         "override_params": {},
-        "created_at": "2025-07-09T19:41:24.843398",
-        "updated_at": "2025-07-09T19:41:24.843399"
+        "created_at": "2025-08-03T22:55:19.785945",
+        "updated_at": "2025-08-03T22:55:19.785946"
+      },
+      {
+        "id": "llama2:latest_hc-004",
+        "model_id": "llama2:latest",
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.785947",
+        "updated_at": "2025-08-03T22:55:19.785948"
+      },
+      {
+        "id": "llama2:latest_hc-005",
+        "model_id": "llama2:latest",
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.785949",
+        "updated_at": "2025-08-03T22:55:19.785950"
+      },
+      {
+        "id": "llama2:latest_si-001",
+        "model_id": "llama2:latest",
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.785951",
+        "updated_at": "2025-08-03T22:55:19.785952"
+      },
+      {
+        "id": "llama2:latest_comp-001",
+        "model_id": "llama2:latest",
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.785954",
+        "updated_at": "2025-08-03T22:55:19.785954"
       }
     ],
     "enabled": true,
     "description": "Llama 2\u6a21\u578b\u7684\u9ad8\u5b89\u5168\u7ea7\u522b\u914d\u7f6e",
     "created_at": "2025-04-21T07:30:00Z",
-    "updated_at": "2025-07-09T19:41:24.843404"
+    "updated_at": "2025-08-03T22:55:19.785955"
   },
   {
     "model_id": "gemma:latest",
@@ -70,8 +110,8 @@
         "enabled": true,
         "priority": 10,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-08-03T22:55:19.786822",
+        "updated_at": "2025-08-03T22:55:19.786823"
       },
       {
         "id": "gemma:latest_pi-003",
@@ -80,8 +120,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-08-03T22:55:19.786826",
+        "updated_at": "2025-08-03T22:55:19.786827"
       },
       {
         "id": "gemma:latest_jb-001",
@@ -90,8 +130,28 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-08-03T22:55:19.786828",
+        "updated_at": "2025-08-03T22:55:19.786829"
+      },
+      {
+        "id": "gemma:latest_jb-002",
+        "model_id": "gemma:latest",
+        "rule_id": "jb-002",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.786831",
+        "updated_at": "2025-08-03T22:55:19.786831"
+      },
+      {
+        "id": "gemma:latest_hc-001",
+        "model_id": "gemma:latest",
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.786833",
+        "updated_at": "2025-08-03T22:55:19.786833"
       },
       {
         "id": "gemma:latest_hc-004",
@@ -100,8 +160,18 @@
         "enabled": true,
         "priority": 18,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-08-03T22:55:19.786835",
+        "updated_at": "2025-08-03T22:55:19.786835"
+      },
+      {
+        "id": "gemma:latest_hc-005",
+        "model_id": "gemma:latest",
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.786837",
+        "updated_at": "2025-08-03T22:55:19.786837"
       },
       {
         "id": "gemma:latest_si-001",
@@ -110,19 +180,39 @@
         "enabled": true,
         "priority": 20,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-08-03T22:55:19.786839",
+        "updated_at": "2025-08-03T22:55:19.786839"
+      },
+      {
+        "id": "gemma:latest_comp-001",
+        "model_id": "gemma:latest",
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.786841",
+        "updated_at": "2025-08-03T22:55:19.786841"
       }
     ],
     "enabled": true,
     "description": "Gemma\u6a21\u578b\u7684\u4e2d\u7b49\u5b89\u5168\u7ea7\u522b\u914d\u7f6e",
     "created_at": "2025-04-21T07:30:00Z",
-    "updated_at": "2025-04-21T07:30:00Z"
+    "updated_at": "2025-08-03T22:55:19.786842"
   },
   {
     "model_id": "tinyllama:latest",
-    "template_id": "low_security",
+    "template_id": "medium_security",
     "rules": [
+      {
+        "id": "tinyllama:latest_pi-001",
+        "model_id": "tinyllama:latest",
+        "rule_id": "pi-001",
+        "enabled": true,
+        "priority": 10,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.787622",
+        "updated_at": "2025-08-03T22:55:19.787623"
+      },
       {
         "id": "tinyllama:latest_pi-003",
         "model_id": "tinyllama:latest",
@@ -130,8 +220,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-08-03T22:55:19.787625",
+        "updated_at": "2025-08-03T22:55:19.787626"
       },
       {
         "id": "tinyllama:latest_jb-001",
@@ -140,8 +230,28 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-08-03T22:55:19.787627",
+        "updated_at": "2025-08-03T22:55:19.787628"
+      },
+      {
+        "id": "tinyllama:latest_jb-002",
+        "model_id": "tinyllama:latest",
+        "rule_id": "jb-002",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.787630",
+        "updated_at": "2025-08-03T22:55:19.787630"
+      },
+      {
+        "id": "tinyllama:latest_hc-001",
+        "model_id": "tinyllama:latest",
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.787632",
+        "updated_at": "2025-08-03T22:55:19.787632"
       },
       {
         "id": "tinyllama:latest_hc-004",
@@ -150,8 +260,18 @@
         "enabled": true,
         "priority": 18,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-08-03T22:55:19.787634",
+        "updated_at": "2025-08-03T22:55:19.787634"
+      },
+      {
+        "id": "tinyllama:latest_hc-005",
+        "model_id": "tinyllama:latest",
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.787636",
+        "updated_at": "2025-08-03T22:55:19.787636"
       },
       {
         "id": "tinyllama:latest_si-001",
@@ -160,19 +280,39 @@
         "enabled": true,
         "priority": 20,
         "override_params": {},
-        "created_at": "2025-04-21T07:30:00Z",
-        "updated_at": "2025-04-21T07:30:00Z"
+        "created_at": "2025-08-03T22:55:19.787638",
+        "updated_at": "2025-08-03T22:55:19.787638"
+      },
+      {
+        "id": "tinyllama:latest_comp-001",
+        "model_id": "tinyllama:latest",
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.787640",
+        "updated_at": "2025-08-03T22:55:19.787640"
       }
     ],
     "enabled": true,
     "description": "TinyLlama\u6a21\u578b\u7684\u4f4e\u5b89\u5168\u7ea7\u522b\u914d\u7f6e",
     "created_at": "2025-04-21T07:30:00Z",
-    "updated_at": "2025-04-21T07:30:00Z"
+    "updated_at": "2025-08-03T22:55:19.787641"
   },
   {
     "model_id": "qwq:latest",
-    "template_id": "low_security",
+    "template_id": "medium_security",
     "rules": [
+      {
+        "id": "qwq:latest_pi-001",
+        "model_id": "qwq:latest",
+        "rule_id": "pi-001",
+        "enabled": true,
+        "priority": 10,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.788393",
+        "updated_at": "2025-08-03T22:55:19.788393"
+      },
       {
         "id": "qwq:latest_pi-003",
         "model_id": "qwq:latest",
@@ -180,8 +320,38 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-22T18:50:35.036780",
-        "updated_at": "2025-04-22T18:50:35.036785"
+        "created_at": "2025-08-03T22:55:19.788396",
+        "updated_at": "2025-08-03T22:55:19.788396"
+      },
+      {
+        "id": "qwq:latest_jb-001",
+        "model_id": "qwq:latest",
+        "rule_id": "jb-001",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.788398",
+        "updated_at": "2025-08-03T22:55:19.788398"
+      },
+      {
+        "id": "qwq:latest_jb-002",
+        "model_id": "qwq:latest",
+        "rule_id": "jb-002",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.788400",
+        "updated_at": "2025-08-03T22:55:19.788400"
+      },
+      {
+        "id": "qwq:latest_hc-001",
+        "model_id": "qwq:latest",
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.788402",
+        "updated_at": "2025-08-03T22:55:19.788402"
       },
       {
         "id": "qwq:latest_hc-004",
@@ -190,8 +360,8 @@
         "enabled": true,
         "priority": 18,
         "override_params": {},
-        "created_at": "2025-04-22T18:50:35.036789",
-        "updated_at": "2025-04-22T18:50:35.036790"
+        "created_at": "2025-08-03T22:55:19.788404",
+        "updated_at": "2025-08-03T22:55:19.788404"
       },
       {
         "id": "qwq:latest_hc-005",
@@ -200,8 +370,8 @@
         "enabled": true,
         "priority": 19,
         "override_params": {},
-        "created_at": "2025-04-22T18:50:35.036791",
-        "updated_at": "2025-04-22T18:50:35.036792"
+        "created_at": "2025-08-03T22:55:19.788406",
+        "updated_at": "2025-08-03T22:55:19.788406"
       },
       {
         "id": "qwq:latest_si-001",
@@ -210,14 +380,24 @@
         "enabled": true,
         "priority": 20,
         "override_params": {},
-        "created_at": "2025-04-22T18:50:35.036793",
-        "updated_at": "2025-04-22T18:50:35.036794"
+        "created_at": "2025-08-03T22:55:19.788408",
+        "updated_at": "2025-08-03T22:55:19.788408"
+      },
+      {
+        "id": "qwq:latest_comp-001",
+        "model_id": "qwq:latest",
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.788410",
+        "updated_at": "2025-08-03T22:55:19.788410"
       }
     ],
     "enabled": true,
     "description": "",
     "created_at": "2025-04-22T18:50:30.958170",
-    "updated_at": "2025-04-22T18:50:35.036796"
+    "updated_at": "2025-08-03T22:55:19.788411"
   },
   {
     "model_id": "llama3.2:latest",
@@ -230,8 +410,8 @@
         "enabled": true,
         "priority": 10,
         "override_params": {},
-        "created_at": "2025-04-28T16:27:51.887821",
-        "updated_at": "2025-04-28T16:27:51.887830"
+        "created_at": "2025-08-03T22:55:19.789166",
+        "updated_at": "2025-08-03T22:55:19.789167"
       },
       {
         "id": "llama3.2:latest_pi-003",
@@ -240,8 +420,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-28T16:27:51.887838",
-        "updated_at": "2025-04-28T16:27:51.887838"
+        "created_at": "2025-08-03T22:55:19.789169",
+        "updated_at": "2025-08-03T22:55:19.789170"
       },
       {
         "id": "llama3.2:latest_jb-001",
@@ -250,8 +430,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-28T16:27:51.887841",
-        "updated_at": "2025-04-28T16:27:51.887841"
+        "created_at": "2025-08-03T22:55:19.789171",
+        "updated_at": "2025-08-03T22:55:19.789172"
       },
       {
         "id": "llama3.2:latest_jb-002",
@@ -260,8 +440,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-28T16:27:51.887843",
-        "updated_at": "2025-04-28T16:27:51.887843"
+        "created_at": "2025-08-03T22:55:19.789173",
+        "updated_at": "2025-08-03T22:55:19.789174"
       },
       {
         "id": "llama3.2:latest_hc-001",
@@ -270,8 +450,8 @@
         "enabled": true,
         "priority": 15,
         "override_params": {},
-        "created_at": "2025-04-28T16:27:51.887845",
-        "updated_at": "2025-04-28T16:27:51.887845"
+        "created_at": "2025-08-03T22:55:19.789175",
+        "updated_at": "2025-08-03T22:55:19.789176"
       },
       {
         "id": "llama3.2:latest_hc-004",
@@ -280,8 +460,8 @@
         "enabled": true,
         "priority": 18,
         "override_params": {},
-        "created_at": "2025-04-28T16:27:51.887847",
-        "updated_at": "2025-04-28T16:27:51.887847"
+        "created_at": "2025-08-03T22:55:19.789177",
+        "updated_at": "2025-08-03T22:55:19.789178"
       },
       {
         "id": "llama3.2:latest_hc-005",
@@ -290,8 +470,8 @@
         "enabled": true,
         "priority": 19,
         "override_params": {},
-        "created_at": "2025-04-28T16:27:51.887848",
-        "updated_at": "2025-04-28T16:27:51.887848"
+        "created_at": "2025-08-03T22:55:19.789179",
+        "updated_at": "2025-08-03T22:55:19.789180"
       },
       {
         "id": "llama3.2:latest_si-001",
@@ -300,8 +480,8 @@
         "enabled": true,
         "priority": 20,
         "override_params": {},
-        "created_at": "2025-04-28T16:27:51.887849",
-        "updated_at": "2025-04-28T16:27:51.887850"
+        "created_at": "2025-08-03T22:55:19.789181",
+        "updated_at": "2025-08-03T22:55:19.789182"
       },
       {
         "id": "llama3.2:latest_comp-001",
@@ -310,18 +490,18 @@
         "enabled": true,
         "priority": 30,
         "override_params": {},
-        "created_at": "2025-04-28T16:27:51.887851",
-        "updated_at": "2025-04-28T16:27:51.887851"
+        "created_at": "2025-08-03T22:55:19.789183",
+        "updated_at": "2025-08-03T22:55:19.789184"
       }
     ],
     "enabled": true,
     "description": "",
     "created_at": "2025-04-22T23:20:50.042430",
-    "updated_at": "2025-04-28T16:27:51.887855"
+    "updated_at": "2025-08-03T22:55:19.789185"
   },
   {
     "model_id": "gemma3:latest",
-    "template_id": "high_security",
+    "template_id": "medium_security",
     "rules": [
       {
         "id": "gemma3:latest_pi-001",
@@ -330,18 +510,8 @@
         "enabled": true,
         "priority": 10,
         "override_params": {},
-        "created_at": "2025-04-23T01:03:57.509682",
-        "updated_at": "2025-04-23T01:03:57.509683"
-      },
-      {
-        "id": "gemma3:latest_pi-002",
-        "model_id": "gemma3:latest",
-        "rule_id": "pi-002",
-        "enabled": true,
-        "priority": 11,
-        "override_params": {},
-        "created_at": "2025-04-23T01:03:57.509816",
-        "updated_at": "2025-04-23T01:03:57.509817"
+        "created_at": "2025-08-03T22:55:19.789901",
+        "updated_at": "2025-08-03T22:55:19.789901"
       },
       {
         "id": "gemma3:latest_pi-003",
@@ -350,28 +520,28 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-23T01:03:57.509820",
-        "updated_at": "2025-04-23T01:03:57.509820"
+        "created_at": "2025-08-03T22:55:19.789904",
+        "updated_at": "2025-08-03T22:55:19.789904"
       },
       {
-        "id": "gemma3:latest_pi-004",
+        "id": "gemma3:latest_jb-001",
         "model_id": "gemma3:latest",
-        "rule_id": "pi-004",
+        "rule_id": "jb-001",
         "enabled": true,
-        "priority": 12,
+        "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-23T01:03:57.509822",
-        "updated_at": "2025-04-23T01:03:57.509822"
+        "created_at": "2025-08-03T22:55:19.789906",
+        "updated_at": "2025-08-03T22:55:19.789906"
       },
       {
-        "id": "gemma3:latest_pi-005",
+        "id": "gemma3:latest_jb-002",
         "model_id": "gemma3:latest",
-        "rule_id": "pi-005",
+        "rule_id": "jb-002",
         "enabled": true,
-        "priority": 13,
+        "priority": 5,
         "override_params": {},
-        "created_at": "2025-04-23T01:03:57.509823",
-        "updated_at": "2025-04-23T01:03:57.509824"
+        "created_at": "2025-08-03T22:55:19.789907",
+        "updated_at": "2025-08-03T22:55:19.789908"
       },
       {
         "id": "gemma3:latest_hc-001",
@@ -380,28 +550,8 @@
         "enabled": true,
         "priority": 15,
         "override_params": {},
-        "created_at": "2025-04-23T01:03:57.510072",
-        "updated_at": "2025-04-23T01:03:57.510072"
-      },
-      {
-        "id": "gemma3:latest_hc-002",
-        "model_id": "gemma3:latest",
-        "rule_id": "hc-002",
-        "enabled": true,
-        "priority": 16,
-        "override_params": {},
-        "created_at": "2025-04-23T01:03:57.510074",
-        "updated_at": "2025-04-23T01:03:57.510074"
-      },
-      {
-        "id": "gemma3:latest_hc-003",
-        "model_id": "gemma3:latest",
-        "rule_id": "hc-003",
-        "enabled": true,
-        "priority": 17,
-        "override_params": {},
-        "created_at": "2025-04-23T01:03:57.510076",
-        "updated_at": "2025-04-23T01:03:57.510076"
+        "created_at": "2025-08-03T22:55:19.789909",
+        "updated_at": "2025-08-03T22:55:19.789910"
       },
       {
         "id": "gemma3:latest_hc-004",
@@ -410,8 +560,8 @@
         "enabled": true,
         "priority": 18,
         "override_params": {},
-        "created_at": "2025-04-23T01:03:57.510080",
-        "updated_at": "2025-04-23T01:03:57.510081"
+        "created_at": "2025-08-03T22:55:19.789911",
+        "updated_at": "2025-08-03T22:55:19.789911"
       },
       {
         "id": "gemma3:latest_hc-005",
@@ -420,8 +570,8 @@
         "enabled": true,
         "priority": 19,
         "override_params": {},
-        "created_at": "2025-04-23T01:03:57.510082",
-        "updated_at": "2025-04-23T01:03:57.510083"
+        "created_at": "2025-08-03T22:55:19.789913",
+        "updated_at": "2025-08-03T22:55:19.789913"
       },
       {
         "id": "gemma3:latest_si-001",
@@ -430,18 +580,8 @@
         "enabled": true,
         "priority": 20,
         "override_params": {},
-        "created_at": "2025-04-23T01:03:57.510084",
-        "updated_at": "2025-04-23T01:03:57.510084"
-      },
-      {
-        "id": "gemma3:latest_si-002",
-        "model_id": "gemma3:latest",
-        "rule_id": "si-002",
-        "enabled": true,
-        "priority": 21,
-        "override_params": {},
-        "created_at": "2025-04-23T01:03:57.510086",
-        "updated_at": "2025-04-23T01:03:57.510086"
+        "created_at": "2025-08-03T22:55:19.789915",
+        "updated_at": "2025-08-03T22:55:19.789915"
       },
       {
         "id": "gemma3:latest_comp-001",
@@ -450,34 +590,14 @@
         "enabled": true,
         "priority": 30,
         "override_params": {},
-        "created_at": "2025-04-23T01:03:57.510087",
-        "updated_at": "2025-04-23T01:03:57.510087"
-      },
-      {
-        "id": "gemma3:latest_comp-002",
-        "model_id": "gemma3:latest",
-        "rule_id": "comp-002",
-        "enabled": true,
-        "priority": 31,
-        "override_params": {},
-        "created_at": "2025-04-23T01:03:57.510089",
-        "updated_at": "2025-04-23T01:03:57.510089"
-      },
-      {
-        "id": "gemma3:latest_comp-003",
-        "model_id": "gemma3:latest",
-        "rule_id": "comp-003",
-        "enabled": true,
-        "priority": 32,
-        "override_params": {},
-        "created_at": "2025-04-23T01:03:57.510090",
-        "updated_at": "2025-04-23T01:03:57.510090"
+        "created_at": "2025-08-03T22:55:19.789916",
+        "updated_at": "2025-08-03T22:55:19.789917"
       }
     ],
     "enabled": true,
     "description": "",
     "created_at": "2025-04-23T01:03:57.507471",
-    "updated_at": "2025-04-23T01:03:57.510093"
+    "updated_at": "2025-08-03T22:55:19.789918"
   },
   {
     "model_id": "deepseek-r1:14b",
@@ -490,8 +610,8 @@
         "enabled": true,
         "priority": 10,
         "override_params": {},
-        "created_at": "2025-07-09T20:57:28.109794",
-        "updated_at": "2025-07-09T20:57:28.109807"
+        "created_at": "2025-08-03T22:55:19.790606",
+        "updated_at": "2025-08-03T22:55:19.790606"
       },
       {
         "id": "deepseek-r1:14b_pi-003",
@@ -500,8 +620,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-07-09T20:57:28.109818",
-        "updated_at": "2025-07-09T20:57:28.109819"
+        "created_at": "2025-08-03T22:55:19.790608",
+        "updated_at": "2025-08-03T22:55:19.790609"
       },
       {
         "id": "deepseek-r1:14b_jb-001",
@@ -510,8 +630,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-07-09T20:57:28.109822",
-        "updated_at": "2025-07-09T20:57:28.109823"
+        "created_at": "2025-08-03T22:55:19.790610",
+        "updated_at": "2025-08-03T22:55:19.790611"
       },
       {
         "id": "deepseek-r1:14b_jb-002",
@@ -520,8 +640,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-07-09T20:57:28.109826",
-        "updated_at": "2025-07-09T20:57:28.109827"
+        "created_at": "2025-08-03T22:55:19.790612",
+        "updated_at": "2025-08-03T22:55:19.790612"
       },
       {
         "id": "deepseek-r1:14b_hc-001",
@@ -530,8 +650,8 @@
         "enabled": true,
         "priority": 15,
         "override_params": {},
-        "created_at": "2025-07-09T20:57:28.109829",
-        "updated_at": "2025-07-09T20:57:28.109830"
+        "created_at": "2025-08-03T22:55:19.790614",
+        "updated_at": "2025-08-03T22:55:19.790614"
       },
       {
         "id": "deepseek-r1:14b_hc-004",
@@ -540,8 +660,8 @@
         "enabled": true,
         "priority": 18,
         "override_params": {},
-        "created_at": "2025-07-09T20:57:28.109833",
-        "updated_at": "2025-07-09T20:57:28.109833"
+        "created_at": "2025-08-03T22:55:19.790616",
+        "updated_at": "2025-08-03T22:55:19.790616"
       },
       {
         "id": "deepseek-r1:14b_hc-005",
@@ -550,8 +670,8 @@
         "enabled": true,
         "priority": 19,
         "override_params": {},
-        "created_at": "2025-07-09T20:57:28.109836",
-        "updated_at": "2025-07-09T20:57:28.109837"
+        "created_at": "2025-08-03T22:55:19.790617",
+        "updated_at": "2025-08-03T22:55:19.790618"
       },
       {
         "id": "deepseek-r1:14b_si-001",
@@ -560,8 +680,8 @@
         "enabled": true,
         "priority": 20,
         "override_params": {},
-        "created_at": "2025-07-09T20:57:28.109840",
-        "updated_at": "2025-07-09T20:57:28.109840"
+        "created_at": "2025-08-03T22:55:19.790619",
+        "updated_at": "2025-08-03T22:55:19.790620"
       },
       {
         "id": "deepseek-r1:14b_comp-001",
@@ -570,14 +690,14 @@
         "enabled": true,
         "priority": 30,
         "override_params": {},
-        "created_at": "2025-07-09T20:57:28.109844",
-        "updated_at": "2025-07-09T20:57:28.109844"
+        "created_at": "2025-08-03T22:55:19.790621",
+        "updated_at": "2025-08-03T22:55:19.790621"
       }
     ],
     "enabled": true,
     "description": "",
     "created_at": "2025-07-09T20:57:06.260752",
-    "updated_at": "2025-07-09T20:57:28.109848"
+    "updated_at": "2025-08-03T22:55:19.790622"
   },
   {
     "model_id": "qwen3:latest",
@@ -590,8 +710,8 @@
         "enabled": true,
         "priority": 10,
         "override_params": {},
-        "created_at": "2025-08-03T20:56:39.051720",
-        "updated_at": "2025-08-03T20:56:39.051722"
+        "created_at": "2025-08-03T22:55:19.791305",
+        "updated_at": "2025-08-03T22:55:19.791306"
       },
       {
         "id": "qwen3:latest_pi-003",
@@ -600,8 +720,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-08-03T20:56:39.051729",
-        "updated_at": "2025-08-03T20:56:39.051729"
+        "created_at": "2025-08-03T22:55:19.791308",
+        "updated_at": "2025-08-03T22:55:19.791308"
       },
       {
         "id": "qwen3:latest_jb-001",
@@ -610,8 +730,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-08-03T20:56:39.051733",
-        "updated_at": "2025-08-03T20:56:39.051733"
+        "created_at": "2025-08-03T22:55:19.791310",
+        "updated_at": "2025-08-03T22:55:19.791310"
       },
       {
         "id": "qwen3:latest_jb-002",
@@ -620,8 +740,8 @@
         "enabled": true,
         "priority": 5,
         "override_params": {},
-        "created_at": "2025-08-03T20:56:39.051735",
-        "updated_at": "2025-08-03T20:56:39.051736"
+        "created_at": "2025-08-03T22:55:19.791312",
+        "updated_at": "2025-08-03T22:55:19.791312"
       },
       {
         "id": "qwen3:latest_hc-001",
@@ -630,8 +750,8 @@
         "enabled": true,
         "priority": 15,
         "override_params": {},
-        "created_at": "2025-08-03T20:56:39.051738",
-        "updated_at": "2025-08-03T20:56:39.051738"
+        "created_at": "2025-08-03T22:55:19.791314",
+        "updated_at": "2025-08-03T22:55:19.791314"
       },
       {
         "id": "qwen3:latest_hc-004",
@@ -640,8 +760,8 @@
         "enabled": true,
         "priority": 18,
         "override_params": {},
-        "created_at": "2025-08-03T20:56:39.051740",
-        "updated_at": "2025-08-03T20:56:39.051740"
+        "created_at": "2025-08-03T22:55:19.791316",
+        "updated_at": "2025-08-03T22:55:19.791316"
       },
       {
         "id": "qwen3:latest_hc-005",
@@ -650,8 +770,8 @@
         "enabled": true,
         "priority": 19,
         "override_params": {},
-        "created_at": "2025-08-03T20:56:39.051742",
-        "updated_at": "2025-08-03T20:56:39.051743"
+        "created_at": "2025-08-03T22:55:19.791318",
+        "updated_at": "2025-08-03T22:55:19.791318"
       },
       {
         "id": "qwen3:latest_si-001",
@@ -660,8 +780,8 @@
         "enabled": true,
         "priority": 20,
         "override_params": {},
-        "created_at": "2025-08-03T20:56:39.051745",
-        "updated_at": "2025-08-03T20:56:39.051745"
+        "created_at": "2025-08-03T22:55:19.791319",
+        "updated_at": "2025-08-03T22:55:19.791320"
       },
       {
         "id": "qwen3:latest_comp-001",
@@ -670,13 +790,113 @@
         "enabled": true,
         "priority": 30,
         "override_params": {},
-        "created_at": "2025-08-03T20:56:39.051747",
-        "updated_at": "2025-08-03T20:56:39.051747"
+        "created_at": "2025-08-03T22:55:19.791321",
+        "updated_at": "2025-08-03T22:55:19.791321"
       }
     ],
     "enabled": true,
     "description": "",
     "created_at": "2025-08-03T20:56:32.030265",
-    "updated_at": "2025-08-03T20:56:39.051750"
+    "updated_at": "2025-08-03T22:55:19.791322"
+  },
+  {
+    "model_id": "phi3:latest",
+    "template_id": "medium_security",
+    "rules": [
+      {
+        "id": "phi3:latest_pi-001",
+        "model_id": "phi3:latest",
+        "rule_id": "pi-001",
+        "enabled": true,
+        "priority": 10,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.792236",
+        "updated_at": "2025-08-03T22:55:19.792236"
+      },
+      {
+        "id": "phi3:latest_pi-003",
+        "model_id": "phi3:latest",
+        "rule_id": "pi-003",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.792238",
+        "updated_at": "2025-08-03T22:55:19.792239"
+      },
+      {
+        "id": "phi3:latest_jb-001",
+        "model_id": "phi3:latest",
+        "rule_id": "jb-001",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.792240",
+        "updated_at": "2025-08-03T22:55:19.792240"
+      },
+      {
+        "id": "phi3:latest_jb-002",
+        "model_id": "phi3:latest",
+        "rule_id": "jb-002",
+        "enabled": true,
+        "priority": 5,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.792242",
+        "updated_at": "2025-08-03T22:55:19.792242"
+      },
+      {
+        "id": "phi3:latest_hc-001",
+        "model_id": "phi3:latest",
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.792244",
+        "updated_at": "2025-08-03T22:55:19.792244"
+      },
+      {
+        "id": "phi3:latest_hc-004",
+        "model_id": "phi3:latest",
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.792246",
+        "updated_at": "2025-08-03T22:55:19.792246"
+      },
+      {
+        "id": "phi3:latest_hc-005",
+        "model_id": "phi3:latest",
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.792247",
+        "updated_at": "2025-08-03T22:55:19.792248"
+      },
+      {
+        "id": "phi3:latest_si-001",
+        "model_id": "phi3:latest",
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.792249",
+        "updated_at": "2025-08-03T22:55:19.792250"
+      },
+      {
+        "id": "phi3:latest_comp-001",
+        "model_id": "phi3:latest",
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30,
+        "override_params": {},
+        "created_at": "2025-08-03T22:55:19.792251",
+        "updated_at": "2025-08-03T22:55:19.792251"
+      }
+    ],
+    "enabled": true,
+    "description": "",
+    "created_at": "2025-08-03T22:55:13.272543",
+    "updated_at": "2025-08-03T22:55:19.792252"
   }
 ]

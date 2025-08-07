@@ -374,5 +374,252 @@
     ],
     "category": "research",
     "created_at": "2025-04-27T09:30:00Z"
+  },
+  {
+    "id": "adult_content_template",
+    "name": "成人内容检测模板",
+    "description": "专门检测色情、成人内容和不当性暗示的规则模板，适用于需要严格内容审核的场景",
+    "rules": [
+      {
+        "rule_id": "ac-001",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "ac-002",
+        "enabled": true,
+        "priority": 6
+      },
+      {
+        "rule_id": "ac-003",
+        "enabled": true,
+        "priority": 7
+      },
+      {
+        "rule_id": "ac-004",
+        "enabled": true,
+        "priority": 8
+      },
+      {
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20
+      }
+    ],
+    "category": "content-safety",
+    "created_at": "2025-08-05T10:00:00Z",
+    "icon": "🔞",
+    "wizard_description": "检测色情和成人内容相关输入"
+  },
+  {
+    "id": "political_sensitive_template",
+    "name": "政治敏感内容检测模板",
+    "description": "检测政治敏感言论、极端政治观点和可能引起争议的政治内容，维护平台中立性",
+    "rules": [
+      {
+        "rule_id": "ps-001",
+        "enabled": true,
+        "priority": 10
+      },
+      {
+        "rule_id": "ps-002",
+        "enabled": true,
+        "priority": 11
+      },
+      {
+        "rule_id": "ps-003",
+        "enabled": true,
+        "priority": 12
+      },
+      {
+        "rule_id": "ps-004",
+        "enabled": true,
+        "priority": 13
+      },
+      {
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30
+      }
+    ],
+    "category": "compliance",
+    "created_at": "2025-08-05T10:00:00Z",
+    "icon": "🏛️",
+    "wizard_description": "检测政治敏感和争议性政治言论"
+  },
+  {
+    "id": "hate_speech_template",
+    "name": "仇恨言论检测模板",
+    "description": "识别和阻止基于种族、性别、宗教、性取向等的仇恨言论和歧视性内容",
+    "rules": [
+      {
+        "rule_id": "hs-001",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "hs-002",
+        "enabled": true,
+        "priority": 6
+      },
+      {
+        "rule_id": "hs-003",
+        "enabled": true,
+        "priority": 7
+      },
+      {
+        "rule_id": "hs-004",
+        "enabled": true,
+        "priority": 8
+      },
+      {
+        "rule_id": "hc-002",
+        "enabled": true,
+        "priority": 16
+      }
+    ],
+    "category": "content-safety",
+    "created_at": "2025-08-05T10:00:00Z",
+    "icon": "⚖️",
+    "wizard_description": "检测仇恨言论和歧视性内容"
+  },
+  {
+    "id": "violence_content_template",
+    "name": "暴力内容检测模板",
+    "description": "检测暴力威胁、伤害指导和极端暴力内容，保护用户安全",
+    "rules": [
+      {
+        "rule_id": "vc-001",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "vc-002",
+        "enabled": true,
+        "priority": 6
+      },
+      {
+        "rule_id": "vc-003",
+        "enabled": true,
+        "priority": 7
+      },
+      {
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15
+      },
+      {
+        "rule_id": "hc-011",
+        "enabled": true,
+        "priority": 5
+      }
+    ],
+    "category": "content-safety",
+    "created_at": "2025-08-05T10:00:00Z",
+    "icon": "⚠️",
+    "wizard_description": "检测暴力威胁和极端暴力内容"
+  },
+  {
+    "id": "drug_substance_template",
+    "name": "毒品药物滥用检测模板",
+    "description": "检测毒品制造、药物滥用和非法物质相关内容，防止有害信息传播",
+    "rules": [
+      {
+        "rule_id": "ds-001",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "ds-002",
+        "enabled": true,
+        "priority": 6
+      },
+      {
+        "rule_id": "ds-003",
+        "enabled": true,
+        "priority": 7
+      },
+      {
+        "rule_id": "hc-003",
+        "enabled": true,
+        "priority": 17
+      }
+    ],
+    "category": "content-safety",
+    "created_at": "2025-08-05T10:00:00Z",
+    "icon": "💊",
+    "wizard_description": "检测毒品和药物滥用相关内容"
+  },
+  {
+    "id": "financial_fraud_template",
+    "name": "金融诈骗检测模板",
+    "description": "识别金融诈骗、投资欺诈和非法金融活动相关内容，保护用户财产安全",
+    "rules": [
+      {
+        "rule_id": "ff-001",
+        "enabled": true,
+        "priority": 10
+      },
+      {
+        "rule_id": "ff-002",
+        "enabled": true,
+        "priority": 11
+      },
+      {
+        "rule_id": "ff-003",
+        "enabled": true,
+        "priority": 12
+      },
+      {
+        "rule_id": "si-002",
+        "enabled": true,
+        "priority": 21
+      }
+    ],
+    "category": "security",
+    "created_at": "2025-08-05T10:00:00Z",
+    "icon": "🏦",
+    "wizard_description": "检测金融诈骗和投资欺诈内容"
+  },
+  {
+    "id": "minor_protection_template",
+    "name": "未成年人保护模板",
+    "description": "专门保护未成年人的安全规则模板，严格过滤可能对儿童有害的内容",
+    "rules": [
+      {
+        "rule_id": "mp-001",
+        "enabled": true,
+        "priority": 1
+      },
+      {
+        "rule_id": "mp-002",
+        "enabled": true,
+        "priority": 2
+      },
+      {
+        "rule_id": "ac-001",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "ac-002",
+        "enabled": true,
+        "priority": 6
+      },
+      {
+        "rule_id": "vc-001",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "hs-001",
+        "enabled": true,
+        "priority": 5
+      }
+    ],
+    "category": "child-safety",
+    "created_at": "2025-08-05T10:00:00Z",
+    "icon": "👶",
+    "wizard_description": "针对未成年人的全面安全保护"
   }
 ]

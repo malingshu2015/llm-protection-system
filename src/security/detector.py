@@ -906,10 +906,16 @@ class HarmfulContentDetector:
             
             legitimate_knives = whitelist.get('knife_whitelist', [])
             legitimate_contexts = whitelist.get('legitimate_contexts', [])
+            professional_identifiers = whitelist.get('professional_identifiers', [])
+            educational_phrases = whitelist.get('educational_phrases', [])
+            safety_disclaimers = whitelist.get('safety_disclaimers', [])
         except Exception as e:
             logger.warning(f"无法加载白名单文件: {e}")
             legitimate_knives = ['手术刀', '厨刀', '菜刀', 'surgical knife', 'kitchen knife', 'chef knife']
             legitimate_contexts = ['医疗', '医学', '手术', '烹饪', '厨房', 'medical', 'surgery', 'cooking', 'kitchen']
+            professional_identifiers = ['我是医生', '我是厨师', 'I am a doctor', 'I am a chef']
+            educational_phrases = ['我想了解', '我想学习', 'I want to understand', 'I want to learn']
+            safety_disclaimers = ['仅供学习', '教育目的', 'for educational purposes only']
         
         # 1. 检查是否为合法的刀具类型 - 但要结合上下文
         legitimate_knife_detected = None
@@ -938,7 +944,34 @@ class HarmfulContentDetector:
                 context_analysis={"knife_type": legitimate_knife_detected, "making_intent": False}
             )
         
-        # 3. 检查是否在合法的上下文中
+        # 3. 优先检查专业身份识别
+        for identifier in professional_identifiers:
+            if identifier.lower() in text_lower:
+                return DetectionResult(
+                    is_allowed=True,
+                    reason=f"Allowed: Professional identity detected - {identifier}",
+                    context_analysis={"context": "professional", "identifier": identifier}
+                )
+        
+        # 4. 检查教育免责声明
+        for disclaimer in safety_disclaimers:
+            if disclaimer.lower() in text_lower:
+                return DetectionResult(
+                    is_allowed=True,
+                    reason=f"Allowed: Educational disclaimer detected - {disclaimer}",
+                    context_analysis={"context": "educational_disclaimer", "disclaimer": disclaimer}
+                )
+        
+        # 5. 检查教育性询问短语
+        for phrase in educational_phrases:
+            if phrase.lower() in text_lower:
+                return DetectionResult(
+                    is_allowed=True,
+                    reason=f"Allowed: Educational inquiry detected - {phrase}",
+                    context_analysis={"context": "educational_inquiry", "phrase": phrase}
+                )
+        
+        # 6. 检查是否在合法的上下文中
         context_score = 0
         detected_contexts = []
         
@@ -1594,11 +1627,16 @@ class SecurityDetector:
             logger.info("SecurityDetector: 请求文本为空，允许通过")
             return DetectionResult(is_allowed=True)
 
+        # 快速检查：如果是简单的问候语，直接允许通过
+        if self._is_simple_greeting(text.strip()):
+            logger.info(f"SecurityDetector: 检测到简单问候语，直接允许通过: {text.strip()}")
+            return DetectionResult(is_allowed=True)
+
         # 记录前200个字符的文本，避免日志过长
         logger.info(f"SecurityDetector: 请求文本: {text[:200]}...")
 
         # 获取或创建对话，但先不添加当前消息
-        conversation_id, conversation = self.conversation_tracker.get_or_create_conversation(request)
+        conversation_id, conversation = self.conversation_tracker.process_request(request)
         logger.info(f"SecurityDetector: 处理对话 {conversation_id}，历史消息数: {len(conversation.messages)}")
 
         # 如果对话中有历史消息，则进行上下文感知检测
@@ -1618,7 +1656,8 @@ class SecurityDetector:
                 return result
                 
         # 现在正式添加当前消息到对话历史
-        self.conversation_tracker.add_user_message_to_conversation(conversation_id, self._extract_user_content(request))
+        user_content = self._extract_text_from_request(request)
+        self.conversation_tracker.add_user_message_to_conversation(conversation_id, user_content)
 
         # 执行模型特定检测
         # if settings.security.enable_model_specific_detection:
@@ -1858,3 +1897,64 @@ class SecurityDetector:
                         text += gen["text"] + "\n"
 
         return text
+
+    def _create_temp_conversation_with_current_message(self, conversation, request):
+        """创建包含当前消息的临时对话，用于上下文感知检测。
+        
+        Args:
+            conversation: 原始对话对象
+            request: 当前请求
+            
+        Returns:
+            包含当前消息的临时对话对象
+        """
+        from copy import deepcopy
+        
+        # 深度复制对话对象以避免修改原始对话
+        temp_conversation = deepcopy(conversation)
+        
+        # 提取当前请求的用户内容
+        current_content = self._extract_text_from_request(request)
+        if current_content:
+            temp_conversation.add_message("user", current_content)
+            
+        return temp_conversation
+
+    def _is_simple_greeting(self, text: str) -> bool:
+        """检查是否为简单的问候语。
+        
+        Args:
+            text: 要检查的文本
+            
+        Returns:
+            是否为简单问候语
+        """
+        if not text or len(text) > 50:  # 问候语通常很短
+            return False
+            
+        # 加载问候语白名单
+        try:
+            import json
+            import os
+            whitelist_path = "rules/sensitive_info_whitelist.json"
+            if os.path.exists(whitelist_path):
+                with open(whitelist_path, "r", encoding="utf-8") as f:
+                    whitelist = json.load(f)
+                    greeting_list = whitelist.get("greeting_whitelist", [])
+                    
+                    # 检查是否匹配问候语白名单
+                    text_lower = text.lower().strip()
+                    for greeting in greeting_list:
+                        if text_lower == greeting.lower().strip():
+                            return True
+        except Exception as e:
+            logger.error(f"加载问候语白名单失败: {e}")
+            
+        # 默认的基础问候语检查
+        basic_greetings = ["你好", "您好", "hi", "hello", "hey", "早上好", "下午好", "晚上好"]
+        text_lower = text.lower().strip()
+        for greeting in basic_greetings:
+            if text_lower == greeting.lower():
+                return True
+                
+        return False

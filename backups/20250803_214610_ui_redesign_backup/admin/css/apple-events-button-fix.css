@@ -1,0 +1,64 @@
+/* 
+ * 安全事件列表按钮样式修复
+ * 用于解决安全事件列表中按钮对齐问题
+ */
+
+/* 操作列样式 */
+.data-table th:last-child,
+.data-table td:last-child {
+  width: 180px;
+  text-align: right;
+  padding-right: 10px;
+}
+
+/* 操作按钮容器 */
+.action-buttons-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+}
+
+/* 按钮基础样式 */
+.rule-actions .button {
+  padding: 3px 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 4px;
+  white-space: nowrap;
+  min-width: 45px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0;
+  height: 24px;
+}
+
+/* 详情按钮样式 */
+.rule-actions .button.secondary {
+  background-color: #f2f2f7;
+  color: #1c1c1e;
+  border: 1px solid #d1d1d6;
+}
+
+.rule-actions .button.secondary:hover {
+  background-color: #e5e5ea;
+}
+
+/* 表格行样式调整 */
+.data-table tr {
+  height: 50px;
+}
+
+.data-table td {
+  vertical-align: middle;
+}
+
+/* 确保按钮在单元格中垂直居中 */
+.rule-actions {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}

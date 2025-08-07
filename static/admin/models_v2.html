@@ -1,0 +1,2803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>模型管理 - 本地大模型防护系统</title>
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/wizard.css">
+    <script src="/static/admin/js/apple-ui.js" defer></script>
+    <script src="/static/admin/js/model-config-wizard.js" defer></script>
+    <style>
+        /* 现代化模型管理页面样式 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --danger-color: #FF3B30;
+            --surface-color: #FFFFFF;
+            --surface-secondary: #F2F2F7;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        /* 仪表板样式 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .dashboard-card {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .dashboard-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .dashboard-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .dashboard-card-icon.primary { background: linear-gradient(135deg, var(--primary-color), #5AC8FA); }
+        .dashboard-card-icon.success { background: linear-gradient(135deg, var(--success-color), #30D158); }
+        .dashboard-card-icon.warning { background: linear-gradient(135deg, var(--warning-color), #FFCC02); }
+        .dashboard-card-icon.danger { background: linear-gradient(135deg, var(--danger-color), #FF453A); }
+
+        .dashboard-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .dashboard-card-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 8px 0;
+        }
+
+        .dashboard-card-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .dashboard-card-progress {
+            margin-top: 16px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--surface-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.low { background: linear-gradient(90deg, var(--success-color), #30D158); }
+        .progress-fill.medium { background: linear-gradient(90deg, var(--warning-color), #FFCC02); }
+        .progress-fill.high { background: linear-gradient(90deg, var(--danger-color), #FF453A); }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 快速操作区域 */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .quick-action-card {
+            background: var(--surface-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .quick-action-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .quick-action-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 16px;
+            color: white;
+        }
+
+        .quick-action-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .quick-action-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        /* 模型卡片网格 */
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 20px;
+        }
+
+        .model-card {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        .model-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .model-card-header {
+            background: linear-gradient(135deg, var(--surface-secondary), #E5E5EA);
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .model-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .model-status-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .model-status-badge.active {
+            background: rgba(52, 199, 89, 0.1);
+            color: var(--success-color);
+        }
+
+        .model-status-badge.inactive {
+            background: rgba(142, 142, 147, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .model-card-meta {
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 16px;
+        }
+
+        .model-card-body {
+            padding: 20px;
+        }
+
+        .model-security-score {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .security-score-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .security-score-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .security-level-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+
+        .security-level-indicator.strict { background: var(--success-color); }
+        .security-level-indicator.balanced { background: var(--warning-color); }
+        .security-level-indicator.relaxed { background: var(--danger-color); }
+
+        .model-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .model-tag {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            background: var(--surface-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .model-tag.production { background: rgba(52, 199, 89, 0.1); color: var(--success-color); border-color: var(--success-color); }
+        .model-tag.testing { background: rgba(255, 149, 0, 0.1); color: var(--warning-color); border-color: var(--warning-color); }
+        .model-tag.development { background: rgba(0, 122, 255, 0.1); color: var(--primary-color); border-color: var(--primary-color); }
+
+        .model-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+            border-color: #0056CC;
+        }
+
+        .btn-secondary {
+            background: var(--surface-color);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-secondary);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background: #D70015;
+            border-color: #D70015;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* 工具栏 */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: var(--surface-color);
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        /* 过滤器 */
+        .filter-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--surface-secondary);
+            padding: 4px;
+            border-radius: var(--radius-sm);
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tab.active {
+            background: var(--surface-color);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .empty-state-description {
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+
+        /* 加载状态 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .models-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+
+            .toolbar-left,
+            .toolbar-right {
+                justify-content: center;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+        }
+
+        /* 配置向导样式 */
+        .wizard-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .wizard-title-section {
+            flex: 1;
+        }
+
+        .wizard-close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+            margin-left: 16px;
+            flex-shrink: 0;
+        }
+
+        .wizard-close-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* 增强选中状态的视觉反馈 */
+        .wizard-option-card.selected {
+            border-color: var(--primary-color) !important;
+            background: rgba(0, 122, 255, 0.08) !important;
+            transform: translateY(-1px);
+            box-shadow: 
+                0 8px 24px rgba(0, 122, 255, 0.15),
+                inset 0 0 0 1px rgba(0, 122, 255, 0.1);
+        }
+
+        .wizard-option-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .wizard-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .wizard-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .wizard-modal {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wizard-overlay.active .wizard-modal {
+            transform: translateY(0);
+        }
+
+        .wizard-header {
+            padding: 24px 24px 0 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .wizard-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 8px 0;
+        }
+
+        .wizard-description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .wizard-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .wizard-step {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            position: relative;
+        }
+
+        .wizard-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            right: -50%;
+            left: 50%;
+            height: 2px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+
+        .wizard-step.active:not(:last-child)::after {
+            background: var(--primary-color);
+        }
+
+        .wizard-step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--border-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .wizard-step.active .wizard-step-number {
+            background: var(--primary-color);
+        }
+
+        .wizard-step.completed .wizard-step-number {
+            background: var(--success-color);
+        }
+
+        .wizard-step-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .wizard-step.active .wizard-step-label {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .wizard-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+            max-height: calc(85vh - 200px);
+        }
+
+        .wizard-footer {
+            padding: 0 24px 24px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface-secondary, #F2F2F7);
+            border-top: 1px solid var(--border-color, #E5E5EA);
+            min-height: 80px; /* 确保有足够高度 */
+        }
+
+        .wizard-footer .btn {
+            min-width: 100px;
+            display: inline-flex !important; /* 强制显示 */
+        }
+
+        .wizard-footer > div:last-child {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: var(--surface-color);
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .option-card {
+            padding: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary-color);
+        }
+
+        .option-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .option-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .option-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .option-description {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 批量操作工具栏样式 */
+        .batch-toolbar {
+            background: var(--primary-color);
+            color: white;
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .batch-info {
+            font-weight: 500;
+        }
+
+        .batch-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .batch-actions .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .batch-actions .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .batch-actions .btn.btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* 模型卡片选中状态 */
+        .model-card.batch-mode {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .model-card.batch-mode .model-card-header {
+            padding-left: 50px; /* 为选择框留出空间：16px(left) + 18px(width) + 2px(border) + 14px(margin) */
+        }
+
+        .model-card.batch-mode .model-card-body {
+            padding-left: 50px; /* 保持与header一致的左边距 */
+        }
+
+        .model-card.batch-mode::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 3px;
+            background: white;
+            z-index: 2;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .model-card.batch-mode:hover::before {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0, 122, 255, 0.2);
+        }
+
+        .model-card.batch-mode.selected {
+            border-color: var(--primary-color);
+            background: rgba(0, 122, 255, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
+        }
+
+        .model-card.batch-mode.selected::before {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .model-card.batch-mode.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 22px;
+            left: 22px;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* 模型市场弹窗样式 */
+        .market-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .market-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .market-modal {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow: hidden;
+            transform: translateY(30px);
+            transition: transform 0.3s ease;
+        }
+
+        .market-overlay.active .market-modal {
+            transform: translateY(0);
+        }
+
+        .market-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .market-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .market-close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .market-close-btn:hover {
+            background: var(--surface-secondary);
+            color: var(--text-primary);
+        }
+
+        .market-body {
+            padding: 24px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .market-filters {
+            margin-bottom: 24px;
+        }
+
+        .market-categories {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .market-category {
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--surface-secondary);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .market-category i {
+            font-size: 12px;
+        }
+
+        .market-category.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .market-category:hover:not(.active) {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .market-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .market-search {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+        }
+
+        .market-search i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .market-search input {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: var(--surface-color);
+            transition: all 0.2s ease;
+        }
+
+        .market-search input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .market-sort select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: var(--surface-color);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .market-view-toggle {
+            display: flex;
+            gap: 4px;
+        }
+
+        .view-btn {
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            background: var(--surface-color);
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .view-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .view-btn:hover:not(.active) {
+            background: var(--surface-secondary);
+            color: var(--text-primary);
+        }
+
+        .market-stats {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+
+        .stats-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stats-item i {
+            font-size: 12px;
+            color: var(--primary-color);
+        }
+
+        .market-models {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .market-model-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0;
+            transition: all 0.2s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .market-model-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .market-model-card.featured {
+            border-color: var(--warning-color);
+            box-shadow: 0 0 0 1px rgba(255, 149, 0, 0.2);
+        }
+
+        .market-model-card.featured::before {
+            content: 'FEATURED';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--warning-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .market-model-card.new::before {
+            content: 'NEW';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--success-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .market-model-card.hot::before {
+            content: 'HOT';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--danger-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .market-model-header {
+            padding: 20px 20px 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--surface-secondary), #F8F9FA);
+        }
+
+        .market-model-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .market-model-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .model-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .rating-stars {
+            color: var(--warning-color);
+        }
+
+        .market-model-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .model-size {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .model-stats {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .market-model-body {
+            padding: 16px 20px;
+        }
+
+        .market-model-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .market-model-tags {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .market-model-tag {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            background: var(--surface-secondary);
+            color: var(--text-secondary);
+        }
+
+        .market-model-tag.primary {
+            background: rgba(0, 122, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        .market-model-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .market-model-actions .btn {
+            flex: 1;
+            justify-content: center;
+            font-size: 13px;
+            padding: 8px 12px;
+        }
+
+        /* 列表视图样式 */
+        .market-models.list-view {
+            display: block;
+        }
+
+        .market-models.list-view .market-model-card {
+            display: flex;
+            margin-bottom: 12px;
+            padding: 16px;
+        }
+
+        .market-models.list-view .market-model-header {
+            flex: 1;
+            border: none;
+            background: none;
+            padding: 0;
+            margin-right: 16px;
+        }
+
+        .market-models.list-view .market-model-body {
+            flex: 2;
+            padding: 0;
+        }
+
+        .market-models.list-view .market-model-actions {
+            flex-shrink: 0;
+            flex-direction: column;
+            width: 120px;
+        }
+
+        .market-models.list-view .market-model-actions .btn {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoaWVsZCI+PHBhdGggZD0iTTEyIDIycy04LTUtOC0xMlY1bDgtM2w4IDN2N2MwIDctOCAxMi04IDEyeiIvPjwvc3ZnPg=="
+                        alt="Logo">
+                    <h2>本地大模型防护系统</h2>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="monitor_v2.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
+                        <span class="sidebar-menu-text">监控中心</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="rules_v2.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="sidebar-menu-text">规则管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="model_rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-cogs"></i></span>
+                        <span class="sidebar-menu-text">规则配置</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="events.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="sidebar-menu-text">安全事件</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="models_v2.html" class="sidebar-menu-link active">
+                        <span class="sidebar-menu-icon"><i class="fas fa-brain"></i></span>
+                        <span class="sidebar-menu-text">模型管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
+                        <span class="sidebar-menu-text">模型测试</span>
+                    </a>
+                </li>
+                <!-- 聊天演示暂时隐藏 -->
+                <!--
+                <li class="sidebar-menu-item">
+                    <a href="/static/index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
+                        <span class="sidebar-menu-text">聊天演示</span>
+                    </a>
+                </li>
+                -->
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center justify-content-center gap-sm">
+                    <span>暗色模式</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="mt-sm">版本 1.0.3</div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部导航栏 -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="navbar-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="navbar-title">本地大模型防护系统</h1>
+                </div>
+                <div class="navbar-right">
+                    <span id="current-time"></span>
+                </div>
+            </nav>
+
+            <!-- 页面标题 -->
+            <header class="page-header">
+                <h1 class="page-title">模型管理</h1>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                    <button class="btn btn-primary" id="config-wizard-btn">
+                        <i class="fas fa-magic"></i> 智能配置
+                    </button>
+                </div>
+            </header>
+
+            <!-- 仪表板 -->
+            <div class="dashboard" id="dashboard">
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <div class="dashboard-card-icon primary">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div>
+                            <h3 class="dashboard-card-title">已安装模型</h3>
+                            <div class="dashboard-card-value" id="total-models">0</div>
+                            <p class="dashboard-card-subtitle">个模型可用</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <div class="dashboard-card-icon success">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <h3 class="dashboard-card-title">安全评分</h3>
+                            <div class="dashboard-card-value" id="avg-security-score">0</div>
+                            <p class="dashboard-card-subtitle">平均安全评分</p>
+                        </div>
+                    </div>
+                    <div class="dashboard-card-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill low" style="width: 0%" id="security-progress"></div>
+                        </div>
+                        <div class="progress-labels">
+                            <span>低风险</span>
+                            <span>高风险</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <div class="dashboard-card-icon warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <h3 class="dashboard-card-title">风险分布</h3>
+                            <div class="dashboard-card-value" id="high-risk-count">0</div>
+                            <p class="dashboard-card-subtitle">高风险模型</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <div class="dashboard-card-icon danger">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div>
+                            <h3 class="dashboard-card-title">配置状态</h3>
+                            <div class="dashboard-card-value" id="configured-count">0</div>
+                            <p class="dashboard-card-subtitle">已配置模型</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="quick-actions">
+                <div class="quick-action-card">
+                    <div class="quick-action-header">
+                        <div class="quick-action-icon primary">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3 class="quick-action-title">智能配置向导</h3>
+                    </div>
+                    <p class="quick-action-description">通过智能向导快速为模型配置最优的安全策略</p>
+                    <button class="btn btn-primary" onclick="openConfigWizard()">
+                        <i class="fas fa-arrow-right"></i> 开始配置
+                    </button>
+                </div>
+
+                <div class="quick-action-card">
+                    <div class="quick-action-header">
+                        <div class="quick-action-icon success">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <h3 class="quick-action-title">批量操作</h3>
+                    </div>
+                    <p class="quick-action-description">选择多个模型进行批量安全配置和策略应用</p>
+                    <button class="btn btn-secondary" onclick="enableBatchMode()">
+                        <i class="fas fa-check-square"></i> 批量选择
+                    </button>
+                </div>
+
+                <div class="quick-action-card">
+                    <div class="quick-action-header">
+                        <div class="quick-action-icon warning">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <h3 class="quick-action-title">模型市场</h3>
+                    </div>
+                    <p class="quick-action-description">浏览和下载预配置的安全模型</p>
+                    <button class="btn btn-secondary" onclick="openModelMarket()">
+                        <i class="fas fa-store"></i> 浏览市场
+                    </button>
+                </div>
+            </div>
+
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all">全部</button>
+                        <button class="filter-tab" data-filter="production">生产</button>
+                        <button class="filter-tab" data-filter="testing">测试</button>
+                        <button class="filter-tab" data-filter="development">开发</button>
+                    </div>
+                </div>
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="搜索模型..." id="search-input">
+                    </div>
+                    <button class="btn btn-secondary" id="view-toggle">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 批量操作工具栏 -->
+            <div class="batch-toolbar" id="batch-toolbar" style="display: none;">
+                <div class="batch-info">
+                    <span class="batch-count">已选择 <strong id="selected-count">0</strong> 个模型</span>
+                </div>
+                <div class="batch-actions">
+                    <button class="btn btn-secondary" onclick="batchDelete()">
+                        <i class="fas fa-trash"></i> 批量删除
+                    </button>
+                    <button class="btn btn-secondary" onclick="batchConfigure()">
+                        <i class="fas fa-cogs"></i> 批量配置
+                    </button>
+                    <button class="btn btn-secondary" onclick="batchExport()">
+                        <i class="fas fa-download"></i> 导出配置
+                    </button>
+                    <button class="btn btn-outline" onclick="clearBatchSelection()">
+                        <i class="fas fa-times"></i> 取消选择
+                    </button>
+                </div>
+            </div>
+
+            <!-- 模型网格 -->
+            <div class="models-grid" id="models-grid">
+                <!-- 模型卡片将动态加载 -->
+            </div>
+
+            <!-- 空状态 -->
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <div class="empty-state-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="empty-state-title">暂无模型</h3>
+                <p class="empty-state-description">开始下载您的第一个模型，或从模型市场浏览可用选项</p>
+                <button class="btn btn-primary" onclick="openModelMarket()">
+                    <i class="fas fa-download"></i> 浏览模型市场
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- 配置向导弹窗 -->
+    <div class="wizard-overlay" id="config-wizard">
+        <div class="wizard-modal">
+            <div class="wizard-header">
+                <div class="wizard-header-content">
+                    <div class="wizard-title-section">
+                        <h2 class="wizard-title">智能安全配置向导</h2>
+                        <p class="wizard-description">我们将帮助您为模型配置最优的安全策略</p>
+                    </div>
+                    <button class="wizard-close-btn" onclick="closeConfigWizard()" title="关闭">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="wizard-steps">
+                    <div class="wizard-step active" data-step="1">
+                        <div class="wizard-step-number">1</div>
+                        <div class="wizard-step-label">选择模型</div>
+                    </div>
+                    <div class="wizard-step" data-step="2">
+                        <div class="wizard-step-number">2</div>
+                        <div class="wizard-step-label">使用场景</div>
+                    </div>
+                    <div class="wizard-step" data-step="3">
+                        <div class="wizard-step-number">3</div>
+                        <div class="wizard-step-label">安全策略</div>
+                    </div>
+                    <div class="wizard-step" data-step="4">
+                        <div class="wizard-step-number">4</div>
+                        <div class="wizard-step-label">完成配置</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-body" id="wizard-content">
+                <!-- 向导内容将动态加载 -->
+            </div>
+
+            <div class="wizard-footer">
+                <button class="btn btn-secondary" id="wizard-prev" onclick="previousStep()">
+                    <i class="fas fa-arrow-left"></i> 上一步
+                </button>
+                <div>
+                    <button class="btn btn-secondary" onclick="closeConfigWizard()">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button class="btn btn-primary" id="wizard-next" onclick="nextStep()">
+                        下一步 <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模型市场弹窗 -->
+    <div class="market-overlay" id="model-market">
+        <div class="market-modal">
+            <div class="market-header">
+                <h2 class="market-title">
+                    <i class="fas fa-store"></i>
+                    模型市场
+                </h2>
+                <button class="market-close-btn" onclick="closeModelMarket()" title="关闭">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="market-body">
+                <div class="market-filters">
+                    <div class="market-categories">
+                        <button class="market-category active" data-category="all">
+                            <i class="fas fa-th-large"></i> 全部模型
+                        </button>
+                        <button class="market-category" data-category="featured">
+                            <i class="fas fa-star"></i> 精选推荐
+                        </button>
+                        <button class="market-category" data-category="latest">
+                            <i class="fas fa-clock"></i> 最新发布
+                        </button>
+                        <button class="market-category" data-category="popular">
+                            <i class="fas fa-fire"></i> 热门下载
+                        </button>
+                        <button class="market-category" data-category="chat">
+                            <i class="fas fa-comments"></i> 对话模型
+                        </button>
+                        <button class="market-category" data-category="code">
+                            <i class="fas fa-code"></i> 代码生成
+                        </button>
+                        <button class="market-category" data-category="vision">
+                            <i class="fas fa-eye"></i> 视觉理解
+                        </button>
+                        <button class="market-category" data-category="embedding">
+                            <i class="fas fa-project-diagram"></i> 文本嵌入
+                        </button>
+                        <button class="market-category" data-category="enterprise">
+                            <i class="fas fa-building"></i> 企业级
+                        </button>
+                    </div>
+                    
+                    <div class="market-controls">
+                        <div class="market-search">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="搜索模型..." id="market-search-input">
+                        </div>
+                        <div class="market-sort">
+                            <select id="market-sort-select">
+                                <option value="featured">推荐排序</option>
+                                <option value="downloads">下载量</option>
+                                <option value="rating">评分</option>
+                                <option value="latest">最新发布</option>
+                                <option value="size">模型大小</option>
+                                <option value="name">名称排序</option>
+                            </select>
+                        </div>
+                        <div class="market-view-toggle">
+                            <button class="view-btn active" data-view="grid" title="网格视图">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button class="view-btn" data-view="list" title="列表视图">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="market-stats">
+                    <span class="stats-item"><i class="fas fa-cubes"></i> <span id="total-models-count">24</span> 个可用模型</span>
+                    <span class="stats-item"><i class="fas fa-download"></i> 总下载量: <span id="total-downloads">156K</span></span>
+                    <span class="stats-item"><i class="fas fa-clock"></i> 最后更新: <span id="last-updated">2小时前</span></span>
+                </div>
+                
+                <div class="market-models" id="market-models">
+                    <!-- 模型列表将动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+        // 全局状态
+        let currentFilter = 'all';
+        let currentWizardStep = 1;
+        let batchMode = false;
+        let selectedModels = new Set();
+        let modelsData = [];
+        let summaryData = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeModelsPage();
+        });
+
+        async function initializeModelsPage() {
+            showLoading();
+            try {
+                await Promise.all([
+                    loadSummaryData(),
+                    loadModelsData()
+                ]);
+                updateDashboard();
+                renderModels();
+            } catch (error) {
+                console.error('初始化失败:', error);
+                showError('初始化页面失败: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function loadSummaryData() {
+            try {
+                const response = await fetch('/api/v1/enhanced-models/summary');
+                if (!response.ok) throw new Error('获取概览数据失败');
+                summaryData = await response.json();
+            } catch (error) {
+                console.error('加载概览数据失败:', error);
+                // 使用默认数据
+                summaryData = {
+                    total_models: 0,
+                    risk_distribution: { high: 0, medium: 0, low: 0, unknown: 0 },
+                    category_distribution: {},
+                    avg_security_score: 0
+                };
+            }
+        }
+
+        async function loadModelsData() {
+            try {
+                const response = await fetch('/api/v1/ollama/models', {
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                if (!response.ok) throw new Error('获取模型列表失败');
+                const data = await response.json();
+                modelsData = data.data || []; // OpenAI格式使用data字段
+                
+                // 转换数据格式为内部格式
+                modelsData = modelsData.map(model => ({
+                    model: model.id,
+                    name: model.id,
+                    size: 0, // 占位值
+                    modified_at: new Date(model.created * 1000).toISOString(),
+                    details: {
+                        family: model.owned_by
+                    },
+                    is_active: true
+                }));
+                
+                // 为每个模型获取安全评分
+                for (let model of modelsData) {
+                    try {
+                        const scoreResponse = await fetch(`/api/v1/enhanced-models/security-score/${model.model}`);
+                        if (scoreResponse.ok) {
+                            const scoreData = await scoreResponse.json();
+                            model.securityScore = scoreData.risk_score;
+                            model.securityLevel = scoreData.security_level;
+                            model.recommendations = scoreData.recommendations;
+                        }
+                    } catch (error) {
+                        console.warn(`获取模型 ${model.model} 安全评分失败:`, error);
+                        model.securityScore = 50;
+                        model.securityLevel = 'balanced';
+                        model.recommendations = [];
+                    }
+                }
+            } catch (error) {
+                console.error('加载模型数据失败:', error);
+                modelsData = [];
+            }
+        }
+
+        function updateDashboard() {
+            // 更新总模型数
+            document.getElementById('total-models').textContent = summaryData.total_models || modelsData.length;
+            
+            // 更新平均安全评分
+            const avgScore = summaryData.avg_security_score || 0;
+            document.getElementById('avg-security-score').textContent = avgScore.toFixed(1);
+            
+            // 更新安全评分进度条
+            const progressBar = document.getElementById('security-progress');
+            progressBar.style.width = `${avgScore}%`;
+            progressBar.className = `progress-fill ${avgScore >= 80 ? 'low' : avgScore >= 60 ? 'medium' : 'high'}`;
+            
+            // 更新高风险模型数量
+            const highRiskCount = summaryData.risk_distribution.high || 0;
+            document.getElementById('high-risk-count').textContent = highRiskCount;
+            
+            // 更新已配置模型数量（假设有模板ID的模型为已配置）
+            const configuredCount = modelsData.filter(model => model.template_id).length;
+            document.getElementById('configured-count').textContent = configuredCount;
+        }
+
+        function renderModels() {
+            const container = document.getElementById('models-grid');
+            const emptyState = document.getElementById('empty-state');
+            
+            // 过滤模型
+            const filteredModels = filterModels(modelsData);
+            
+            if (filteredModels.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            container.innerHTML = filteredModels.map(model => createModelCard(model)).join('');
+            
+            // 添加事件监听器
+            addModelCardEventListeners();
+            
+            // 在批量模式下为模型卡片添加点击事件
+            if (batchMode) {
+                addBatchModeEventListeners();
+            }
+        }
+
+        function addBatchModeEventListeners() {
+            document.querySelectorAll('.model-card.batch-mode').forEach(card => {
+                card.addEventListener('click', function(event) {
+                    // 阻止事件冒泡，避免触发其他按钮点击
+                    if (event.target.closest('button')) {
+                        return;
+                    }
+                    
+                    const modelName = this.getAttribute('data-model');
+                    toggleModelSelection(modelName);
+                });
+            });
+        }
+
+        function createModelCard(model) {
+            const sizeText = formatSize(model.size);
+            const dateText = new Date(model.modified_at).toLocaleDateString();
+            const securityScore = model.securityScore || 50;
+            const securityLevel = model.securityLevel || 'balanced';
+            const isActive = model.is_active !== false;
+            const isSelected = selectedModels.has(model.model);
+            
+            return `
+                <div class="model-card ${batchMode ? 'batch-mode' : ''} ${isSelected ? 'selected' : ''}" data-model="${model.model}" data-category="${model.category || 'development'}">
+                    <div class="model-card-header">
+                        <div class="model-card-title">
+                            ${model.model}
+                            <span class="model-status-badge ${isActive ? 'active' : 'inactive'}">
+                                ${isActive ? '运行中' : '已停止'}
+                            </span>
+                        </div>
+                        <div class="model-card-meta">
+                            <span><i class="fas fa-hdd"></i> ${sizeText}</span>
+                            <span><i class="fas fa-calendar"></i> ${dateText}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="model-card-body">
+                        <div class="model-security-score">
+                            <span class="security-score-label">安全评分</span>
+                            <div style="display: flex; align-items: center;">
+                                <span class="security-score-value">${securityScore.toFixed(0)}</span>
+                                <div class="security-level-indicator ${securityLevel}"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="model-tags">
+                            <span class="model-tag ${model.category || 'development'}">${getCategoryName(model.category)}</span>
+                            <span class="model-tag">${securityLevel === 'strict' ? '严格模式' : securityLevel === 'balanced' ? '平衡模式' : '宽松模式'}</span>
+                            ${model.details?.family ? `<span class="model-tag">${model.details.family}</span>` : ''}
+                        </div>
+                        
+                        <div class="model-card-actions">
+                            ${batchMode ? 
+                                `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); toggleModelSelection('${model.model}')">
+                                    <i class="fas fa-${isSelected ? 'check-square' : 'square'}"></i> ${isSelected ? '已选择' : '选择'}
+                                </button>` : ''
+                            }
+                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); configureModel('${model.model}')">
+                                <i class="fas fa-cog"></i> 配置
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); viewModelDetails('${model.model}')">
+                                <i class="fas fa-info-circle"></i> 详情
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteModel('${model.model}')">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterModels(models) {
+            let filtered = models;
+            
+            // 分类过滤
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(model => 
+                    (model.category || 'development') === currentFilter
+                );
+            }
+            
+            // 搜索过滤
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            if (searchTerm) {
+                filtered = filtered.filter(model =>
+                    model.model.toLowerCase().includes(searchTerm) ||
+                    (model.details?.family || '').toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            return filtered;
+        }
+
+        function formatSize(bytes) {
+            if (!bytes) return '未知';
+            const mb = bytes / (1024 * 1024);
+            return mb > 1024 ? `${(mb / 1024).toFixed(2)} GB` : `${mb.toFixed(2)} MB`;
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                production: '生产环境',
+                testing: '测试环境',
+                development: '开发环境',
+                research: '研究用途',
+                education: '教育用途'
+            };
+            return names[category] || '开发环境';
+        }
+
+        function addModelCardEventListeners() {
+            // 过滤器标签
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    renderModels();
+                });
+            });
+            
+            // 搜索框
+            document.getElementById('search-input').addEventListener('input', function() {
+                renderModels();
+            });
+            
+            // 刷新按钮
+            document.getElementById('refresh-btn').addEventListener('click', function() {
+                initializeModelsPage();
+            });
+            
+            // 智能配置按钮
+            document.getElementById('config-wizard-btn').addEventListener('click', function() {
+                openConfigWizard();
+            });
+        }
+
+        // 配置向导相关函数
+        function openConfigWizard() {
+            if (window.modelConfigWizard) {
+                window.modelConfigWizard.open();
+            } else {
+                console.error('配置向导未初始化');
+                showError('配置向导未初始化，请刷新页面重试');
+            }
+        }
+
+        function closeConfigWizard() {
+            if (window.modelConfigWizard) {
+                window.modelConfigWizard.close();
+            }
+        }
+        
+        function nextStep() {
+            if (window.modelConfigWizard) {
+                window.modelConfigWizard.nextStep();
+            }
+        }
+        
+        function previousStep() {
+            if (window.modelConfigWizard) {
+                window.modelConfigWizard.previousStep();
+            }
+        }
+
+        // 其他功能函数
+        function enableBatchMode() {
+            batchMode = !batchMode;
+            selectedModels.clear();
+            
+            // 显示或隐藏批量操作工具栏
+            const batchToolbar = document.getElementById('batch-toolbar');
+            if (batchMode) {
+                batchToolbar.style.display = 'flex';
+            } else {
+                batchToolbar.style.display = 'none';
+            }
+            
+            // 重新渲染模型卡片以显示选择框 
+            renderModels();
+            
+            // 更新选择计数
+            updateBatchCount();
+        }
+
+        function toggleModelSelection(modelName) {
+            if (selectedModels.has(modelName)) {
+                selectedModels.delete(modelName);
+            } else {
+                selectedModels.add(modelName);
+            }
+            
+            // 更新UI显示选中状态
+            const card = document.querySelector(`[data-model="${modelName}"]`);
+            if (card) {
+                if (selectedModels.has(modelName)) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            }
+            
+            // 更新选择计数
+            updateBatchCount();
+        }
+
+        function updateBatchCount() {
+            const countElement = document.getElementById('selected-count');
+            if (countElement) {
+                countElement.textContent = selectedModels.size;
+            }
+        }
+
+        function clearBatchSelection() {
+            selectedModels.clear();
+            document.querySelectorAll('.model-card.selected').forEach(card => {
+                card.classList.remove('selected');
+            });
+            updateBatchCount();
+        }
+
+        async function batchDelete() {
+            if (selectedModels.size === 0) {
+                showError('请至少选择一个模型');
+                return;
+            }
+
+            const modelNames = Array.from(selectedModels);
+            if (!confirm(`确定要删除选中的 ${modelNames.length} 个模型吗？此操作不可撤销。\n\n选中的模型：\n${modelNames.join('\n')}`)) {
+                return;
+            }
+
+            showLoading();
+            let successCount = 0;
+            let failedModels = [];
+
+            try {
+                for (const modelName of modelNames) {
+                    try {
+                        const response = await fetch(`/api/v1/ollama/delete/${modelName}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': 'Bearer cherry-studio-key'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.error || '删除失败');
+                        }
+
+                        successCount++;
+                    } catch (error) {
+                        failedModels.push(`${modelName}: ${error.message}`);
+                    }
+                }
+
+                // 显示结果
+                if (successCount === modelNames.length) {
+                    showSuccess(`成功删除 ${successCount} 个模型`);
+                } else if (successCount > 0) {
+                    showError(`成功删除 ${successCount} 个模型，${failedModels.length} 个失败：\n${failedModels.join('\n')}`);
+                } else {
+                    showError(`删除失败：\n${failedModels.join('\n')}`);
+                }
+
+                // 清空选择并重新加载
+                clearBatchSelection();
+                initializeModelsPage();
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function batchConfigure() {
+            if (selectedModels.size === 0) {
+                showError('请至少选择一个模型');
+                return;
+            }
+
+            const modelNames = Array.from(selectedModels);
+            if (confirm(`确定要为选中的 ${modelNames.length} 个模型应用批量配置吗？\n\n选中的模型：\n${modelNames.join('\n')}`)) {
+                // 这里可以打开批量配置对话框或直接应用预设配置
+                showSuccess('批量配置功能正在开发中...');
+                // TODO: 实现批量配置逻辑
+            }
+        }
+
+        function batchExport() {
+            if (selectedModels.size === 0) {
+                showError('请至少选择一个模型');
+                return;
+            }
+
+            const modelNames = Array.from(selectedModels);
+            const configData = {
+                export_date: new Date().toISOString(),
+                models: modelNames.map(name => {
+                    const model = modelsData.find(m => m.model === name);
+                    return {
+                        name: name,
+                        security_score: model?.securityScore || 0,
+                        security_level: model?.securityLevel || 'balanced',
+                        recommendations: model?.recommendations || []
+                    };
+                })
+            };
+
+            // 创建下载链接
+            const blob = new Blob([JSON.stringify(configData, null, 2)], { 
+                type: 'application/json' 
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `model-config-export-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showSuccess(`已导出 ${modelNames.length} 个模型的配置`);
+        }
+
+        function configureModel(modelName) {
+            // 打开单个模型配置页面
+            alert(`配置模型: ${modelName}`);
+        }
+
+        function viewModelDetails(modelName) {
+            // 显示模型详细信息
+            alert(`查看模型详情: ${modelName}`);
+        }
+
+        async function deleteModel(modelName) {
+            if (!confirm(`确定要删除模型 ${modelName} 吗？此操作不可撤销。`)) {
+                return;
+            }
+            
+            showLoading();
+            try {
+                const response = await fetch(`/api/v1/ollama/delete/${modelName}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '删除失败');
+                }
+                
+                showSuccess(`模型 ${modelName} 已成功删除`);
+                initializeModelsPage();
+            } catch (error) {
+                showError('删除模型失败: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function openModelMarket() {
+            const marketOverlay = document.getElementById('model-market');
+            marketOverlay.classList.add('active');
+            
+            // 加载模型市场数据
+            loadMarketModels();
+        }
+
+        function closeModelMarket() {
+            const marketOverlay = document.getElementById('model-market');
+            marketOverlay.classList.remove('active');
+        }
+
+        async function loadMarketModels() {
+            const marketContainer = document.getElementById('market-models');
+            
+            // 显示加载状态
+            marketContainer.innerHTML = `
+                <div style="text-align: center; padding: 60px;">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top: 16px; color: var(--text-secondary);">加载模型市场...</p>
+                </div>
+            `;
+
+            try {
+                // 模拟API请求获取市场模型数据 - 更丰富的数据
+                const marketModels = [
+                    {
+                        name: 'Llama 3.2',
+                        size: '3.2B',
+                        description: 'Meta最新的开源大语言模型，在对话、推理和代码生成方面表现优异。支持多语言对话，具备强大的上下文理解能力。',
+                        tags: ['chat', 'general', 'multilingual'],
+                        category: 'chat',
+                        featured: true,
+                        isNew: false,
+                        isHot: true,
+                        downloads: 15600,
+                        rating: 4.8,
+                        releaseDate: '2024-08-01',
+                        compatibility: ['CPU', 'GPU'],
+                        minMemory: '8GB',
+                        publisher: 'Meta',
+                        license: 'MIT',
+                        installed: modelsData.some(m => m.model.includes('llama3.2'))
+                    },
+                    {
+                        name: 'CodeLlama 13B',
+                        size: '13B',
+                        description: '专门为代码生成和理解优化的大语言模型，支持多种编程语言，具备出色的代码补全和调试能力。',
+                        tags: ['code', 'programming', 'debugging'],
+                        category: 'code',
+                        featured: true,
+                        isNew: false,
+                        isHot: false,
+                        downloads: 23400,
+                        rating: 4.9,
+                        releaseDate: '2024-07-15',
+                        compatibility: ['CPU', 'GPU'],
+                        minMemory: '16GB',
+                        publisher: 'Meta',
+                        license: 'Custom',
+                        installed: modelsData.some(m => m.model.includes('codellama'))
+                    },
+                    {
+                        name: 'Qwen2.5 7B',
+                        size: '7B',
+                        description: '阿里云通义千问2.5模型，在中文理解和生成方面表现出色，具备强大的数学推理和代码能力。',
+                        tags: ['chat', 'chinese', 'math'],
+                        category: 'chat',
+                        featured: false,
+                        isNew: true,
+                        isHot: false,
+                        downloads: 8900,
+                        rating: 4.7,
+                        releaseDate: '2024-08-05',
+                        compatibility: ['CPU', 'GPU'],
+                        minMemory: '12GB',
+                        publisher: 'Alibaba',
+                        license: 'Apache 2.0',
+                        installed: modelsData.some(m => m.model.includes('qwen2'))
+                    },
+                    {
+                        name: 'LLaVA 1.6 13B',
+                        size: '13B',
+                        description: '多模态大语言模型，能够理解和描述图像内容，支持视觉问答和图像分析任务。',
+                        tags: ['vision', 'multimodal', 'image'],
+                        category: 'vision',
+                        featured: false,
+                        isNew: false,
+                        isHot: false,
+                        downloads: 5600,
+                        rating: 4.5,
+                        releaseDate: '2024-06-20',
+                        compatibility: ['GPU'],
+                        minMemory: '16GB',
+                        publisher: 'UW-Madison',
+                        license: 'Apache 2.0',
+                        installed: modelsData.some(m => m.model.includes('llava'))
+                    },
+                    {
+                        name: 'Mistral 7B v0.3',
+                        size: '7B',
+                        description: '高效的开源语言模型，在性能和速度之间取得了良好平衡，适合生产环境部署。',
+                        tags: ['chat', 'efficient', 'production'],
+                        category: 'enterprise',
+                        featured: true,
+                        isNew: false,
+                        isHot: true,
+                        downloads: 34500,
+                        rating: 4.6,
+                        releaseDate: '2024-07-28',
+                        compatibility: ['CPU', 'GPU'],
+                        minMemory: '10GB',
+                        publisher: 'Mistral AI',
+                        license: 'Apache 2.0',
+                        installed: modelsData.some(m => m.model.includes('mistral'))
+                    },
+                    {
+                        name: 'all-MiniLM-L6-v2',
+                        size: '384MB',
+                        description: '轻量级的句子嵌入模型，适用于语义搜索和文本相似度计算，支持多种下游任务。',
+                        tags: ['embedding', 'small', 'search'],
+                        category: 'embedding',
+                        featured: false,
+                        isNew: false,
+                        isHot: false,
+                        downloads: 12300,
+                        rating: 4.4,
+                        releaseDate: '2024-05-10',
+                        compatibility: ['CPU'],
+                        minMemory: '2GB',
+                        publisher: 'Microsoft',
+                        license: 'MIT',
+                        installed: modelsData.some(m => m.model.includes('minilm'))
+                    },
+                    {
+                        name: 'DeepSeek Coder 6.7B',
+                        size: '6.7B',
+                        description: '专业的代码生成模型，支持130+编程语言，在代码理解和生成任务上表现优异。',
+                        tags: ['code', 'programming', 'multilang'],
+                        category: 'code',
+                        featured: false,
+                        isNew: true,
+                        isHot: true,
+                        downloads: 7800,
+                        rating: 4.7,
+                        releaseDate: '2024-08-03',
+                        compatibility: ['CPU', 'GPU'],
+                        minMemory: '10GB',
+                        publisher: 'DeepSeek',
+                        license: 'MIT',
+                        installed: modelsData.some(m => m.model.includes('deepseek'))
+                    },
+                    {
+                        name: 'ChatGLM3 6B',
+                        size: '6B',
+                        description: '清华大学开源的对话语言模型，支持中英文对话，具备工具调用和代码执行能力。',
+                        tags: ['chat', 'chinese', 'tools'],
+                        category: 'chat',
+                        featured: false,
+                        isNew: false,
+                        isHot: false,
+                        downloads: 18900,
+                        rating: 4.5,
+                        releaseDate: '2024-06-15',
+                        compatibility: ['CPU', 'GPU'],
+                        minMemory: '8GB',
+                        publisher: 'Tsinghua',
+                        license: 'Apache 2.0',
+                        installed: false
+                    }
+                ];
+
+                // 渲染模型列表
+                renderMarketModels(marketModels);
+                
+                // 绑定事件
+                bindMarketEvents();
+                
+                // 更新统计信息
+                updateMarketStats(marketModels);
+                
+            } catch (error) {
+                marketContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px; color: var(--danger-color);">
+                        <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <p>加载模型市场失败: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderMarketModels(models, activeCategory = 'all') {
+            const marketContainer = document.getElementById('market-models');
+            
+            // 过滤模型
+            let filteredModels = models;
+            
+            if (activeCategory === 'featured') {
+                filteredModels = models.filter(model => model.featured);
+            } else if (activeCategory === 'latest') {
+                filteredModels = models.filter(model => model.isNew).sort((a, b) => 
+                    new Date(b.releaseDate) - new Date(a.releaseDate));
+            } else if (activeCategory === 'popular') {
+                filteredModels = models.sort((a, b) => b.downloads - a.downloads).slice(0, 6);
+            } else if (activeCategory !== 'all') {
+                filteredModels = models.filter(model => model.category === activeCategory);
+            }
+
+            if (filteredModels.length === 0) {
+                marketContainer.innerHTML = `
+                    <div style="text-align: center; padding: 60px; color: var(--text-secondary);">
+                        <i class="fas fa-search" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                        <p>该分类下暂无模型</p>
+                    </div>
+                `;
+                return;
+            }
+
+            marketContainer.innerHTML = filteredModels.map(model => createMarketModelCard(model)).join('');
+        }
+
+        function createMarketModelCard(model) {
+            const stars = '★'.repeat(Math.floor(model.rating)) + '☆'.repeat(5 - Math.floor(model.rating));
+            const releaseDate = new Date(model.releaseDate);
+            const isRecent = (Date.now() - releaseDate) < (30 * 24 * 60 * 60 * 1000); // 30天内
+            
+            let statusClass = '';
+            if (model.featured) statusClass = 'featured';
+            else if (model.isNew) statusClass = 'new';
+            else if (model.isHot) statusClass = 'hot';
+
+            return `
+                <div class="market-model-card ${statusClass}" data-category="${model.category}">
+                    <div class="market-model-header">
+                        <div class="market-model-title-row">
+                            <h3 class="market-model-name">
+                                ${model.name}
+                                ${model.featured ? '<i class="fas fa-certificate" style="color: var(--warning-color); font-size: 12px;" title="精选推荐"></i>' : ''}
+                            </h3>
+                            <div class="model-rating">
+                                <span class="rating-stars">${stars.substring(0, 1)}${model.rating}</span>
+                            </div>
+                        </div>
+                        <div class="market-model-meta">
+                            <span class="model-size">${model.size}</span>
+                            <div class="model-stats">
+                                <span class="stat-item">
+                                    <i class="fas fa-download"></i>
+                                    ${formatDownloads(model.downloads)}
+                                </span>
+                                <span class="stat-item">
+                                    <i class="fas fa-memory"></i>
+                                    ${model.minMemory}
+                                </span>
+                                ${isRecent ? '<span class="stat-item" style="color: var(--success-color);"><i class="fas fa-clock"></i>最新</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="market-model-body">
+                        <p class="market-model-description">${model.description}</p>
+                        
+                        <div class="market-model-tags">
+                            ${model.tags.map(tag => `<span class="market-model-tag ${tag === model.category ? 'primary' : ''}">${tag}</span>`).join('')}
+                        </div>
+                        
+                        <div class="market-model-actions">
+                            ${model.installed 
+                                ? '<button class="btn btn-secondary" disabled><i class="fas fa-check"></i> 已安装</button>'
+                                : `<button class="btn btn-primary" onclick="downloadModel('${model.name}')"><i class="fas fa-download"></i> 下载</button>`
+                            }
+                            <button class="btn btn-secondary" onclick="previewModel('${model.name}', ${JSON.stringify(model).replace(/"/g, '&quot;')})">
+                                <i class="fas fa-eye"></i> 详情
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatDownloads(downloads) {
+            if (downloads >= 1000000) {
+                return (downloads / 1000000).toFixed(1) + 'M';
+            } else if (downloads >= 1000) {
+                return (downloads / 1000).toFixed(1) + 'K';
+            }
+            return downloads.toString();
+        }
+
+        function updateMarketStats(models) {
+            document.getElementById('total-models-count').textContent = models.length;
+            
+            const totalDownloads = models.reduce((sum, model) => sum + model.downloads, 0);
+            document.getElementById('total-downloads').textContent = formatDownloads(totalDownloads);
+            
+            // 找最新更新时间
+            const latestDate = new Date(Math.max(...models.map(m => new Date(m.releaseDate))));
+            const timeDiff = Date.now() - latestDate;
+            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+            document.getElementById('last-updated').textContent = hours < 24 ? `${hours}小时前` : `${Math.floor(hours/24)}天前`;
+        }
+
+        function bindMarketEvents() {
+            // 绑定分类筛选事件
+            document.querySelectorAll('.market-category').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.market-category').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const activeCategory = this.getAttribute('data-category');
+                    // 重新渲染模型（需要访问models数据）
+                    // 这里简化处理，实际应该缓存模型数据
+                    loadMarketModels();
+                });
+            });
+
+            // 绑定搜索事件
+            const searchInput = document.getElementById('market-search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    // 实现搜索功能
+                    console.log('搜索:', this.value);
+                });
+            }
+
+            // 绑定排序事件
+            const sortSelect = document.getElementById('market-sort-select');
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    // 实现排序功能
+                    console.log('排序:', this.value);
+                });
+            }
+
+            // 绑定视图切换事件
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const view = this.getAttribute('data-view');
+                    const container = document.getElementById('market-models');
+                    if (view === 'list') {
+                        container.classList.add('list-view');
+                    } else {
+                        container.classList.remove('list-view');
+                    }
+                });
+            });
+        }
+
+        function bindMarketCategoryEvents() {
+            document.querySelectorAll('.market-category').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 更新活动状态
+                    document.querySelectorAll('.market-category').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 重新渲染模型
+                    const activeCategory = this.getAttribute('data-category');
+                    loadMarketModels().then(() => {
+                        // 等待数据加载完成后应用筛选
+                        setTimeout(() => {
+                            const models = getMarketModelsData(); // 需要缓存数据
+                            renderMarketModels(models, activeCategory);
+                        }, 100);
+                    });
+                });
+            });
+        }
+
+        async function downloadModel(modelName) {
+            if (!confirm(`确定要下载模型 ${modelName} 吗？这可能需要较长时间。`)) {
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch('/api/v1/ollama/pull', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer cherry-studio-key'
+                    },
+                    body: JSON.stringify({ 
+                        model: modelName.toLowerCase().replace(/\s+/g, '') 
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '下载失败');
+                }
+
+                showSuccess(`模型 ${modelName} 开始下载，请稍候...`);
+                
+                // 关闭模型市场
+                closeModelMarket();
+                
+                // 刷新模型列表
+                setTimeout(() => {
+                    initializeModelsPage();
+                }, 2000);
+                
+            } catch (error) {
+                showError('下载模型失败: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function previewModel(modelName, modelData) {
+            try {
+                const model = typeof modelData === 'string' ? JSON.parse(modelData) : modelData;
+                const compatibilityText = model.compatibility ? model.compatibility.join(', ') : '未知';
+                const releaseDate = new Date(model.releaseDate).toLocaleDateString();
+                
+                const previewContent = `
+                    <div style="max-width: 500px;">
+                        <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            ${model.name}
+                            ${model.featured ? '<span style="background: var(--warning-color); color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: 600;">精选</span>' : ''}
+                            ${model.isNew ? '<span style="background: var(--success-color); color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: 600;">最新</span>' : ''}
+                        </h3>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <strong>模型大小:</strong> ${model.size}<br>
+                                <strong>评分:</strong> ${model.rating}/5.0<br>
+                                <strong>下载量:</strong> ${formatDownloads(model.downloads)}<br>
+                                <strong>发布日期:</strong> ${releaseDate}
+                            </div>
+                            <div>
+                                <strong>发布者:</strong> ${model.publisher}<br>
+                                <strong>许可证:</strong> ${model.license}<br>
+                                <strong>最小内存:</strong> ${model.minMemory}<br>
+                                <strong>兼容性:</strong> ${compatibilityText}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <strong>模型描述:</strong><br>
+                            <p style="margin: 8px 0; line-height: 1.6; color: var(--text-secondary);">
+                                ${model.description}
+                            </p>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <strong>标签:</strong><br>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
+                                ${model.tags.map(tag => `<span style="padding: 3px 8px; background: var(--surface-secondary); border-radius: 12px; font-size: 11px; color: var(--text-secondary);">${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); text-align: right;">
+                            ${model.installed 
+                                ? '<span style="color: var(--success-color);"><i class="fas fa-check"></i> 已安装</span>'
+                                : `<button class="btn btn-primary" onclick="downloadModel('${model.name}'); alert('开始下载 ${model.name}'); closePreview();" style="padding: 8px 16px;">
+                                    <i class="fas fa-download"></i> 立即下载
+                                </button>`
+                            }
+                        </div>
+                    </div>
+                `;
+                
+                // 创建预览模态框
+                const existingModal = document.getElementById('model-preview-modal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                const modal = document.createElement('div');
+                modal.id = 'model-preview-modal';
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(0, 0, 0, 0.6);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1001;
+                `;
+                
+                modal.innerHTML = `
+                    <div style="
+                        background: var(--surface-color);
+                        border-radius: var(--radius-lg);
+                        padding: 24px;
+                        max-width: 90%;
+                        max-height: 80%;
+                        overflow-y: auto;
+                        position: relative;
+                    ">
+                        <button onclick="closePreview()" style="
+                            position: absolute;
+                            top: 12px; right: 12px;
+                            background: none;
+                            border: none;
+                            font-size: 20px;
+                            color: var(--text-secondary);
+                            cursor: pointer;
+                        ">×</button>
+                        ${previewContent}
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // 点击背景关闭
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closePreview();
+                    }
+                });
+                
+                // 全局关闭函数
+                window.closePreview = function() {
+                    const modal = document.getElementById('model-preview-modal');
+                    if (modal) {
+                        modal.remove();
+                    }
+                };
+                
+            } catch (error) {
+                console.error('预览模型信息失败:', error);
+                alert(`模型预览功能开发中...\n\n模型: ${modelName}\n\n将显示模型详细信息、使用示例和性能指标。`);
+            }
+        }
+
+        // 工具函数
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            // 实现成功提示
+            console.log('成功:', message);
+        }
+
+        function showError(message) {
+            // 实现错误提示
+            console.error('错误:', message);
+        }
+
+        // 添加事件监听
+        document.addEventListener('modelConfigurationApplied', function(event) {
+            // 配置应用完成后刷新页面
+            initializeModelsPage();
+        });
+    </script>
+</body>
+
+</html>

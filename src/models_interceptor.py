@@ -1,8 +1,8 @@
 """拦截器相关数据模型。"""
 
 from enum import Enum
-from typing import Any, Dict, List, Optional
-
+from typing import Any, Dict, List, Optional, Set
+from datetime import datetime
 from pydantic import BaseModel, Field
 
 
@@ -25,6 +25,64 @@ class Severity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
+
+
+class SecurityLevel(str, Enum):
+    """安全等级。"""
+    
+    STRICT = "strict"       # 严格模式，适用于生产环境
+    BALANCED = "balanced"   # 平衡模式，推荐用于一般用途
+    RELAXED = "relaxed"     # 宽松模式，适用于开发测试
+
+
+class ModelCategory(str, Enum):
+    """模型分类。"""
+    
+    PRODUCTION = "production"    # 生产环境
+    TESTING = "testing"         # 测试环境
+    DEVELOPMENT = "development" # 开发环境
+    RESEARCH = "research"       # 研究用途
+    EDUCATION = "education"     # 教育用途
+
+
+class ModelTag(BaseModel):
+    """模型标签。"""
+    
+    id: str
+    name: str
+    color: str = "#007AFF"  # 默认蓝色
+    description: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
+class SecurityTemplate(BaseModel):
+    """安全配置模板。"""
+    
+    id: str
+    name: str
+    description: str
+    security_level: SecurityLevel
+    enabled_rules: List[str] = []
+    rule_config: Dict[str, Any] = {}
+    is_default: bool = False
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class ModelMetadata(BaseModel):
+    """扩展的模型元数据。"""
+    
+    model_name: str
+    display_name: Optional[str] = None
+    description: Optional[str] = None
+    category: ModelCategory = ModelCategory.DEVELOPMENT
+    security_level: SecurityLevel = SecurityLevel.BALANCED
+    tags: List[str] = []  # 标签ID列表
+    template_id: Optional[str] = None  # 应用的安全模板ID
+    custom_config: Dict[str, Any] = {}
+    risk_score: float = 0.0  # 0-100的风险评分
+    last_updated: datetime = Field(default_factory=datetime.now)
+    is_active: bool = True
 
 
 class InterceptedRequest(BaseModel):

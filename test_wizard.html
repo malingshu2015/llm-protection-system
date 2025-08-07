@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能配置向导测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 40px;
+            background: #f5f5f7;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #0056CC;
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 16px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧙‍♂️ 智能配置向导测试</h1>
+        <p>测试智能配置向导的各项功能</p>
+        
+        <button class="btn" onclick="testModelsAPI()">测试模型加载API</button>
+        <button class="btn" onclick="testTemplatesAPI()">测试模板加载API</button>
+        <button class="btn" onclick="testBatchConfigAPI()">测试批量配置API</button>
+        <button class="btn" onclick="openActualWizard()">打开实际向导</button>
+        
+        <div class="test-results" id="results">
+            测试结果将显示在这里...
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const results = document.getElementById('results');
+            results.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '\n';
+        }
+
+        async function testModelsAPI() {
+            try {
+                log('测试模型加载API...');
+                const response = await fetch('/v1/models', {
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                const data = await response.json();
+                log(`✅ 模型API成功: 找到 ${data.data?.length || 0} 个模型`);
+                log(`模型列表: ${data.data?.map(m => m.id).join(', ')}`);
+            } catch (error) {
+                log(`❌ 模型API失败: ${error.message}`);
+            }
+        }
+
+        async function testTemplatesAPI() {
+            try {
+                log('测试模板加载API...');
+                const response = await fetch('/api/v1/enhanced-models/templates');
+                const data = await response.json();
+                log(`✅ 模板API成功: 找到 ${data.length} 个模板`);
+                log(`模板列表: ${data.map(t => t.name).join(', ')}`);
+            } catch (error) {
+                log(`❌ 模板API失败: ${error.message}`);
+            }
+        }
+
+        async function testBatchConfigAPI() {
+            try {
+                log('测试批量配置API...');
+                const response = await fetch('/api/v1/enhanced-models/batch-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model_names: ['tinyllama:latest'],
+                        template_id: 'balanced-general',
+                        category: 'testing',
+                        tags: ['test', '向导测试']
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    log(`✅ 配置API成功: ${data.message}`);
+                } else {
+                    log(`❌ 配置API失败: ${data.message}`);
+                }
+            } catch (error) {
+                log(`❌ 配置API失败: ${error.message}`);
+            }
+        }
+
+        function openActualWizard() {
+            log('跳转到实际的模型管理页面...');
+            window.open('/static/admin/models_v2.html', '_blank');
+        }
+
+        // 清空结果
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // 页面加载时清空结果
+        document.addEventListener('DOMContentLoaded', clearResults);
+    </script>
+</body>
+</html>

@@ -102,21 +102,58 @@ async def ollama_proxy(request: Request, path: str):
                     },
                 )
 
-            if security_detector is not None:
-                security_result = await security_detector.check_request(intercepted_request)
-                if not security_result.is_allowed:
-                    logger.warning(f"安全检测失败: {security_result.reason}")
-                    return JSONResponse(
-                        status_code=status.HTTP_403_FORBIDDEN,
-                        content={
-                            "error": {
-                                "message": f"本地大模型防护系统阻止了请求: {security_result.reason}",
-                                "type": "security_violation",
-                                "code": 403,
-                                "details": security_result.details if hasattr(security_result, 'details') else None
+            # 🔧 修复上下文污染：只检测当前用户输入，不检测整个消息历史
+            current_user_input = _extract_current_user_input(body)
+            logger.info(f"🔧 上下文污染修复：提取当前用户输入进行安全检测: {current_user_input[:100]}...")
+            logger.info(f"🔧 原始消息数量: {len(body.get('messages', []))}")
+            
+            # 创建仅包含当前用户输入的请求副本用于安全检测
+            safe_body = {
+                "messages": [{"role": "user", "content": current_user_input}] if current_user_input else [],
+                "model": body.get("model", "")
+            }
+            
+            # 修改拦截请求的body为只包含当前输入
+            intercepted_request_for_check = InterceptedRequest(
+                method=intercepted_request.method,
+                url=intercepted_request.url,
+                headers=intercepted_request.headers,
+                body=safe_body,  # 只包含当前用户输入
+                query_params=intercepted_request.query_params,
+                timestamp=intercepted_request.timestamp,
+                client_ip=intercepted_request.client_ip,
+                provider=intercepted_request.provider,
+                path=intercepted_request.path,
+            )
+
+            # 为每个请求创建独立的安全检测器实例，避免状态污染
+            from src.security.detector import SecurityDetector
+            security_detector_instance = SecurityDetector()
+            
+            security_result = await security_detector_instance.check_request(intercepted_request_for_check)
+            if not security_result.is_allowed:
+                logger.warning(f"安全检测失败: {security_result.reason}")
+                
+                # 🔧 改进错误消息显示：明确显示当前检测到的内容
+                error_message = f"本地大模型防护系统阻止了请求: {security_result.reason}"
+                if current_user_input:
+                    error_message += f" (当前输入: {current_user_input[:50]}{'...' if len(current_user_input) > 50 else ''})"
+                
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={
+                        "error": {
+                            "message": error_message,
+                            "type": "security_violation",
+                            "code": 403,
+                            "details": {
+                                **(security_result.details if hasattr(security_result, 'details') and security_result.details else {}),
+                                "current_input": current_user_input,
+                                "detection_scope": "current_input_only"
                             }
-                        },
-                    )
+                        }
+                    },
+                )
 
             # 获取对话ID
             from src.security.conversation_tracker import conversation_tracker
@@ -384,21 +421,24 @@ async def ollama_proxy(request: Request, path: str):
                 )
 
             # 执行安全检测
-            if security_detector is not None:
-                security_result = await security_detector.check_request(intercepted_request)
-                if not security_result.is_allowed:
-                    logger.warning(f"安全检测失败: {security_result.reason}")
-                    return JSONResponse(
-                        status_code=status.HTTP_403_FORBIDDEN,
-                        content={
-                            "error": {
-                                "message": f"本地大模型防护系统阻止了请求: {security_result.reason}",
-                                "type": "security_violation",
-                                "code": 403,
-                                "details": security_result.details if hasattr(security_result, 'details') else None
-                            }
-                        },
-                    )
+            # 为每个请求创建独立的安全检测器实例，避免状态污染
+            from src.security.detector import SecurityDetector
+            security_detector_instance = SecurityDetector()
+            
+            security_result = await security_detector_instance.check_request(intercepted_request)
+            if not security_result.is_allowed:
+                logger.warning(f"安全检测失败: {security_result.reason}")
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={
+                        "error": {
+                            "message": f"本地大模型防护系统阻止了请求: {security_result.reason}",
+                            "type": "security_violation",
+                            "code": 403,
+                            "details": security_result.details if hasattr(security_result, 'details') else None
+                        }
+                    },
+                )
 
             # 获取对话ID
             from src.security.conversation_tracker import conversation_tracker
@@ -413,7 +453,10 @@ async def ollama_proxy(request: Request, path: str):
                 logger.info("检测到流式响应，跳过内容检查")
             else:
                 # 执行安全检测
-                security_result = await security_detector.check_response(response, conversation_id)
+                # 为每个响应创建独立的安全检测器实例，避免状态污染
+                from src.security.detector import SecurityDetector
+                security_detector_instance = SecurityDetector()
+                security_result = await security_detector_instance.check_response(response, conversation_id)
                 if not security_result.is_allowed:
                     logger.warning(f"响应安全检测失败: {security_result.reason}")
                     return JSONResponse(
@@ -626,3 +669,34 @@ def _create_response(intercepted_response: InterceptedResponse) -> Response:
             status_code=intercepted_response.status_code,
             headers=intercepted_response.headers,
         )
+
+
+def _extract_current_user_input(request_body):
+    """从请求中提取当前用户输入，忽略历史消息。
+    
+    Args:
+        request_body: 请求体字典
+        
+    Returns:
+        str: 当前用户输入的内容
+    """
+    if not isinstance(request_body, dict):
+        logger.info("🔧 请求体不是字典格式")
+        return ""
+    
+    messages = request_body.get("messages", [])
+    logger.info(f"🔧 消息列表: {messages}")
+    if not messages:
+        logger.info("🔧 消息列表为空")
+        return ""
+    
+    # 只检测最后一条用户消息（当前输入）
+    for message in reversed(messages):
+        logger.info(f"🔧 检查消息: {message}")
+        if isinstance(message, dict) and message.get("role") == "user":
+            content = message.get("content", "")
+            logger.info(f"🔧 提取到当前用户输入: {content[:50]}...")
+            return content
+    
+    logger.info("🔧 未找到用户消息")
+    return ""

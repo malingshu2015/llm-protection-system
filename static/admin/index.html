@@ -8,7 +8,11 @@
     <link rel="stylesheet" href="/static/admin/css/apple-main.css">
     <script src="/static/admin/js/apple-ui.js" defer></script>
     <!-- 保留旧样式以防万一，但不使用 -->
-    <style type="text/css" media="none">
+    <script>
+        // 自动跳转到监控中心
+        window.location.href = 'monitor_v2.html';
+    </script>
+</head>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -354,12 +358,18 @@
             <ul class="sidebar-menu">
                 <li class="sidebar-menu-item">
                     <a href="index.html" class="sidebar-menu-link active">
-                        <span class="sidebar-menu-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="sidebar-menu-icon"><i class="fas fa-tachometer-alt"></i></span>
+                        <span class="sidebar-menu-text">系统概览</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="monitor_v2.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
                         <span class="sidebar-menu-text">监控中心</span>
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="rules.html" class="sidebar-menu-link">
+                    <a href="rules_v2.html" class="sidebar-menu-link">
                         <span class="sidebar-menu-icon"><i class="fas fa-shield-alt"></i></span>
                         <span class="sidebar-menu-text">规则管理</span>
                     </a>
@@ -377,23 +387,20 @@
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="monitor.html" class="sidebar-menu-link">
-                        <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
-                        <span class="sidebar-menu-text">实时监控</span>
-                    </a>
-                </li>
-                <li class="sidebar-menu-item">
-                    <a href="models.html" class="sidebar-menu-link">
+                    <a href="models_v2.html" class="sidebar-menu-link">
                         <span class="sidebar-menu-icon"><i class="fas fa-brain"></i></span>
                         <span class="sidebar-menu-text">模型管理</span>
                     </a>
                 </li>
+                <!-- 聊天演示暂时隐藏 -->
+                <!--
                 <li class="sidebar-menu-item">
                     <a href="/static/index.html" class="sidebar-menu-link">
                         <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
                         <span class="sidebar-menu-text">聊天演示</span>
                     </a>
                 </li>
+                -->
             </ul>
 
             <div class="sidebar-footer">
@@ -425,7 +432,7 @@
 
             <!-- 页面标题 -->
             <header class="page-header">
-                <h1 class="page-title">监控中心</h1>
+                <h1 class="page-title">系统概览</h1>
                 <div class="page-actions">
                     <button class="button" id="refresh-status">
                         <i class="fas fa-sync-alt"></i> 刷新数据
@@ -492,7 +499,7 @@
                         <h3 class="module-title">规则管理</h3>
                         <p class="module-description">管理和配置安全检测规则，包括提示注入、越狱尝试、敏感信息等检测。</p>
                         <div class="module-action">
-                            <a href="rules.html" class="button">进入管理</a>
+                            <a href="rules_v2.html" class="button">进入管理</a>
                         </div>
                     </div>
 
@@ -525,7 +532,7 @@
                         <h3 class="module-title">实时监控面板</h3>
                         <p class="module-description">监控系统运行状态和性能指标，包括 CPU 和内存使用率、请求统计等。</p>
                         <div class="module-action">
-                            <a href="monitor.html" class="button">查看监控</a>
+                            <a href="monitor_v2.html" class="button">查看监控</a>
                         </div>
                     </div>
 
@@ -536,7 +543,7 @@
                         <h3 class="module-title">模型管理</h3>
                         <p class="module-description">管理 Ollama 模型，包括模型列表、拉取和删除等操作。</p>
                         <div class="module-action">
-                            <a href="models.html" class="button">管理模型</a>
+                            <a href="models_v2.html" class="button">管理模型</a>
                         </div>
                     </div>
                 </div>
