@@ -1,0 +1,98 @@
+[
+  {
+    "id": "vc-001",
+    "name": "Violence Instructions",
+    "description": "检测详细的暴力指导和伤害他人的方法",
+    "detection_type": "violence_content",
+    "severity": "critical",
+    "patterns": [
+      "(?i)(?:how|怎么|如何|教我|告诉我)[.\\s]*(?:to|才能|可以)[.\\s]*(?:hurt|伤害|harm|损害|injure|弄伤|torture|折磨)[.\\s]*(?:someone|某人|people|人|others|他人)",
+      "(?i)(?:step by step|分步|详细|具体)[.\\s]*(?:guide|指南|instructions|指导|tutorial|教程)[.\\s]*(?:to|用于|关于)[.\\s]*(?:violence|暴力|fighting|打架|assault|攻击)",
+      "(?i)(?:best|最好|most effective|最有效)[.\\s]*(?:way|方法|method|手段)[.\\s]*(?:to|来)[.\\s]*(?:cause|造成|inflict|施加)[.\\s]*(?:pain|痛苦|damage|伤害|injury|损伤)",
+      "(?i)(?:weapons|武器|tools|工具)[.\\s]*(?:for|用于|to|来)[.\\s]*(?:hurting|伤害|attacking|攻击|violence|暴力)",
+      "(?i)(?:vulnerable|脆弱|weak|薄弱)[.\\s]*(?:points|部位|spots|地方|areas|区域)[.\\s]*(?:on|在)[.\\s]*(?:human|人类|body|身体)[.\\s]*(?:for|用于)[.\\s]*(?:attack|攻击|harm|伤害)"
+    ],
+    "keywords": [
+      "violence instructions",
+      "how to hurt",
+      "cause pain",
+      "attack methods",
+      "vulnerable points",
+      "torture methods",
+      "暴力指导",
+      "如何伤害",
+      "造成痛苦",
+      "攻击方法",
+      "脆弱部位",
+      "折磨方法"
+    ],
+    "priority": 5,
+    "categories": ["violence_content", "instructions"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "vc-002",
+    "name": "Extreme Violence",
+    "description": "检测极端暴力内容和血腥描述",
+    "detection_type": "violence_content",
+    "severity": "critical",
+    "patterns": [
+      "(?i)(?:graphic|生动的|detailed|详细的|explicit|明确的)[.\\s]*(?:violence|暴力|torture|折磨|murder|谋杀|killing|杀戮)",
+      "(?i)(?:dismember|肢解|mutilate|残害|decapitate|斬首|disembowel|开膛破肚)",
+      "(?i)(?:blood|血液|gore|血腥|brutal|残暴)[.\\s]*(?:scene|场面|description|描述|imagery|画面)",
+      "(?i)(?:sadistic|虐待狂|psychopathic|精神变态)[.\\s]*(?:behavior|行为|tendencies|倾向|fantasies|幻想)",
+      "(?i)(?:mass|大规模)[.\\s]*(?:violence|暴力|killing|杀戮|slaughter|屠杀|massacre|大屠杀)"
+    ],
+    "keywords": [
+      "graphic violence",
+      "torture",
+      "dismember",
+      "mutilate",
+      "sadistic",
+      "mass killing",
+      "gore",
+      "生动暴力",
+      "折磨",
+      "肢解",
+      "残害",
+      "虐待狂",
+      "大规模杀戮",
+      "血腥"
+    ],
+    "priority": 6,
+    "categories": ["violence_content", "extreme"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "vc-003",
+    "name": "Domestic Violence",
+    "description": "检测家庭暴力和亲密关系暴力内容",
+    "detection_type": "violence_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:domestic|家庭|household|家里)[.\\s]*(?:violence|暴力|abuse|虐待|beating|殴打)",
+      "(?i)(?:spouse|配偶|partner|伴侣|wife|妻子|husband|丈夫)[.\\s]*(?:abuse|虐待|beating|殴打|violence|暴力)",
+      "(?i)(?:how|怎么|如何)[.\\s]*(?:to|来)[.\\s]*(?:control|控制|dominate|支配)[.\\s]*(?:partner|伴侣|spouse|配偶)[.\\s]*(?:through|通过)[.\\s]*(?:violence|暴力|intimidation|恐吓)",
+      "(?i)(?:child|儿童|kid|孩子)[.\\s]*(?:abuse|虐待|beating|殴打|violence|暴力|neglect|忽视)",
+      "(?i)(?:elder|老人|elderly|年长者)[.\\s]*(?:abuse|虐待|violence|暴力|neglect|忽视|mistreatment|虐待)"
+    ],
+    "keywords": [
+      "domestic violence",
+      "spouse abuse",
+      "child abuse",
+      "elder abuse",
+      "intimate partner violence",
+      "家庭暴力",
+      "配偶虐待",
+      "儿童虐待",
+      "老人虐待",
+      "親密關係暴力"
+    ],
+    "priority": 7,
+    "categories": ["violence_content", "domestic"],
+    "block": true,
+    "enabled": true
+  }
+]

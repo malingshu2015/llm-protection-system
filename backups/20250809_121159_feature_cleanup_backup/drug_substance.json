@@ -1,0 +1,94 @@
+[
+  {
+    "id": "ds-001",
+    "name": "Drug Manufacturing",
+    "description": "检测毒品制造和合成指导",
+    "detection_type": "drug_substance",
+    "severity": "critical",
+    "patterns": [
+      "(?i)(?:how|怎么|如何|教我|告诉我)[.\\s]*(?:to|才能|可以)[.\\s]*(?:make|制作|produce|生产|synthesize|合成|cook|制备)[.\\s]*(?:drugs|毒品|narcotics|麻醉品|cocaine|可卡因|heroin|海洛因|meth|冰毒|methamphetamine|甲基苯丙胺)",
+      "(?i)(?:recipe|配方|formula|公式|method|方法)[.\\s]*(?:for|用于|to make|制作)[.\\s]*(?:illegal|非法|banned|禁用)[.\\s]*(?:substances|物质|drugs|毒品)",
+      "(?i)(?:chemical|化学)[.\\s]*(?:process|过程|procedure|程序)[.\\s]*(?:for|用于)[.\\s]*(?:drug|毒品)[.\\s]*(?:production|生产|manufacturing|制造)",
+      "(?i)(?:lab|实验室|laboratory|实验室)[.\\s]*(?:setup|设置|equipment|设备)[.\\s]*(?:for|用于)[.\\s]*(?:making|制作|producing|生产)[.\\s]*(?:drugs|毒品|narcotics|麻醉品)",
+      "(?i)(?:precursor|前体|raw materials|原材料|chemicals|化学品)[.\\s]*(?:for|用于)[.\\s]*(?:drug|毒品)[.\\s]*(?:synthesis|合成|production|生产)"
+    ],
+    "keywords": [
+      "drug manufacturing",
+      "drug synthesis",
+      "drug recipe",
+      "drug lab",
+      "precursor chemicals",
+      "illegal substances",
+      "毒品制造",
+      "毒品合成",
+      "毒品配方",
+      "毒品实验室",
+      "前体化学品",
+      "非法物质"
+    ],
+    "priority": 5,
+    "categories": ["drug_substance", "manufacturing"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "ds-002",
+    "name": "Drug Distribution",
+    "description": "检测毒品销售和分销相关内容",
+    "detection_type": "drug_substance",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:where|哪里|how|怎么)[.\\s]*(?:to|可以)[.\\s]*(?:buy|购买|get|获得|obtain|得到)[.\\s]*(?:drugs|毒品|narcotics|麻醉品|cocaine|可卡因|heroin|海洛因)",
+      "(?i)(?:selling|销售|dealing|交易|trafficking|贩卖)[.\\s]*(?:drugs|毒品|narcotics|麻醉品|illegal substances|非法物质)",
+      "(?i)(?:drug|毒品)[.\\s]*(?:dealer|经销商|supplier|供应商|network|网络|market|市场)",
+      "(?i)(?:smuggling|走私|transporting|运输)[.\\s]*(?:drugs|毒品|narcotics|麻醉品)[.\\s]*(?:across|穿越|over|越过)[.\\s]*(?:border|边境|boundaries|边界)",
+      "(?i)(?:darknet|暗网|dark web|暗网)[.\\s]*(?:drug|毒品)[.\\s]*(?:marketplace|市场|vendors|供应商|purchases|购买)"
+    ],
+    "keywords": [
+      "drug dealing",
+      "drug trafficking",
+      "drug distribution",
+      "drug smuggling",
+      "darknet drugs",
+      "毒品交易",
+      "毒品贩卖",
+      "毒品分销",
+      "毒品走私",
+      "暗网毒品"
+    ],
+    "priority": 6,
+    "categories": ["drug_substance", "distribution"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "ds-003",
+    "name": "Substance Abuse Encouragement",
+    "description": "检测鼓励物质滥用的内容",
+    "detection_type": "drug_substance",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:benefits|好处|advantages|优势)[.\\s]*(?:of|的)[.\\s]*(?:using|使用|taking|服用)[.\\s]*(?:drugs|毒品|cocaine|可卡因|heroin|海洛因|meth|冰毒)",
+      "(?i)(?:how|如何)[.\\s]*(?:to|来)[.\\s]*(?:use|使用|take|服用|consume|消费)[.\\s]*(?:drugs|毒品|narcotics|麻醉品)[.\\s]*(?:safely|安全地|effectively|有效地)",
+      "(?i)(?:drug|毒品)[.\\s]*(?:combination|组合|mixing|混合)[.\\s]*(?:for|用于)[.\\s]*(?:better|更好|enhanced|增强)[.\\s]*(?:effects|效果|high|快感)",
+      "(?i)(?:encouraging|鼓励|promoting|推广)[.\\s]*(?:drug|毒品)[.\\s]*(?:use|使用|abuse|滥用|experimentation|实验)",
+      "(?i)(?:recreational|娱乐性)[.\\s]*(?:drug|毒品)[.\\s]*(?:use|使用|consumption|消费)[.\\s]*(?:is|是)[.\\s]*(?:harmless|无害|safe|安全|beneficial|有益)"
+    ],
+    "keywords": [
+      "drug benefits",
+      "safe drug use",
+      "drug combination",
+      "recreational drugs",
+      "substance abuse",
+      "毒品好处",
+      "安全用药",
+      "毒品组合",
+      "娱乐性毒品",
+      "物质滥用"
+    ],
+    "priority": 7,
+    "categories": ["drug_substance", "encouragement"],
+    "block": true,
+    "enabled": true
+  }
+]

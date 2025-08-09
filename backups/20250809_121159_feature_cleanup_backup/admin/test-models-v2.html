@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试页面 - 模型管理</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>模型管理页面测试</h1>
+    <div id="status"></div>
+    
+    <h2>API测试结果：</h2>
+    <div id="api-results"></div>
+    
+    <h2>导航测试：</h2>
+    <div>
+        <a href="index.html">首页</a> | 
+        <a href="models_v2.html">模型管理V2</a> | 
+        <a href="test-models-v2.html">测试页面</a>
+    </div>
+
+    <script>
+        console.log('测试页面加载开始...');
+        
+        function addStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            status.appendChild(div);
+            console.log(message);
+        }
+        
+        async function testAPIs() {
+            const results = document.getElementById('api-results');
+            const apis = [
+                { name: '模型列表', url: '/api/v1/ollama/models', auth: true },
+                { name: '概览数据', url: '/api/v1/enhanced-models/summary', auth: false },
+                { name: '安全模板', url: '/api/v1/enhanced-models/templates', auth: false }
+            ];
+            
+            for (const api of apis) {
+                try {
+                    addStatus(`测试 ${api.name} API...`);
+                    
+                    const options = {
+                        method: 'GET'
+                    };
+                    
+                    if (api.auth) {
+                        options.headers = {
+                            'Authorization': 'Bearer cherry-studio-key'
+                        };
+                    }
+                    
+                    const response = await fetch(api.url, options);
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        addStatus(`${api.name} API 成功: ${JSON.stringify(data).substring(0, 100)}...`, 'success');
+                    } else {
+                        addStatus(`${api.name} API 失败: ${data.error || data.detail || 'Unknown error'}`, 'error');
+                    }
+                } catch (error) {
+                    addStatus(`${api.name} API 异常: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        // 页面加载完成后运行测试
+        document.addEventListener('DOMContentLoaded', function() {
+            addStatus('页面DOM加载完成');
+            testAPIs();
+        });
+        
+        // 页面可见性变化监听
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                addStatus('页面变为隐藏状态');
+            } else {
+                addStatus('页面变为可见状态');
+            }
+        });
+        
+        console.log('测试页面脚本加载完成');
+    </script>
+</body>
+</html>

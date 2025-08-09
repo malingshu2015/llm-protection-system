@@ -1,0 +1,146 @@
+"""拦截器相关数据模型。"""
+
+from enum import Enum
+from typing import Any, Dict, List, Optional, Set
+from datetime import datetime
+from pydantic import BaseModel, Field
+
+
+class DetectionType(str, Enum):
+    """安全检测类型。"""
+
+    PROMPT_INJECTION = "prompt_injection"
+    JAILBREAK = "jailbreak"
+    ROLE_PLAY = "role_play"
+    SENSITIVE_INFO = "sensitive_info"
+    HARMFUL_CONTENT = "harmful_content"
+    COMPLIANCE_VIOLATION = "compliance_violation"
+    CUSTOM = "custom"
+
+
+class Severity(str, Enum):
+    """安全检测严重程度。"""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+class SecurityLevel(str, Enum):
+    """安全等级。"""
+    
+    STRICT = "strict"       # 严格模式，适用于生产环境
+    BALANCED = "balanced"   # 平衡模式，推荐用于一般用途
+    RELAXED = "relaxed"     # 宽松模式，适用于开发测试
+
+
+class ModelCategory(str, Enum):
+    """模型分类。"""
+    
+    PRODUCTION = "production"    # 生产环境
+    TESTING = "testing"         # 测试环境
+    DEVELOPMENT = "development" # 开发环境
+    RESEARCH = "research"       # 研究用途
+    EDUCATION = "education"     # 教育用途
+
+
+class ModelTag(BaseModel):
+    """模型标签。"""
+    
+    id: str
+    name: str
+    color: str = "#007AFF"  # 默认蓝色
+    description: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
+class SecurityTemplate(BaseModel):
+    """安全配置模板。"""
+    
+    id: str
+    name: str
+    description: str
+    security_level: SecurityLevel
+    enabled_rules: List[str] = []
+    rule_config: Dict[str, Any] = {}
+    is_default: bool = False
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class ModelMetadata(BaseModel):
+    """扩展的模型元数据。"""
+    
+    model_name: str
+    display_name: Optional[str] = None
+    description: Optional[str] = None
+    category: ModelCategory = ModelCategory.DEVELOPMENT
+    security_level: SecurityLevel = SecurityLevel.BALANCED
+    tags: List[str] = []  # 标签ID列表
+    template_id: Optional[str] = None  # 应用的安全模板ID
+    custom_config: Dict[str, Any] = {}
+    risk_score: float = 0.0  # 0-100的风险评分
+    last_updated: datetime = Field(default_factory=datetime.now)
+    is_active: bool = True
+
+
+class InterceptedRequest(BaseModel):
+    """拦截的请求模型。"""
+
+    method: str
+    url: str
+    headers: Dict[str, str]
+    body: Optional[Dict[str, Any]] = None
+    query_params: Dict[str, str] = {}
+    timestamp: float = 0.0
+    client_ip: str = ""
+    provider: str = ""
+
+
+class InterceptedResponse(BaseModel):
+    """拦截的响应模型。"""
+
+    status_code: int
+    headers: Dict[str, str]
+    body: Optional[Dict[str, Any]] = None
+    timestamp: float = 0.0
+    latency: float = 0.0
+    is_streaming: bool = False
+    raw_response: Any = None
+
+
+class DetectionResult(BaseModel):
+    """安全检测结果。"""
+
+    is_allowed: bool = True
+    detection_type: Optional[DetectionType] = None
+    severity: Optional[Severity] = None
+    reason: str = ""
+    details: Dict[str, Any] = {}
+    status_code: int = 403
+    confidence_score: float = Field(default=1.0, ge=0.0, le=1.0, description="检测置信度评分，0.0-1.0之间")
+    risk_level: str = Field(default="unknown", description="风险级别: low, medium, high, critical")
+    suggested_action: str = Field(default="block", description="建议的处理动作: allow, warn, block")
+    context_analysis: Dict[str, Any] = Field(default_factory=dict, description="上下文分析结果")
+
+
+class SecurityRule(BaseModel):
+    """安全规则。"""
+
+    id: str
+    name: str
+    description: str
+    detection_type: DetectionType
+    severity: Severity
+    patterns: List[str] = []
+    keywords: List[str] = []
+    enabled: bool = True
+    block: bool = True
+    priority: int = 100  # 优先级，数字越小优先级越高
+    categories: List[str] = []  # 规则分类
+    custom_code: Optional[str] = None
+
+    # 这些字段不会被序列化/反序列化
+    compiled_patterns: List[Any] = Field(default_factory=list, exclude=True)
+    keyword_patterns: List[Any] = Field(default_factory=list, exclude=True)

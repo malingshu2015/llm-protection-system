@@ -1,0 +1,96 @@
+[
+  {
+    "id": "ff-001",
+    "name": "Investment Fraud",
+    "description": "检测投资诈骗和庞氏骗局",
+    "detection_type": "financial_fraud",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:guaranteed|保证|promised|承诺)[.\\s]*(?:high|高)[.\\s]*(?:returns|回报|profits|利润)[.\\s]*(?:with|伴随)[.\\s]*(?:no|零|minimal|最小)[.\\s]*(?:risk|风险)",
+      "(?i)(?:ponzi|庞氏|pyramid|金字塔)[.\\s]*(?:scheme|计划|scam|骗局|fraud|欺诈)",
+      "(?i)(?:get rich quick|快速致富|easy money|轻松赚钱|instant wealth|即时财富)",
+      "(?i)(?:investment|投资)[.\\s]*(?:opportunity|机会)[.\\s]*(?:limited time|限时|exclusive|独家|secret|秘密)",
+      "(?i)(?:cryptocurrency|加密货币|bitcoin|比特币)[.\\s]*(?:scam|骗局|fraud|欺诈|pump and dump|拉高出货)"
+    ],
+    "keywords": [
+      "guaranteed returns",
+      "ponzi scheme",
+      "pyramid scheme",
+      "get rich quick",
+      "investment scam",
+      "crypto fraud",
+      "保证回报",
+      "庞氏骗局",
+      "金字塔计划",
+      "快速致富",
+      "投资诈骗",
+      "加密货币欺诈"
+    ],
+    "priority": 10,
+    "categories": ["financial_fraud", "investment"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "ff-002",
+    "name": "Identity Theft",
+    "description": "检测身份盗用和个人信息欺诈",
+    "detection_type": "financial_fraud",
+    "severity": "critical",
+    "patterns": [
+      "(?i)(?:how|如何|怎么)[.\\s]*(?:to|来)[.\\s]*(?:steal|盗取|obtain|获得)[.\\s]*(?:identity|身份|personal|个人)[.\\s]*(?:information|信息|data|数据)",
+      "(?i)(?:fake|虚假|forged|伪造)[.\\s]*(?:identity|身份|documents|文件|credentials|凭证)",
+      "(?i)(?:social security|社会保障)[.\\s]*(?:number|号码|SSN)[.\\s]*(?:theft|盗窃|fraud|欺诈)",
+      "(?i)(?:credit card|信用卡)[.\\s]*(?:fraud|欺诈|cloning|克隆|skimming|撇取)",
+      "(?i)(?:phishing|钓鱼|scamming|诈骗)[.\\s]*(?:techniques|技术|methods|方法)[.\\s]*(?:for|用于)[.\\s]*(?:personal|个人)[.\\s]*(?:information|信息)"
+    ],
+    "keywords": [
+      "identity theft",
+      "fake identity",
+      "social security fraud",
+      "credit card fraud",
+      "phishing techniques",
+      "身份盗用",
+      "虚假身份",
+      "社会保障欺诈",
+      "信用卡欺诈",
+      "钓鱼技术"
+    ],
+    "priority": 11,
+    "categories": ["financial_fraud", "identity"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "ff-003",
+    "name": "Money Laundering",
+    "description": "检测洗钱和非法资金转移",
+    "detection_type": "financial_fraud",
+    "severity": "critical",
+    "patterns": [
+      "(?i)(?:money|资金)[.\\s]*(?:laundering|洗钱|cleaning|清洗)[.\\s]*(?:methods|方法|techniques|技术|schemes|计划)",
+      "(?i)(?:how|如何|怎么)[.\\s]*(?:to|来)[.\\s]*(?:hide|隐藏|conceal|掩盖)[.\\s]*(?:illegal|非法)[.\\s]*(?:funds|资金|money|金钱|income|收入)",
+      "(?i)(?:offshore|离岸)[.\\s]*(?:accounts|账户|banking|银行)[.\\s]*(?:for|用于)[.\\s]*(?:tax|税收)[.\\s]*(?:evasion|逃避|avoidance|规避)",
+      "(?i)(?:shell|空壳)[.\\s]*(?:companies|公司|corporations|企业)[.\\s]*(?:for|用于)[.\\s]*(?:hiding|隐藏)[.\\s]*(?:assets|资产|money|金钱)",
+      "(?i)(?:cryptocurrency|加密货币)[.\\s]*(?:mixing|混合|tumbling|翻滚)[.\\s]*(?:services|服务|to hide|隐藏)[.\\s]*(?:transactions|交易|funds|资金)"
+    ],
+    "keywords": [
+      "money laundering",
+      "hide illegal funds",
+      "offshore accounts",
+      "shell companies",
+      "crypto mixing",
+      "tax evasion",
+      "洗钱",
+      "隐藏非法资金",
+      "离岸账户",
+      "空壳公司",
+      "加密货币混合",
+      "逃税"
+    ],
+    "priority": 12,
+    "categories": ["financial_fraud", "laundering"],
+    "block": true,
+    "enabled": true
+  }
+]
