@@ -660,7 +660,229 @@
         </div>
     </div>
 
+
+    <!-- 智能推荐配置模态框 -->
+    <div class="modal-backdrop" id="recommend-modal" style="display: none;">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <i class="fas fa-magic"></i>
+                        智能推荐配置
+                    </h3>
+                    <button type="button" class="modal-close" onclick="modelRulesManager.hideModal('recommend-modal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" id="recommend-empty" style="display:none;">
+                        <div class="alert">
+                            暂无可推荐的模型，所有模型均已配置。
+                        </div>
+                    </div>
+                    <div class="form-group" id="recommend-controls" style="display:none;">
+                        <label class="form-label">选择需要应用推荐模板的模型</label>
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                <input type="checkbox" id="select-all-recommend">
+                                全选
+                            </label>
+                        </div>
+                        <div class="model-selection-list" id="recommend-list">
+                            <!-- 推荐项将通过JS渲染 -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="button secondary" id="cancel-recommend-btn">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button type="button" class="button primary" id="confirm-recommend-btn">
+                        <i class="fas fa-check"></i> 应用所选
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 规则编辑模态框 -->
+    <div class="modal-backdrop" id="rule-edit-modal" style="display: none;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <i class="fas fa-edit"></i>
+                        编辑规则
+                    </h3>
+                    <button type="button" class="modal-close" onclick="modelRulesManager.hideModal('rule-edit-modal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="rule-edit-form">
+                        <div class="form-group">
+                            <label class="form-label">规则名称</label>
+                            <input type="text" id="rule-name" class="form-control" placeholder="输入规则名称">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">规则描述</label>
+                            <textarea id="rule-description" class="form-control" rows="3"
+                                placeholder="输入规则描述"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">规则类型</label>
+                            <select id="rule-type" class="form-control">
+                                <option value="jailbreak">越狱检测</option>
+                                <option value="sensitive_info">敏感信息检测</option>
+                                <option value="prompt_injection">提示注入检测</option>
+                                <option value="content_filter">内容过滤</option>
+                                <option value="rate_limit">频率限制</option>
+                                <option value="compliance_violation">合规违规</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">严重级别</label>
+                            <select id="rule-severity" class="form-control">
+                                <option value="low">低</option>
+                                <option value="medium">中</option>
+                                <option value="high">高</option>
+                                <option value="critical">严重</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">优先级</label>
+                            <input type="number" id="rule-priority" class="form-control" min="1" max="100"
+                                placeholder="1-100">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="rule-enabled"> 启用规则
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">检测模式</label>
+                            <div class="form-group">
+                                <textarea id="rule-patterns" class="form-control" rows="6"
+                                    placeholder="输入检测模式，每行一个模式"></textarea>
+                                <small class="form-text">支持正则表达式和关键词匹配，每行一个模式</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">白名单</label>
+                            <div class="form-group">
+                                <textarea id="rule-whitelist" class="form-control" rows="3"
+                                    placeholder="输入白名单项，每行一个"></textarea>
+                                <small class="form-text">匹配白名单的内容将不会触发此规则</small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="modelRulesManager.hideModal('rule-edit-modal')">
+                        取消
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="modelRulesManager.saveRule()">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/admin/js/model-rules-enhanced.js"></script>
+
+    <!-- 开发环境下的测试脚本 -->
+    <script>
+        // 检查是否在开发环境
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log('🧪 开发环境检测到，加载测试功能');
+
+            // 简化的测试函数
+            window.testRuleEdit = async function () {
+                console.log('🔧 开始测试规则编辑功能');
+
+                try {
+                    // 1. 检查页面基本元素
+                    const modelsGrid = document.getElementById('models-grid');
+                    const modelCards = modelsGrid ? modelsGrid.querySelectorAll('.model-card') : [];
+                    console.log(`✅ 找到 ${modelCards.length} 个模型卡片`);
+
+                    if (modelCards.length === 0) {
+                        console.error('❌ 没有找到模型卡片');
+                        return;
+                    }
+
+                    // 2. 点击第一个配置按钮
+                    const configBtn = modelCards[0].querySelector('.config-btn');
+                    if (!configBtn) {
+                        console.error('❌ 没有找到配置按钮');
+                        return;
+                    }
+
+                    console.log('🔘 点击配置按钮');
+                    configBtn.click();
+
+                    // 等待弹窗显示
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    // 3. 检查模型配置弹窗
+                    const configModal = document.getElementById('model-rules-config-modal');
+                    if (!configModal || configModal.style.display === 'none') {
+                        console.error('❌ 模型配置弹窗没有显示');
+                        return;
+                    }
+                    console.log('✅ 模型配置弹窗显示成功');
+
+                    // 4. 点击编辑按钮
+                    const editBtn = configModal.querySelector('.edit-btn');
+                    if (!editBtn) {
+                        console.error('❌ 没有找到编辑按钮');
+                        return;
+                    }
+
+                    console.log('🔘 点击编辑按钮');
+                    editBtn.click();
+
+                    // 等待编辑弹窗显示
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    // 5. 检查规则编辑弹窗
+                    const editModal = document.getElementById('rule-edit-modal');
+                    if (!editModal || editModal.style.display === 'none') {
+                        console.error('❌ 规则编辑弹窗没有显示');
+                        return;
+                    }
+                    console.log('✅ 规则编辑弹窗显示成功');
+
+                    // 6. 检查表单字段
+                    const fields = ['rule-name', 'rule-description', 'rule-type'];
+                    let filledCount = 0;
+                    for (const fieldId of fields) {
+                        const field = document.getElementById(fieldId);
+                        if (field && field.value) {
+                            filledCount++;
+                            console.log(`✅ 字段 ${fieldId}: ${field.value}`);
+                        }
+                    }
+
+                    console.log(`🎉 测试完成！${filledCount}/${fields.length} 个字段已填充`);
+
+                } catch (error) {
+                    console.error('❌ 测试失败:', error);
+                }
+            };
+
+            console.log('🧪 测试功能已加载，运行 testRuleEdit() 开始测试');
+        }
+    </script>
 </body>
 
 </html>

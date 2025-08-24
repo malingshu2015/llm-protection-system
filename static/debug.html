@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页面测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 系统诊断页面</h1>
+    
+    <div class="test-card">
+        <h3>📊 服务器状态</h3>
+        <div id="server-status">检查中...</div>
+    </div>
+    
+    <div class="test-card">
+        <h3>📁 文件访问测试</h3>
+        <div id="file-status">检查中...</div>
+    </div>
+    
+    <div class="test-card">
+        <h3>🔗 页面链接测试</h3>
+        <button onclick="testPage('/static/index.html')">测试主页</button>
+        <button onclick="testPage('/static/admin/model_rules.html')">测试规则配置页</button>
+        <button onclick="testPage('/static/admin/rules.html')">测试规则管理页</button>
+        <div id="page-test-results"></div>
+    </div>
+    
+    <div class="test-card">
+        <h3>🎯 API测试</h3>
+        <button onclick="testAPI('/api/v1/model-rules')">测试模型规则API</button>
+        <button onclick="testAPI('/api/v1/model-rules-recommend')">测试推荐API</button>
+        <div id="api-test-results"></div>
+    </div>
+    
+    <div class="test-card">
+        <h3>🐛 浏览器控制台错误</h3>
+        <div id="console-errors">检查浏览器控制台...</div>
+    </div>
+
+    <script>
+        // 检查服务器状态
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                document.getElementById('server-status').innerHTML = `
+                    <div class="success">✅ 服务器正常运行</div>
+                    <div>状态: ${data.status}</div>
+                    <div>版本: ${data.version}</div>
+                    <div>Ollama: ${data.ollama_available ? '✅' : '❌'}</div>
+                `;
+            } catch (error) {
+                document.getElementById('server-status').innerHTML = `
+                    <div class="error">❌ 服务器连接失败</div>
+                    <div>错误: ${error.message}</div>
+                `;
+            }
+        }
+        
+        // 检查文件访问
+        async function checkFileAccess() {
+            const files = [
+                '/static/admin/css/apple-main.css',
+                '/static/admin/js/apple-ui.js',
+                '/static/admin/js/model-rules-enhanced.js',
+                '/static/admin/css/model-rules-enhanced.css'
+            ];
+            
+            let results = '';
+            for (const file of files) {
+                try {
+                    const response = await fetch(file, { method: 'HEAD' });
+                    if (response.ok) {
+                        results += `<div class="success">✅ ${file}</div>`;
+                    } else {
+                        results += `<div class="error">❌ ${file} - ${response.status}</div>`;
+                    }
+                } catch (error) {
+                    results += `<div class="error">❌ ${file} - ${error.message}</div>`;
+                }
+            }
+            document.getElementById('file-status').innerHTML = results;
+        }
+        
+        // 测试页面
+        async function testPage(url) {
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const text = await response.text();
+                    if (text.includes('<!DOCTYPE html>') || text.includes('<html')) {
+                        document.getElementById('page-test-results').innerHTML += 
+                            `<div class="success">✅ ${url} - 页面正常</div>`;
+                    } else {
+                        document.getElementById('page-test-results').innerHTML += 
+                            `<div class="warning">⚠️ ${url} - 内容异常</div>`;
+                    }
+                } else {
+                    document.getElementById('page-test-results').innerHTML += 
+                        `<div class="error">❌ ${url} - ${response.status}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('page-test-results').innerHTML += 
+                    `<div class="error">❌ ${url} - ${error.message}</div>`;
+            }
+        }
+        
+        // 测试API
+        async function testAPI(url) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('api-test-results').innerHTML += 
+                        `<div class="success">✅ ${url} - API正常</div>`;
+                } else {
+                    document.getElementById('api-test-results').innerHTML += 
+                        `<div class="error">❌ ${url} - ${response.status}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('api-test-results').innerHTML += 
+                    `<div class="error">❌ ${url} - ${error.message}</div>`;
+            }
+        }
+        
+        // 检查控制台错误
+        function checkConsoleErrors() {
+            const errors = [];
+            // 模拟检查一些常见的错误
+            if (typeof fetch === 'undefined') {
+                errors.push('fetch API 不可用');
+            }
+            if (typeof Promise === 'undefined') {
+                errors.push('Promise 不可用');
+            }
+            
+            if (errors.length > 0) {
+                document.getElementById('console-errors').innerHTML = 
+                    `<div class="error">❌ 发现问题:</div><ul>${errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+            } else {
+                document.getElementById('console-errors').innerHTML = 
+                    `<div class="success">✅ 浏览器基本功能正常</div>`;
+            }
+        }
+        
+        // 页面加载时执行所有检查
+        window.addEventListener('load', function() {
+            checkServerStatus();
+            checkFileAccess();
+            checkConsoleErrors();
+        });
+        
+        // 监听未处理的Promise错误
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('未处理的Promise错误:', event.reason);
+        });
+        
+        // 监听JavaScript错误
+        window.addEventListener('error', function(event) {
+            console.error('JavaScript错误:', event.error);
+        });
+    </script>
+</body>
+</html>

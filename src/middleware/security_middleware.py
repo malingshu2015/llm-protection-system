@@ -1,5 +1,7 @@
 """安全中间件模块。"""
 
+import time
+import json
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
@@ -12,7 +14,7 @@ from src.security.content_masker import content_masker
 
 
 class SecurityMiddleware(BaseHTTPMiddleware):
-    """安全中间件，用于API密钥认证和速率限制。"""
+    """安全中间件，用于API密钥认证、速率限制和实时监控。"""
 
     async def dispatch(self, request: Request, call_next):
         """处理请求。
@@ -31,6 +33,11 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         # 跳过不需要认证的路径
         if self._is_public_path(request.url.path):
             return await call_next(request)
+        
+        # 收集实时监控数据
+        start_time = time.time()
+        client_info = self._extract_client_info(request)
+        input_content = None
 
         # API密钥认证
         if settings.security.enable_api_auth:
@@ -94,8 +101,29 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                     },
                 )
 
+        # 尝试提取输入内容用于实时监控
+        if request.url.path.startswith("/v1/chat/completions") or "chat/completions" in request.url.path:
+            try:
+                # 尝试从request中获取已缓存的body
+                if hasattr(request, '_body'):
+                    body_bytes = request._body
+                    if body_bytes:
+                        import json as json_module
+                        body_data = json_module.loads(body_bytes.decode('utf-8'))
+                        messages = body_data.get('messages', [])
+                        # 获取最后一条用户消息作为输入内容
+                        for msg in reversed(messages):
+                            if msg.get('role') == 'user':
+                                input_content = msg.get('content', '')[:500]  # 限制长度
+                                break
+            except Exception as e:
+                logger.debug(f"提取输入内容失败: {e}")
+
         # 处理请求
         response = await call_next(request)
+        
+        # 计算响应时间
+        response_time = (time.time() - start_time) * 1000
 
         # 内容脱敏
         if settings.security.enable_content_masking and isinstance(response, Response):
@@ -141,6 +169,23 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                 except Exception as e:
                     logger.error(f"处理响应内容失败: {e}")
 
+        # 广播实时监控事件
+        if input_content and not request.url.path.startswith("/api/v1/realtime"):
+            try:
+                from src.web.realtime_monitor_api import broadcast_realtime_event
+                import asyncio
+                
+                # 异步广播事件，不阻塞响应
+                asyncio.create_task(broadcast_realtime_event(
+                    content=input_content,
+                    client_type=client_info['type'],
+                    client_id=client_info['id'],
+                    detection_result=None,  # 在这里无法获取检测结果
+                    response_time_ms=response_time
+                ))
+            except Exception as e:
+                logger.debug(f"广播实时监控事件失败: {e}")
+
         return response
 
     def _is_public_path(self, path: str) -> bool:
@@ -169,3 +214,48 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                 return True
 
         return False
+
+    def _extract_client_info(self, request: Request) -> dict:
+        """提取客户端信息用于实时监控。
+        
+        Args:
+            request: 请求对象
+            
+        Returns:
+            包含客户端类型和ID的字典
+        """
+        # 获取User-Agent
+        user_agent = request.headers.get("user-agent", "").lower()
+        client_ip = request.client.host if request.client else "unknown"
+        
+        # 根据User-Agent和其他头信息判断客户端类型
+        if "cherry studio" in user_agent or "cherry-studio" in user_agent:
+            client_type = "Cherry Studio"
+        elif "chatbox" in user_agent:
+            client_type = "ChatBox"
+        elif "open-webui" in user_agent or "openwebui" in user_agent:
+            client_type = "Open WebUI"
+        elif "postman" in user_agent:
+            client_type = "Postman"
+        elif "curl" in user_agent:
+            client_type = "cURL"
+        elif "python" in user_agent:
+            client_type = "Python Client"
+        elif "javascript" in user_agent or "axios" in user_agent or "fetch" in user_agent:
+            client_type = "Web Client"
+        elif "mobile" in user_agent or "android" in user_agent or "iphone" in user_agent:
+            client_type = "Mobile App"
+        elif "mozilla" in user_agent or "chrome" in user_agent or "safari" in user_agent:
+            client_type = "Web Browser"
+        else:
+            client_type = "API Client"
+            
+        # 生成客户端ID (IP地址 + 时间戳的简化版本)
+        client_id = f"{client_ip}_{int(time.time()) % 10000}"
+        
+        return {
+            "type": client_type,
+            "id": client_id,
+            "ip": client_ip,
+            "user_agent": request.headers.get("user-agent", "")
+        }

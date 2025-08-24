@@ -8,7 +8,8 @@ from json import JSONEncoder
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status, Body
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
+from typing import Literal
 
 # 尝试导入ollama，如果不可用则设置为None
 print("=== 开始导入Ollama模块 ===")
@@ -1084,7 +1085,23 @@ async def ollama_chat(request: OllamaRequest = Body(...)):
             # 为每个请求创建独立的安全检测器实例，避免状态污染
             from src.security.detector import SecurityDetector
             security_detector_instance = SecurityDetector()
+            
+            # 记录开始时间
+            start_time = time.time()
             security_result = await security_detector_instance.check_request(intercepted_request)
+            
+            # 计算响应时间
+            response_time_ms = (time.time() - start_time) * 1000
+            
+            # 🔥 实时广播客户端输入事件
+            from src.web.realtime_monitor_api import broadcast_realtime_event
+            await broadcast_realtime_event(
+                content=current_user_input,
+                client_type="api",  # 或者从请求头中检测客户端类型
+                client_id="unknown",  # 可以从API密钥或IP地址获取
+                detection_result=security_result,
+                response_time_ms=response_time_ms
+            )
 
             if not security_result.is_allowed:
                 logger.warning(f"安全检测失败: {security_result.reason}")

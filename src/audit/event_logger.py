@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import time
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -9,6 +10,64 @@ from typing import Dict, List, Optional
 from src.config import settings
 from src.logger import logger
 from src.models_interceptor import DetectionResult, DetectionType, Severity
+
+# 导入优化的数据库管理器
+try:
+    from src.database.optimized_db import optimized_event_db
+    DATABASE_AVAILABLE = True
+except ImportError:
+    DATABASE_AVAILABLE = False
+    logger.warning("优化数据库不可用，将使用文件存储模式")
+
+
+# 日志脱敏工具
+class ContentSanitizer:
+    """内容脱敏工具类。"""
+    
+    # 敏感信息模式
+    SENSITIVE_PATTERNS = [
+        # 信用卡号 - 16位数字，可以包含空格或连字符
+        (r'\b(?:\d{4}[\s-]?){3}\d{4}\b', '[CREDIT_CARD]'),
+        # 邮箱地址
+        (r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[EMAIL]'),
+        # 电话号码 - 支持多种格式
+        (r'\b(?:\d{3}-?\d{3}-?\d{4}|\d{11}|\d{3}\s\d{3}\s\d{4})\b', '[PHONE]'),
+        # API密钥 - 以sk-开头的长字符串
+        (r'\b(?:sk-|api-|key-)?[a-zA-Z0-9]{32,}\b', '[API_KEY]'),
+        # 身份证号 - 18位，最后一位可以是X
+        (r'\b\d{17}[\dXx]\b', '[ID_CARD]'),
+        # 密码
+        (r'(?i)(?:password|passwd|pwd)\s*[:=]\s*\S+', '[PASSWORD]'),
+        # 银行账号
+        (r'\b\d{16,19}\b', '[BANK_ACCOUNT]'),
+    ]
+    
+    @classmethod
+    def sanitize_content(cls, content: str, max_length: int = 500) -> str:
+        """
+        脱敏敏感信息。
+        
+        Args:
+            content: 原始内容
+            max_length: 最大长度限制
+            
+        Returns:
+            脱敏后的内容
+        """
+        if not content:
+            return content
+            
+        sanitized = content
+        
+        # 应用脱敏模式
+        for pattern, replacement in cls.SENSITIVE_PATTERNS:
+            sanitized = re.sub(pattern, replacement, sanitized, flags=re.IGNORECASE)
+        
+        # 限制长度
+        if len(sanitized) > max_length:
+            sanitized = sanitized[:max_length] + "..."
+            
+        return sanitized
 
 
 class SecurityEvent:
@@ -173,6 +232,30 @@ class SecurityEventLogger:
         if result.is_allowed:
             return
 
+        # 脱敏敏感信息
+        sanitized_content = ContentSanitizer.sanitize_content(content)
+
+        # 尝试使用优化数据库
+        if DATABASE_AVAILABLE:
+            try:
+                # 使用异步数据库（在后台任务中处理）
+                import asyncio
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # 如果事件循环正在运行，创建任务
+                    loop.create_task(optimized_event_db.log_event(result, sanitized_content))
+                else:
+                    # 如果没有事件循环，使用文件存储作为备份
+                    self._log_event_to_file(result, sanitized_content)
+                return
+            except Exception as e:
+                logger.warning(f"数据库记录失败，使用文件存储: {e}")
+        
+        # 回退到文件存储
+        self._log_event_to_file(result, sanitized_content)
+    
+    def _log_event_to_file(self, result: DetectionResult, content: str) -> None:
+        """记录安全事件到文件（备用方法）"""
         # 生成事件ID
         event_id = f"event-{int(time.time())}-{len(self.events) + 1}"
 

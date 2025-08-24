@@ -35,10 +35,21 @@
     color: white;
 }
 
-.stat-card-icon.primary { background: linear-gradient(135deg, #007AFF, #5AC8FA); }
-.stat-card-icon.success { background: linear-gradient(135deg, #34C759, #30D158); }
-.stat-card-icon.warning { background: linear-gradient(135deg, #FF9500, #FFCC02); }
-.stat-card-icon.danger { background: linear-gradient(135deg, #FF3B30, #FF453A); }
+.stat-card-icon.primary {
+    background: linear-gradient(135deg, #007AFF, #5AC8FA);
+}
+
+.stat-card-icon.success {
+    background: linear-gradient(135deg, #34C759, #30D158);
+}
+
+.stat-card-icon.warning {
+    background: linear-gradient(135deg, #FF9500, #FFCC02);
+}
+
+.stat-card-icon.danger {
+    background: linear-gradient(135deg, #FF3B30, #FF453A);
+}
 
 .stat-card-content {
     flex: 1;
@@ -348,8 +359,13 @@
     font-weight: 500;
 }
 
-.config-stat-change.positive { color: var(--success-color, #34C759); }
-.config-stat-change.negative { color: var(--danger-color, #FF3B30); }
+.config-stat-change.positive {
+    color: var(--success-color, #34C759);
+}
+
+.config-stat-change.negative {
+    color: var(--danger-color, #FF3B30);
+}
 
 .security-score-indicator {
     display: flex;
@@ -503,6 +519,7 @@
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -565,6 +582,114 @@
 }
 
 /* 模态框增强样式 */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-dialog {
+    background: var(--surface-color, #FFFFFF);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-dialog.modal-md {
+    max-width: 500px;
+}
+
+.modal-dialog.modal-lg {
+    max-width: 800px;
+}
+
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border-color, #E5E7EB);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary, #1F2937);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text-secondary, #6B7280);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: var(--hover-color, #F3F4F6);
+    color: var(--text-primary, #1F2937);
+}
+
+.modal-body {
+    padding: 20px 24px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 16px 24px 20px;
+    border-top: 1px solid var(--border-color, #E5E7EB);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color, #E5E7EB);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.checkbox-item:hover {
+    background: var(--hover-color, #F3F4F6);
+    border-color: var(--primary-color, #3B82F6);
+}
+
+.checkbox-item input[type="checkbox"] {
+    margin: 0;
+}
+
 .modal-backdrop.large-modal {
     position: fixed;
     top: 0;
@@ -572,10 +697,16 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.6);
-    display: flex;
+    display: none;
+    /* 默认隐藏 */
     align-items: center;
     justify-content: center;
     z-index: 1000;
+}
+
+/* 显示模态框时 */
+.modal-backdrop.large-modal.show {
+    display: flex !important;
 }
 
 .modal-backdrop.large-modal .modal-content {
@@ -900,57 +1031,57 @@
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .quick-actions {
         grid-template-columns: 1fr;
     }
-    
+
     .models-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .templates-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .toolbar {
         flex-direction: column;
         gap: 16px;
         align-items: stretch;
     }
-    
+
     .toolbar-left,
     .toolbar-right {
         justify-content: center;
     }
-    
+
     .search-box {
         width: 100%;
     }
-    
+
     .batch-toolbar {
         flex-direction: column;
         gap: 16px;
         text-align: center;
     }
-    
+
     .batch-actions {
         justify-content: center;
     }
-    
+
     .filters-container {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .model-info-panel {
         grid-template-columns: 1fr;
     }
-    
+
     .config-actions {
         justify-content: center;
     }
-    
+
     .modal-backdrop.large-modal .modal-content {
         width: 95%;
         max-height: 90vh;
@@ -981,7 +1112,9 @@
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* 模态框开启时禁止body滚动 */

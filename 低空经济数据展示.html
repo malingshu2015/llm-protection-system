@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>低空经济行业数据分析</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .section-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .card-icon.aircraft {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        }
+
+        .card-icon.ground {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .card-icon.platform {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+        }
+
+        .card-icon.safety {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+        }
+
+        .card-icon.control {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .card-icon.monitor {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+        }
+
+        .card-icon.manage {
+            background: linear-gradient(135deg, #a8e6cf, #dcedc8);
+        }
+
+        .card-icon.record {
+            background: linear-gradient(135deg, #ffd3a5, #fd9853);
+        }
+
+        .card-icon.weather {
+            background: linear-gradient(135deg, #89f7fe, #66a6ff);
+        }
+
+        .card-icon.emergency {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        .card-icon.analytics {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.8rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card-icon:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .importance-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .importance-high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .importance-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .importance-low {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .data-list {
+            list-style: none;
+        }
+
+        .data-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+        }
+
+        .data-item:last-child {
+            border-bottom: none;
+        }
+
+        .data-item::before {
+            content: '•';
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .stars {
+            color: #fbbf24;
+            margin-left: 10px;
+        }
+
+        .summary-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .summary-card h4 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .summary-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .summary-card li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .summary-card li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>低空经济行业数据分析</h1>
+            <p>飞行器端 · 地面站 · 低空管理平台</p>
+        </div>
+
+        <div class="section-tabs">
+            <button class="tab-btn active" onclick="showSection('aircraft')">飞行器端</button>
+            <button class="tab-btn" onclick="showSection('ground')">地面站</button>
+            <button class="tab-btn" onclick="showSection('platform')">低空管理平台</button>
+            <button class="tab-btn" onclick="showSection('summary')">综合分析</button>
+        </div>
+
+        <!-- 飞行器端数据 -->
+        <div id="aircraft" class="section active">
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon aircraft">🛩️</div>
+                        <div class="card-title">飞行状态数据</div>
+                        <span class="importance-badge importance-high">极高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">位置信息：经纬度、高度、速度、航向</li>
+                        <li class="data-item">姿态数据：俯仰角、横滚角、偏航角</li>
+                        <li class="data-item">动力系统：电池电量、油量、发动机状态</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐⭐</span> 直接关系到飞行安全</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon ground">📶</div>
+                        <div class="card-title">设备状态数据</div>
+                        <span class="importance-badge importance-medium">很高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">传感器数据：GPS、IMU、气压计、温度传感器</li>
+                        <li class="data-item">通信设备：信号强度、连接状态、数据传输质量</li>
+                        <li class="data-item">载荷设备：摄像头状态、任务设备运行状态</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐</span> 影响任务执行和设备寿命</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon manage">📝</div>
+                        <div class="card-title">任务数据</div>
+                        <span class="importance-badge importance-medium">很高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">任务计划：飞行航线、任务目标、时间规划</li>
+                        <li class="data-item">执行状态：任务进度、完成度、异常情况</li>
+                        <li class="data-item">载荷数据：拍摄影像、采集数据、监测信息</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐</span> 关系到业务价值实现</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon safety">⚠️</div>
+                        <div class="card-title">安全数据</div>
+                        <span class="importance-badge importance-high">极高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">故障诊断：设备故障码、异常报警、系统错误</li>
+                        <li class="data-item">应急处置：紧急程序触发、安全模式状态</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐⭐</span> 直接影响生命财产安全</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 地面站数据 -->
+        <div id="ground" class="section">
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon control">🕹️</div>
+                        <div class="card-title">控制指令数据</div>
+                        <span class="importance-badge importance-high">极高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">遥控指令：起飞、降落、航线变更、紧急停止</li>
+                        <li class="data-item">参数设置：飞行参数、设备配置、安全阈值</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐⭐</span> 直接控制飞行器行为</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon monitor">📊</div>
+                        <div class="card-title">监控数据</div>
+                        <span class="importance-badge importance-medium">很高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">实时监控：飞行器状态、位置轨迹、设备参数</li>
+                        <li class="data-item">视频回传：实时画面、录制视频、图像传输</li>
+                        <li class="data-item">数据链路：通信质量、延迟、丢包率</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐</span> 保障操作决策准确性</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon manage">📅</div>
+                        <div class="card-title">任务管理数据</div>
+                        <span class="importance-badge importance-low">中等</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">任务调度：任务分配、时间安排、资源协调</li>
+                        <li class="data-item">数据处理：数据接收、存储、初步处理</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐</span> 影响运营效率</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon record">📋</div>
+                        <div class="card-title">操作记录数据</div>
+                        <span class="importance-badge importance-medium">很高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">操作日志：操作人员、操作时间、操作内容</li>
+                        <li class="data-item">安全记录：异常事件、处理措施、结果记录</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐</span> 用于事后分析和责任追溯</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 低空管理平台数据 -->
+        <div id="platform" class="section">
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon platform">🌐</div>
+                        <div class="card-title">空域管理数据</div>
+                        <span class="importance-badge importance-high">极高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">空域信息：禁飞区、限制区、危险区、可用空域</li>
+                        <li class="data-item">飞行计划：航线审批、时间窗口、高度限制</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐⭐</span> 关系到空域安全和合规性</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon monitor">🔍</div>
+                        <div class="card-title">监管数据</div>
+                        <span class="importance-badge importance-high">极高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">飞行监控：大范围飞行器监控、流量管理</li>
+                        <li class="data-item">合规检查：许可证、适航证、保险状态</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐⭐</span> 关系到行业监管和公共安全</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon weather">🌦️</div>
+                        <div class="card-title">气象与环境数据</div>
+                        <span class="importance-badge importance-medium">很高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">气象信息：风速、风向、能见度、降水</li>
+                        <li class="data-item">环境监测：空气质量、温度、气压</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐</span> 影响飞行安全和任务执行</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon emergency">🚨</div>
+                        <div class="card-title">应急响应数据</div>
+                        <span class="importance-badge importance-high">极高</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">应急预案：各类突发情况的处置流程</li>
+                        <li class="data-item">救援资源：救援队伍、设备、物资位置</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐⭐⭐</span> 关系到应急处置效果</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon analytics">📈</div>
+                        <div class="card-title">统计分析数据</div>
+                        <span class="importance-badge importance-low">中等</span>
+                    </div>
+                    <ul class="data-list">
+                        <li class="data-item">运行统计：飞行次数、时长、里程、载重</li>
+                        <li class="data-item">性能分析：设备利用率、任务完成率、安全指标</li>
+                        <li class="data-item"><span class="stars">⭐⭐⭐</span> 用于优化决策</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 综合分析 -->
+        <div id="summary" class="section">
+            <div class="summary-section">
+                <h2 style="color: #1e293b; margin-bottom: 20px;">数据重要程度综合分析</h2>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h4>极高重要程度数据 <span class="stars">⭐⭐⭐⭐⭐</span></h4>
+                        <ul>
+                            <li>直接影响生命财产安全</li>
+                            <li>关系到空域安全和合规性</li>
+                            <li>包括：飞行状态、控制指令、空域管理、监管数据、应急响应</li>
+                            <li>要求：实时性高、可靠性高、安全性高</li>
+                        </ul>
+                    </div>
+                    <div class="summary-card">
+                        <h4>很高重要程度数据 <span class="stars">⭐⭐⭐⭐</span></h4>
+                        <ul>
+                            <li>影响任务执行和设备安全</li>
+                            <li>关系到运营质量和操作决策</li>
+                            <li>包括：设备状态、任务数据、监控数据、操作记录、气象环境</li>
+                            <li>要求：较高的实时性和可靠性</li>
+                        </ul>
+                    </div>
+                    <div class="summary-card">
+                        <h4>中等重要程度数据 <span class="stars">⭐⭐⭐</span></h4>
+                        <ul>
+                            <li>影响运营效率和业务分析</li>
+                            <li>用于优化决策和统计分析</li>
+                            <li>包括：任务管理数据、统计分析数据</li>
+                            <li>要求：可适当延迟，但需要完整性</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // 隐藏所有section
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // 移除所有tab的active类
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // 显示选中的section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // 添加对应tab的active类
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

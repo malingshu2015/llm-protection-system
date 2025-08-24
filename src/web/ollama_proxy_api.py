@@ -131,6 +131,37 @@ async def ollama_proxy(request: Request, path: str):
             security_detector_instance = SecurityDetector()
             
             security_result = await security_detector_instance.check_request(intercepted_request_for_check)
+            
+            # 📊 广播实时监控事件（包含安全检测结果）
+            try:
+                from src.web.realtime_monitor_api import broadcast_realtime_event
+                import asyncio
+                
+                # 识别客户端类型
+                user_agent = request.headers.get("user-agent", "").lower()
+                if "cherry studio" in user_agent or "cherry-studio" in user_agent:
+                    client_type = "Cherry Studio"
+                elif "chatbox" in user_agent:
+                    client_type = "ChatBox"  
+                elif "open-webui" in user_agent or "openwebui" in user_agent:
+                    client_type = "Open WebUI"
+                else:
+                    client_type = "API Client"
+                
+                client_ip = request.client.host if request.client else "unknown"
+                client_id = f"{client_type}_{client_ip}_{int(time.time()) % 10000}"
+                
+                # 异步广播事件
+                asyncio.create_task(broadcast_realtime_event(
+                    content=current_user_input,
+                    client_type=client_type,
+                    client_id=client_id,
+                    detection_result=security_result,
+                    response_time_ms=0.0  # 将在处理完成后更新
+                ))
+            except Exception as e:
+                logger.debug(f"广播实时监控事件失败: {e}")
+            
             if not security_result.is_allowed:
                 logger.warning(f"安全检测失败: {security_result.reason}")
                 
@@ -350,22 +381,27 @@ async def ollama_proxy(request: Request, path: str):
 
             # 获取Ollama模型列表
             try:
-                import subprocess
                 import json
 
-                # 使用curl命令获取Ollama模型列表
-                curl_cmd = "curl -s http://localhost:11434/api/tags"
-                result = subprocess.run(curl_cmd, shell=True, capture_output=True, text=True)
-
-                if result.returncode != 0:
-                    logger.error(f"获取Ollama模型列表失败: {result.stderr}")
+                # 使用安全的方式获取Ollama模型列表
+                try:
+                    import aiohttp
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get('http://localhost:11434/api/tags', timeout=5) as response:
+                            if response.status == 200:
+                                ollama_models = await response.json()
+                            else:
+                                logger.error(f"获取Ollama模型列表失败: HTTP {response.status}")
+                                return JSONResponse(
+                                    content={"error": f"获取Ollama模型列表失败: HTTP {response.status}"},
+                                    status_code=500
+                                )
+                except Exception as e:
+                    logger.error(f"连接Ollama服务失败: {str(e)}")
                     return JSONResponse(
-                        content={"error": f"获取Ollama模型列表失败: {result.stderr}"},
+                        content={"error": f"连接Ollama服务失败: {str(e)}"},
                         status_code=500
                     )
-
-                # 解析Ollama模型列表
-                ollama_models = json.loads(result.stdout)
 
                 # 转换为OpenAI格式的模型列表
                 openai_models = {

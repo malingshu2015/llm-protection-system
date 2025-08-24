@@ -905,7 +905,9 @@ async def get_rule(rule_id: str = Path(...)):
     try:
         rules = await get_rules()
         for rule in rules:
-            if rule.id == rule_id:
+            # 处理字典格式的规则数据
+            rule_id_to_check = rule.get("id") if isinstance(rule, dict) else rule.id
+            if rule_id_to_check == rule_id:
                 return rule
 
         # 如果没有找到规则，返回404
@@ -989,7 +991,9 @@ async def update_rule(
         # 查找要更新的规则
         target_rule = None
         for rule in rules:
-            if rule.id == rule_id:
+            # 处理字典格式的规则数据
+            rule_id_to_check = rule.get("id") if isinstance(rule, dict) else rule.id
+            if rule_id_to_check == rule_id:
                 target_rule = rule
                 break
 
@@ -1004,7 +1008,14 @@ async def update_rule(
 
         # 将更新应用到目标规则
         update_dict = update.model_dump(exclude_unset=True)
-        updated_rule = target_rule.model_copy(update=update_dict)
+
+        # 由于target_rule是字典格式，需要手动更新
+        if isinstance(target_rule, dict):
+            updated_rule = target_rule.copy()
+            updated_rule.update(update_dict)
+        else:
+            # 如果是Pydantic模型，使用model_copy
+            updated_rule = target_rule.model_copy(update=update_dict)
 
         return updated_rule
     except Exception as e:
@@ -1032,7 +1043,9 @@ async def delete_rule(rule_id: str = Path(...)):
         # 查找要删除的规则
         target_rule = None
         for rule in rules:
-            if rule.id == rule_id:
+            # 处理字典格式的规则数据
+            rule_id_to_check = rule.get("id") if isinstance(rule, dict) else rule.id
+            if rule_id_to_check == rule_id:
                 target_rule = rule
                 break
 
@@ -1169,7 +1182,9 @@ async def update_rule_priority(
         # 查找目标规则
         target_rule = None
         for rule in rules:
-            if rule.id == rule_id:
+            # 处理字典格式的规则数据
+            rule_id_to_check = rule.get("id") if isinstance(rule, dict) else rule.id
+            if rule_id_to_check == rule_id:
                 target_rule = rule
                 break
 
@@ -1183,7 +1198,12 @@ async def update_rule_priority(
         logger.info(f"更新规则优先级: {rule_id} -> {priority}")
 
         # 将更新应用到目标规则
-        updated_rule = target_rule.model_copy(update={"priority": priority})
+        if isinstance(target_rule, dict):
+            updated_rule = target_rule.copy()
+            updated_rule["priority"] = priority
+        else:
+            # 如果是Pydantic模型，使用model_copy
+            updated_rule = target_rule.model_copy(update={"priority": priority})
 
         return updated_rule
     except Exception as e:

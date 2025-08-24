@@ -17,6 +17,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.middleware.security_middleware import SecurityMiddleware
 
+# 导入数据库初始化
+try:
+    from src.database.optimized_db import optimized_event_db
+    DATABASE_AVAILABLE = True
+except ImportError:
+    DATABASE_AVAILABLE = False
+
 # Get version from VERSION file
 VERSION_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "VERSION")
 VERSION = "1.0.0"  # Default version
@@ -68,6 +75,8 @@ app.include_router(health_router)
 app.include_router(model_rules_router)
 app.include_router(events_router)
 app.include_router(enhanced_models_router)
+from src.web.realtime_monitor_api import router as realtime_monitor_router
+app.include_router(realtime_monitor_router)
 # app.include_router(new_providers_router)
 # app.include_router(models_router)
 app.include_router(ollama_proxy_router)
@@ -79,6 +88,45 @@ if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 else:
     logger.warning(f"Static directory not found: {static_dir}")
+
+
+@app.on_event("startup")
+async def startup_event():
+    """应用启动事件处理"""
+    logger.info("应用正在启动...")
+    
+    # 初始化数据库
+    if DATABASE_AVAILABLE:
+        try:
+            await optimized_event_db.initialize()
+            logger.info("数据库初始化成功")
+        except Exception as e:
+            logger.error(f"数据库初始化失败: {e}")
+    
+    # 初始化缓存系统
+    try:
+        from src.security.smart_cache import cache_manager
+        # 启动缓存优化任务
+        asyncio.create_task(cache_manager.optimize_cache())
+        logger.info("缓存系统初始化成功")
+    except Exception as e:
+        logger.error(f"缓存系统初始化失败: {e}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """应用关闭事件处理"""
+    logger.info("应用正在关闭...")
+    
+    # 关闭数据库
+    if DATABASE_AVAILABLE:
+        try:
+            await optimized_event_db.close()
+            logger.info("数据库连接已关闭")
+        except Exception as e:
+            logger.error(f"数据库关闭失败: {e}")
+    
+    logger.info("应用已安全关闭")
 
 # 添加 favicon.ico 路由
 @app.get("/favicon.ico")

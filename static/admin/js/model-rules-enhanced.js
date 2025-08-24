@@ -1,4 +1,4 @@
-// 规则配置页面增强脚本
+// 规则配置页面增强脚本 - 版本 1.0.1
 
 class ModelRulesManager {
     constructor() {
@@ -576,7 +576,8 @@ class ModelRulesManager {
     }
 
     async configureModel(modelId) {
-        console.log('配置模型:', modelId);
+        console.log('🔧 配置模型被调用:', modelId);
+        console.log('🔧 当前modelRulesManager实例:', this);
         
         try {
             // 获取模型详细信息
@@ -940,18 +941,29 @@ class ModelRulesManager {
     }
 
     showModal(modalId) {
+        console.log('🔍 尝试显示模态框:', modalId);
         const modal = document.getElementById(modalId);
+        console.log('🔍 找到的模态框元素:', modal);
         if (modal) {
-            modal.style.display = 'block';
+            // 使用CSS类控制显示，而不是直接设置style
+            modal.classList.add('show');
             document.body.classList.add('modal-open');
+            console.log('✅ 模态框显示成功，已添加show类');
+
+            // 确保模态框在最顶层
+            modal.style.zIndex = '9999';
+        } else {
+            console.error('❌ 未找到模态框元素:', modalId);
         }
     }
 
     hideModal(modalId) {
+        console.log('🔍 尝试隐藏模态框:', modalId);
         const modal = document.getElementById(modalId);
         if (modal) {
-            modal.style.display = 'none';
+            modal.classList.remove('show');
             document.body.classList.remove('modal-open');
+            console.log('✅ 模态框已隐藏，移除show类');
         }
     }
 
@@ -985,10 +997,132 @@ class ModelRulesManager {
         }, 3000);
     }
 
-    editRule(ruleId) {
-        console.log('编辑规则:', ruleId);
-        // TODO: 实现规则编辑功能
-        alert(`编辑规则功能开发中...\n\n规则ID: ${ruleId}\n\n将提供规则详细配置界面。`);
+    async editRule(ruleId) {
+        try {
+            console.log('开始编辑规则:', ruleId);
+            this.showLoading(true);
+
+            // 获取规则详情
+            const response = await fetch(`/api/v1/rules/${encodeURIComponent(ruleId)}`);
+            if (!response.ok) {
+                throw new Error('获取规则详情失败');
+            }
+
+            const ruleData = await response.json();
+            console.log('获取到的规则数据:', ruleData);
+
+            // 确保数据格式正确
+            const rule = ruleData.data || ruleData; // 处理可能的包装格式
+            console.log('处理后的规则数据:', rule);
+
+            this._populateRuleEditForm(rule);
+            console.log('准备显示模态框: rule-edit-modal');
+            this.showModal('rule-edit-modal');
+            console.log('模态框显示完成');
+
+        } catch (e) {
+            console.error('编辑规则失败:', e);
+            this.showError(`编辑规则失败: ${e.message}`);
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    _populateRuleEditForm(rule) {
+        console.log('开始填充规则编辑表单，规则数据:', rule);
+
+        // 存储当前编辑的规则ID
+        this.currentEditingRuleId = rule.id;
+        console.log('设置当前编辑规则ID:', this.currentEditingRuleId);
+
+        // 填充表单字段
+        const nameField = document.getElementById('rule-name');
+        const descField = document.getElementById('rule-description');
+        const typeField = document.getElementById('rule-type');
+        const severityField = document.getElementById('rule-severity');
+        const priorityField = document.getElementById('rule-priority');
+        const enabledField = document.getElementById('rule-enabled');
+        const patternsField = document.getElementById('rule-patterns');
+        const whitelistField = document.getElementById('rule-whitelist');
+
+        console.log('表单字段元素:', {
+            nameField, descField, typeField, severityField,
+            priorityField, enabledField, patternsField, whitelistField
+        });
+
+        if (nameField) nameField.value = rule.name || '';
+        if (descField) descField.value = rule.description || '';
+        if (typeField) typeField.value = rule.detection_type || '';
+        if (severityField) severityField.value = rule.severity || '';
+        if (priorityField) priorityField.value = rule.priority || '';
+        if (enabledField) enabledField.checked = rule.enabled || false;
+
+        // 填充模式（patterns）
+        const patterns = rule.patterns || [];
+        if (patternsField) patternsField.value = patterns.join('\n');
+
+        // 填充白名单（如果有的话）- 检查多个可能的字段名
+        const whitelist = rule.whitelist || rule.keywords || [];
+        if (whitelistField) whitelistField.value = whitelist.join('\n');
+
+        console.log('表单填充完成');
+    }
+
+    async saveRule() {
+        try {
+            this.showLoading(true);
+
+            if (!this.currentEditingRuleId) {
+                throw new Error('没有正在编辑的规则');
+            }
+
+            // 收集表单数据
+            const formData = {
+                name: document.getElementById('rule-name').value.trim(),
+                description: document.getElementById('rule-description').value.trim(),
+                detection_type: document.getElementById('rule-type').value,
+                severity: document.getElementById('rule-severity').value,
+                priority: parseInt(document.getElementById('rule-priority').value) || 1,
+                enabled: document.getElementById('rule-enabled').checked,
+                patterns: document.getElementById('rule-patterns').value
+                    .split('\n')
+                    .map(p => p.trim())
+                    .filter(p => p.length > 0),
+                whitelist: document.getElementById('rule-whitelist').value
+                    .split('\n')
+                    .map(w => w.trim())
+                    .filter(w => w.length > 0)
+            };
+
+            // 验证必填字段
+            if (!formData.name) {
+                throw new Error('规则名称不能为空');
+            }
+
+            // 发送更新请求
+            const response = await fetch(`/api/v1/rules/${encodeURIComponent(this.currentEditingRuleId)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || '保存规则失败');
+            }
+
+            this.showSuccess('规则保存成功');
+            this.hideModal('rule-edit-modal');
+            this.refreshData(); // 刷新页面数据
+
+        } catch (e) {
+            console.error('保存规则失败:', e);
+            this.showError(`保存规则失败: ${e.message}`);
+        } finally {
+            this.showLoading(false);
+        }
     }
 
     viewModelDetails(modelId) {
@@ -1022,9 +1156,139 @@ class ModelRulesManager {
         // TODO: 实现批量应用modal
     }
 
-    autoRecommendConfig() {
-        console.log('开始自动推荐配置');
-        // TODO: 实现自动推荐逻辑
+    // ===== 智能推荐配置：弹窗交互 =====
+    async autoRecommendConfig() {
+        try {
+            console.log('🚀 开始智能推荐配置...');
+            this.showLoading(true);
+            
+            // 检查按钮点击是否被触发
+            const button = document.getElementById('auto-recommend-btn');
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 推荐中...';
+            }
+            
+            const recResp = await fetch('/api/v1/model-rules-recommend', {
+                headers: {
+                    'Authorization': 'Bearer cherry-studio-key'
+                }
+            });
+            console.log('📡 推荐API响应状态:', recResp.status);
+            
+            if (!recResp.ok) {
+                const errorText = await recResp.text();
+                console.error('❌ 推荐API响应错误:', errorText);
+                throw new Error(`获取推荐配置失败 (${recResp.status}): ${errorText}`);
+            }
+            
+            const recData = await recResp.json();
+            console.log('✅ 推荐API响应数据:', recData);
+            const recs = recData.recommendations || [];
+
+            if (recs.length === 0) {
+                this.showSuccess('所有模型均已配置，无需推荐');
+                return;
+            }
+
+            this._renderRecommendModal(recs);
+            this.showModal('recommend-modal');
+        } catch (e) {
+            console.error('❌ 自动推荐失败:', e);
+            // 提供更详细的错误信息
+            let errorMessage = `自动推荐失败: ${e.message}`;
+            
+            if (e.message.includes('Failed to fetch')) {
+                errorMessage = '无法连接到服务器，请确保服务正在运行';
+            } else if (e.message.includes('500')) {
+                errorMessage = '服务器内部错误，请检查后端服务状态';
+            } else if (e.message.includes('11434')) {
+                errorMessage = '无法连接到Ollama服务，请确保Ollama正在运行';
+            }
+            
+            this.showError(errorMessage);
+        } finally {
+            this.showLoading(false);
+            
+            // 恢复按钮状态
+            const button = document.getElementById('auto-recommend-btn');
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-arrow-right"></i> 开始推荐';
+            }
+        }
+    }
+
+    _renderRecommendModal(recs) {
+        const empty = document.getElementById('recommend-empty');
+        const controls = document.getElementById('recommend-controls');
+        const list = document.getElementById('recommend-list');
+        const selectAll = document.getElementById('select-all-recommend');
+        const confirmBtn = document.getElementById('confirm-recommend-btn');
+        const cancelBtn = document.getElementById('cancel-recommend-btn');
+
+        if (!recs || recs.length === 0) {
+            empty.style.display = 'block';
+            controls.style.display = 'none';
+            confirmBtn.disabled = true;
+            return;
+        }
+
+        empty.style.display = 'none';
+        controls.style.display = 'block';
+        confirmBtn.disabled = false;
+
+        list.innerHTML = recs.map(r => `
+            <label class="checkbox-item">
+                <input type="checkbox" class="recommend-checkbox" data-model-id="${r.model_id}" checked>
+                <span>
+                    <strong>${r.model_id}</strong>
+                    <span style="color:var(--text-secondary);margin-left:8px;">→ ${r.template_name}</span>
+                </span>
+            </label>
+        `).join('');
+
+        // 绑定全选
+        selectAll.checked = true;
+        selectAll.onchange = (e) => {
+            document.querySelectorAll('.recommend-checkbox').forEach(cb => cb.checked = e.target.checked);
+        };
+
+        // 绑定按钮
+        cancelBtn.onclick = () => this.hideModal('recommend-modal');
+        confirmBtn.onclick = async () => {
+            const checked = Array.from(document.querySelectorAll('.recommend-checkbox'))
+                .filter(cb => cb.checked)
+                .map(cb => cb.dataset.modelId);
+            if (checked.length === 0) {
+                this.showError('请至少选择一个模型');
+                return;
+            }
+            try {
+                this.showLoading(true);
+                const applyResp = await fetch('/api/v1/model-rules-recommend/apply', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer cherry-studio-key'
+                    },
+                    body: JSON.stringify({ model_ids: checked })
+                });
+                if (!applyResp.ok) {
+                    const err = await applyResp.json().catch(() => ({}));
+                    throw new Error(err.detail || '应用推荐失败');
+                }
+                const applyData = await applyResp.json();
+                this.showSuccess(`已为 ${applyData.applied} 个模型应用推荐`);
+                this.hideModal('recommend-modal');
+                await this.refreshData();
+            } catch (e) {
+                console.error('应用推荐失败:', e);
+                this.showError(`应用推荐失败: ${e.message}`);
+            } finally {
+                this.showLoading(false);
+            }
+        };
     }
 
     checkAllConfigurations() {
@@ -1037,5 +1301,42 @@ class ModelRulesManager {
 let modelRulesManager;
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 初始化ModelRulesManager...');
     modelRulesManager = new ModelRulesManager();
+    // 将管理器设置为全局变量，以便HTML中的onclick可以访问
+    window.modelRulesManager = modelRulesManager;
+    console.log('✅ ModelRulesManager初始化完成，已设置为全局变量');
+
+    // 添加测试函数到全局作用域
+    window.testConfigureModel = function(modelId) {
+        console.log('🧪 测试配置模型:', modelId);
+        if (window.modelRulesManager) {
+            console.log('✅ modelRulesManager 可访问');
+            window.modelRulesManager.configureModel(modelId || 'phi3:latest');
+        } else {
+            console.error('❌ modelRulesManager 不可访问');
+        }
+    };
+
+    // 添加全局hideModal函数，供HTML中的onclick使用
+    window.hideModal = function(modalId) {
+        if (window.modelRulesManager) {
+            window.modelRulesManager.hideModal(modalId);
+        }
+    };
+
+    console.log('🧪 测试函数已添加，可在控制台运行: testConfigureModel()');
+    
+    // 添加推荐功能测试
+    window.testAutoRecommend = function() {
+        console.log('🧪 测试智能推荐功能...');
+        if (window.modelRulesManager) {
+            console.log('✅ modelRulesManager 可访问');
+            window.modelRulesManager.autoRecommendConfig();
+        } else {
+            console.error('❌ modelRulesManager 不可访问');
+        }
+    };
+    
+    console.log('🧪 推荐测试函数已添加，可在控制台运行: testAutoRecommend()');
 });

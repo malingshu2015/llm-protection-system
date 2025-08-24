@@ -196,6 +196,7 @@ async def get_model_rule_summaries():
         )
 
 
+
 @router.get("/api/v1/model-rules/{model_id}")
 async def get_model_rule_config(model_id: str = Path(...)):
     """获取特定模型的规则配置。
@@ -608,14 +609,7 @@ async def create_model_rule(request: CreateModelRuleRequest = Body(...)):
 
 @router.post("/api/v1/rule-templates/create-from-model")
 async def create_template_from_model(request: CreateTemplateFromModelRequest = Body(...)):
-    """从模型配置创建模板。
-
-    Args:
-        request: 从模型创建模板请求
-
-    Returns:
-        创建的模板
-    """
+    """从模型配置创建模板。"""
     try:
         template = model_rule_manager.create_template_from_model(
             request.model_id,
@@ -631,3 +625,119 @@ async def create_template_from_model(request: CreateTemplateFromModelRequest = B
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"从模型创建模板失败: {str(e)}"
         )
+
+# ========== 智能推荐配置 API ==========
+@router.get("/api/v1/model-rules-recommend")
+async def recommend_model_rules():
+    """为未配置的模型生成推荐的规则模板。
+
+    返回示例:
+    {
+        "success": true,
+        "recommendations": [
+            {"model_id": "tinyllama:latest", "template_id": "medium_security", "template_name": "中安全级别", "reason": "默认平衡安全级别"}
+        ]
+    }
+    """
+    try:
+        # 1) 读取本地模型元数据（如果存在）
+        import os, json, requests
+        metadata = {}
+        meta_path = os.path.join("data", "models_metadata.json")
+        if os.path.exists(meta_path):
+            try:
+                with open(meta_path, "r") as f:
+                    metadata = json.load(f)
+            except Exception as e:
+                logger.warning(f"读取模型元数据失败: {e}")
+
+        # 2) 获取本地可用模型列表
+        models = []
+        try:
+            resp = requests.get('http://localhost:11434/api/tags', timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                models = [m.get('model') or m.get('name') for m in data.get('models', []) if isinstance(m, dict)]
+        except Exception as e:
+            logger.warning(f"获取Ollama模型列表失败: {e}")
+
+        # 兜底：若未获取到模型，则从现有配置与常见模型补齐
+        if not models:
+            configs = model_rule_manager.get_all_model_rule_configs()
+            models = [c.model_id for c in configs]
+            common = ["llama3.2:latest", "phi3:latest", "tinyllama:latest", "qwen3:latest", "deepseek-r1:14b"]
+            models.extend([m for m in common if m not in models])
+
+        # 3) 仅对“尚未配置”的模型进行推荐
+        configured = {c.model_id for c in model_rule_manager.get_all_model_rule_configs()}
+        target_models = [m for m in models if m and m not in configured]
+
+        # 4) 生成推荐（基于元数据的 security_level 或默认映射）
+        def pick_template_for(model_id: str):
+            info = metadata.get(model_id) if isinstance(metadata, dict) else None
+            # 如果元数据中直接指定了 template_id 且存在，则优先使用
+            if info and info.get("template_id") and model_rule_manager.get_template(info["template_id"]):
+                tpl_id = info["template_id"]
+                tpl = model_rule_manager.get_template(tpl_id)
+                return tpl_id, getattr(tpl, 'name', tpl_id), "来源: 模型元数据映射"
+            # 根据 security_level 选择
+            level = (info.get("security_level") if info else None) or "balanced"
+            mapping = {
+                "strict": "high_security",
+                "high": "high_security",
+                "balanced": "medium_security",
+                "medium": "medium_security",
+                "low": "low_security"
+            }
+            tpl_id = mapping.get(level, "medium_security")
+            # 若模板不存在，退化到可用模板之一
+            if not model_rule_manager.get_template(tpl_id):
+                fallback = ["medium_security", "high_security", "low_security", "research", "custom"]
+                tpl_id = next((t for t in fallback if model_rule_manager.get_template(t)), "custom")
+            tpl = model_rule_manager.get_template(tpl_id)
+            tpl_name = getattr(tpl, 'name', tpl_id)
+            reason = f"默认{('平衡' if tpl_id=='medium_security' else '严格' if tpl_id=='high_security' else '低')}安全级别"
+            return tpl_id, tpl_name, reason
+
+        recommendations = []
+        for mid in target_models:
+            tpl_id, tpl_name, reason = pick_template_for(mid)
+            recommendations.append({
+                "model_id": mid,
+                "template_id": tpl_id,
+                "template_name": tpl_name,
+                "reason": reason
+            })
+
+        return {"success": True, "recommendations": recommendations}
+    except Exception as e:
+        logger.error(f"生成推荐配置失败: {e}")
+        raise HTTPException(status_code=500, detail=f"生成推荐配置失败: {str(e)}")
+
+class ApplyRecommendationsRequest(BaseModel):
+    model_ids: Optional[List[str]] = None
+
+@router.post("/api/v1/model-rules-recommend/apply")
+async def apply_recommendations(request: ApplyRecommendationsRequest = Body(default=ApplyRecommendationsRequest())):
+    """为指定或所有未配置模型应用推荐模板。"""
+    try:
+        # 获取推荐
+        rec_resp = await recommend_model_rules()
+        recs = rec_resp.get("recommendations", [])
+        if request.model_ids:
+            recs = [r for r in recs if r.get("model_id") in set(request.model_ids)]
+
+        success = 0
+        failed = []
+        for r in recs:
+            try:
+                model_rule_manager.apply_template_to_model(r["model_id"], r["template_id"])
+                success += 1
+            except Exception as ex:
+                logger.warning(f"应用推荐失败 {r}: {ex}")
+                failed.append({"model_id": r["model_id"], "error": str(ex)})
+
+        return {"success": True, "applied": success, "failed": failed}
+    except Exception as e:
+        logger.error(f"应用推荐配置失败: {e}")
+        raise HTTPException(status_code=500, detail=f"应用推荐配置失败: {str(e)}")

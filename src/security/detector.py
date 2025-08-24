@@ -1,5 +1,7 @@
 """Security detection module for identifying and mitigating security threats."""
 
+import asyncio
+import hashlib
 import json
 import os
 import re
@@ -10,6 +12,7 @@ from src.config import settings
 from src.logger import logger
 from src.models_interceptor import DetectionResult, DetectionType, InterceptedRequest, InterceptedResponse, SecurityRule, Severity
 from src.security.detection_cache import CacheableDetectorMixin
+from src.security.smart_cache import cache_manager
 
 
 class PromptInjectionDetector(CacheableDetectorMixin):
@@ -569,6 +572,21 @@ class SensitiveInfoDetector:
         
         return False
 
+    async def _is_whitelisted_async(self, pattern_type: str, matched_text: str) -> bool:
+        """异步版本：检查匹配的文本是否在白名单中。
+        
+        Args:
+            pattern_type: 模式类型
+            matched_text: 匹配的文本
+            
+        Returns:
+            是否在白名单中
+        """
+        # 对于白名单检查，实际上不需要I/O操作，但我们使用async来保持一致性
+        return await asyncio.get_event_loop().run_in_executor(
+            None, self._is_whitelisted, pattern_type, matched_text
+        )
+
     def _has_context_indicators(self, text: str, matched_text: str) -> bool:
         """检查是否有上下文指示器表明这是测试/示例数据。
 
@@ -599,10 +617,25 @@ class SensitiveInfoDetector:
 
         for indicator in test_indicators:
             if indicator in context:
-                logger.debug(f"SensitiveInfoDetector: 发现上下文指示器: {indicator}")
+                logger.debug(f"SensitiveInfoDetector: 发现测试指示器 '{indicator}' 在上下文中")
                 return True
 
         return False
+
+    async def _has_context_indicators_async(self, text: str, matched_text: str) -> bool:
+        """异步版本：检查是否有上下文指示器表明这是测试/示例数据。
+        
+        Args:
+            text: 完整文本
+            matched_text: 匹配的文本
+            
+        Returns:
+            是否有上下文指示器
+        """
+        # 对于上下文检查，我们可以将其包装为异步版本
+        return await asyncio.get_event_loop().run_in_executor(
+            None, self._has_context_indicators, text, matched_text
+        )
 
     def _compile_patterns(self) -> Dict[str, List[re.Pattern]]:
         """预编译正则表达式以提高性能。
@@ -624,7 +657,7 @@ class SensitiveInfoDetector:
 
         return compiled_patterns
 
-    def detect(self, text: str) -> List[DetectionResult]:
+    async def detect(self, text: str) -> List[DetectionResult]:
         """Detect sensitive information in text.
 
         Args:
@@ -633,6 +666,25 @@ class SensitiveInfoDetector:
         Returns:
             A list of detection results.
         """
+        # 使用智能缓存
+        cache_key = {
+            'detector': 'sensitive_info',
+            'text_hash': hashlib.md5(text.encode()).hexdigest(),
+            'patterns_version': len(self.compiled_patterns)
+        }
+        
+        async def compute_detection():
+            return await self._compute_sensitive_detection(text)
+        
+        # 缓存检测结果，TTL为10分钟
+        return await cache_manager.get_or_compute(
+            key=cache_key,
+            compute_func=compute_detection,
+            ttl=600.0
+        )
+    
+    async def _compute_sensitive_detection(self, text: str) -> List[DetectionResult]:
+        """实际执行敏感信息检测"""
         results = []
 
         for pattern_type, compiled_patterns in self.compiled_patterns.items():
@@ -642,12 +694,12 @@ class SensitiveInfoDetector:
                     matched_text = match.group(0)
                     
                     # 检查白名单
-                    if self._is_whitelisted(pattern_type, matched_text):
+                    if await self._is_whitelisted_async(pattern_type, matched_text):
                         logger.debug(f"SensitiveInfoDetector: 跳过白名单项: {pattern_type} - {matched_text}")
                         continue
                     
                     # 检查上下文指示器
-                    if self._has_context_indicators(text, matched_text):
+                    if await self._has_context_indicators_async(text, matched_text):
                         logger.debug(f"SensitiveInfoDetector: 跳过测试/示例数据: {pattern_type} - {matched_text}")
                         continue
                     
@@ -805,7 +857,7 @@ class HarmfulContentDetector:
                     # 添加一个不会匹配任何内容的正则表达式作为占位符
                     rule.keyword_patterns.append(re.compile(r"^\b$"))
 
-    def detect(self, text: str) -> DetectionResult:
+    async def detect(self, text: str) -> DetectionResult:
         """Detect harmful content in text.
 
         Args:
@@ -814,6 +866,25 @@ class HarmfulContentDetector:
         Returns:
             The detection result.
         """
+        # 使用智能缓存
+        cache_key = {
+            'detector': 'harmful_content',
+            'text_hash': hashlib.md5(text.encode()).hexdigest(),
+            'rules_version': len(self.rules)  # 简单的规则版本标识
+        }
+        
+        async def compute_detection():
+            return await self._compute_harmful_detection(text)
+        
+        # 缓存检测结果，TTL为5分钟
+        return await cache_manager.get_or_compute(
+            key=cache_key,
+            compute_func=compute_detection,
+            ttl=300.0
+        )
+    
+    async def _compute_harmful_detection(self, text: str) -> DetectionResult:
+        """实际执行有害内容检测"""
         # 首先使用规则进行检测
         for rule in self.rules:
             if not rule.enabled:
@@ -1179,7 +1250,7 @@ class ComplianceDetector:
                     # 添加一个不会匹配任何内容的正则表达式作为占位符
                     rule.keyword_patterns.append(re.compile(r"^\b$"))
 
-    def detect(self, text: str) -> DetectionResult:
+    async def detect(self, text: str) -> DetectionResult:
         """Detect compliance violations in text.
 
         Args:
@@ -1336,7 +1407,7 @@ class JailbreakDetector:
                     # 添加一个不会匹配任何内容的正则表达式作为占位符
                     rule.keyword_patterns.append(re.compile(r"^\b$"))
 
-    def detect(self, text: str) -> DetectionResult:
+    async def detect(self, text: str) -> DetectionResult:
         """Detect jailbreak attempts in text.
 
         Args:
@@ -1681,25 +1752,25 @@ class SecurityDetector:
 
         # Check for jailbreak attempts
         logger.info("SecurityDetector: 检查越狱尝试")
-        result = self.jailbreak_detector.detect(text)
+        result = await self.jailbreak_detector.detect(text)
         if not result.is_allowed:
             return self._process_detection_result(result, conversation_id)
 
         # Check for harmful content
         logger.info("SecurityDetector: 检查有害内容")
-        result = self.harmful_content_detector.detect(text)
+        result = await self.harmful_content_detector.detect(text)
         if not result.is_allowed:
             return self._process_detection_result(result, conversation_id)
 
         # Check for compliance violations
         logger.info("SecurityDetector: 检查合规违规")
-        result = self.compliance_detector.detect(text)
+        result = await self.compliance_detector.detect(text)
         if not result.is_allowed:
             return self._process_detection_result(result, conversation_id)
 
         # Check for sensitive information in request
         logger.info("SecurityDetector: 检查敏感信息")
-        sensitive_results = self.sensitive_info_detector.detect(text)
+        sensitive_results = await self.sensitive_info_detector.detect(text)
         if sensitive_results:
             result = sensitive_results[0]
             return self._process_detection_result(result, conversation_id)
@@ -1768,7 +1839,7 @@ class SecurityDetector:
             return result
 
         # Check for jailbreak attempts
-        result = self.jailbreak_detector.detect(text)
+        result = await self.jailbreak_detector.detect(text)
         if not result.is_allowed:
             logger.warning(
                 f"Blocked response due to {result.detection_type}: {result.reason}"
@@ -1778,7 +1849,7 @@ class SecurityDetector:
             return result
 
         # Check for sensitive information in response
-        sensitive_results = self.sensitive_info_detector.detect(text)
+        sensitive_results = await self.sensitive_info_detector.detect(text)
         if sensitive_results:
             result = sensitive_results[0]
             logger.warning(
@@ -1789,7 +1860,7 @@ class SecurityDetector:
             return result
 
         # Check for harmful content
-        result = self.harmful_content_detector.detect(text)
+        result = await self.harmful_content_detector.detect(text)
         if not result.is_allowed:
             logger.warning(
                 f"Blocked response due to {result.detection_type}: {result.reason}"
@@ -1799,7 +1870,7 @@ class SecurityDetector:
             return result
 
         # Check for compliance violations
-        result = self.compliance_detector.detect(text)
+        result = await self.compliance_detector.detect(text)
         if not result.is_allowed:
             logger.warning(
                 f"Blocked response due to {result.detection_type}: {result.reason}"

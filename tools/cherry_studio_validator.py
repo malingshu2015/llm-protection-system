@@ -8,12 +8,13 @@ import requests
 import json
 import sys
 import time
+import os
 from urllib.parse import urljoin
 
 class CherryStudioConfigValidator:
-    def __init__(self, base_url="http://localhost:8081", api_key="cherry-studio-key"):
+    def __init__(self, base_url="http://localhost:8081", api_key=None):
         self.base_url = base_url
-        self.api_key = api_key
+        self.api_key = api_key or os.getenv("CHERRY_STUDIO_API_KEY", "cherry-studio-key")
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
@@ -256,7 +257,7 @@ def main():
     """主函数"""
     # 支持命令行参数
     base_url = "http://localhost:8081"
-    api_key = "cherry-studio-key"
+    api_key = os.getenv("CHERRY_STUDIO_API_KEY", "cherry-studio-key")
     
     if len(sys.argv) > 1:
         base_url = sys.argv[1]
