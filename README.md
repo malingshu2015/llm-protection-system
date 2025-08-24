@@ -2,7 +2,7 @@
 
 一个全面的安全防护系统，为本地部署的大型语言模型提供安全防护。
 
-![Version](https://img.shields.io/badge/version-1.0.2-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 
@@ -21,8 +21,9 @@
 
 - **监控与分析**
   - 实时监控：监控系统资源和请求统计
+  - 智能缓存：基于AI的智能缓存系统，提升响应速度
   - 安全事件管理：记录和分析安全事件
-  - 性能分析：监控系统性能
+  - 性能分析：监控系统性能和资源使用情况
 
 - **用户界面**
   - 管理控制台：直观的Web界面
@@ -69,8 +70,8 @@ pip install -e .
 
 ```bash
 # 使用Docker运行
-docker pull malingshu2015/llm-protection-system:1.0.2
-docker run -p 8080:8080 malingshu2015/llm-protection-system:1.0.2
+docker pull malingshu2015/llm-protection-system:1.1.0
+docker run -p 8080:8080 -p 8081:8081 malingshu2015/llm-protection-system:1.1.0
 ```
 
 ## 使用
@@ -107,6 +108,11 @@ DEBUG=false
 ```
 http://localhost:8080/static/admin/index.html
 ```
+
+**v1.1.0 新增功能：**
+- 实时监控面板：`http://localhost:8080/static/admin/monitor_v2.html`
+- 增强模型管理：`http://localhost:8080/static/admin/models_v2.html`
+- 优化规则配置：`http://localhost:8080/static/admin/rules_v2.html`
 
 ### 使用聊天演示
 
