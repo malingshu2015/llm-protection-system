@@ -83,9 +83,11 @@ python test_firewall.py --list-tests
 通过管理界面验证规则配置：
 
 1. 访问管理控制台：http://localhost:8080/static/admin/index.html
-2. 查看安全规则管理：http://localhost:8080/static/admin/rules.html
+2. 查看安全规则管理：http://localhost:8080/static/admin/rules_v2.html
 3. 查看模型规则配置：http://localhost:8080/static/admin/model_rules.html
 4. 查看安全事件记录：http://localhost:8080/static/admin/events.html
+5. 查看实时监控面板：http://localhost:8080/static/admin/monitor_v2.html
+6. 查看增强模型管理：http://localhost:8080/static/admin/models_v2.html
 
 ## 4. 测试场景
 

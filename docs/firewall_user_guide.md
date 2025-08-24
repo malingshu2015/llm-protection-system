@@ -27,6 +27,9 @@ python -m src.main
 
 - **聊天演示**: http://localhost:8080/static/index.html
 - **管理控制台**: http://localhost:8080/static/admin/index.html
+- **实时监控面板**: http://localhost:8080/static/admin/monitor_v2.html
+- **增强模型管理**: http://localhost:8080/static/admin/models_v2.html
+- **优化规则配置**: http://localhost:8080/static/admin/rules_v2.html
 
 ## 3. 使用聊天界面
 

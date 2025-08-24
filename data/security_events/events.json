@@ -1,5 +1,100 @@
 [
   {
+    "event_id": "event-1756008033-202",
+    "timestamp": 1756008033.300603,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected Violence Content: \u5236\u4f5c\u70b8\u5f39",
+    "details": {
+      "rule_id": "hc-001",
+      "rule_name": "Violence Content",
+      "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+      "matched_text": "\u5236\u4f5c\u70b8\u5f39"
+    },
+    "content": "Detected Violence Content: \u5236\u4f5c\u70b8\u5f39",
+    "rule_id": "hc-001",
+    "rule_name": "Violence Content",
+    "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+    "matched_text": "\u5236\u4f5c\u70b8\u5f39",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1755964016-201",
+    "timestamp": 1755964016.6365829,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39",
+    "details": {
+      "rule_id": "hc-001",
+      "rule_name": "Violence Content",
+      "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+      "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39"
+    },
+    "content": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39",
+    "rule_id": "hc-001",
+    "rule_name": "Violence Content",
+    "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+    "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1755963990-200",
+    "timestamp": 1755963990.8968031,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
+    "details": {
+      "rule_id": "hc-001",
+      "rule_name": "Violence Content",
+      "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+      "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n"
+    },
+    "content": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
+    "rule_id": "hc-001",
+    "rule_name": "Violence Content",
+    "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+    "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1755948377-199",
+    "timestamp": 1755948377.331611,
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "reason": "Detected Unicode Character Evasion: stan",
+    "details": {
+      "rule_id": "pi-007",
+      "rule_name": "Unicode Character Evasion",
+      "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+      "matched_text": "stan"
+    },
+    "content": "Detected Unicode Character Evasion: stan",
+    "rule_id": "pi-007",
+    "rule_name": "Unicode Character Evasion",
+    "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+    "matched_text": "stan",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1755936229-198",
+    "timestamp": 1755936229.231256,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected Violence Content: \u5236\u4f5c\u70b8\u5f39",
+    "details": {
+      "rule_id": "hc-001",
+      "rule_name": "Violence Content",
+      "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+      "matched_text": "\u5236\u4f5c\u70b8\u5f39"
+    },
+    "content": "Detected Violence Content: \u5236\u4f5c\u70b8\u5f39",
+    "rule_id": "hc-001",
+    "rule_name": "Violence Content",
+    "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+    "matched_text": "\u5236\u4f5c\u70b8\u5f39",
+    "matched_keyword": null
+  },
+  {
     "event_id": "event-1755936191-197",
     "timestamp": 1755936191.249357,
     "detection_type": "harmful_content",
@@ -3634,46 +3729,8 @@
     "matched_keyword": "STAN"
   },
   {
-    "event_id": "event-1755936229-198",
-    "timestamp": 1755936229.231256,
-    "detection_type": "harmful_content",
-    "severity": "high",
-    "reason": "Detected Violence Content: \u5236\u4f5c\u70b8\u5f39",
-    "details": {
-      "rule_id": "hc-001",
-      "rule_name": "Violence Content",
-      "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
-      "matched_text": "\u5236\u4f5c\u70b8\u5f39"
-    },
-    "content": "Detected Violence Content: \u5236\u4f5c\u70b8\u5f39",
-    "rule_id": "hc-001",
-    "rule_name": "Violence Content",
-    "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
-    "matched_text": "\u5236\u4f5c\u70b8\u5f39",
-    "matched_keyword": null
-  },
-  {
-    "event_id": "event-1755948377-199",
-    "timestamp": 1755948377.331611,
-    "detection_type": "prompt_injection",
-    "severity": "high",
-    "reason": "Detected Unicode Character Evasion: stan",
-    "details": {
-      "rule_id": "pi-007",
-      "rule_name": "Unicode Character Evasion",
-      "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
-      "matched_text": "stan"
-    },
-    "content": "Detected Unicode Character Evasion: stan",
-    "rule_id": "pi-007",
-    "rule_name": "Unicode Character Evasion",
-    "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
-    "matched_text": "stan",
-    "matched_keyword": null
-  },
-  {
-    "event_id": "event-1755963990-200",
-    "timestamp": 1755963990.8968031,
+    "event_id": "event-1756012492-203",
+    "timestamp": 1756012492.1952882,
     "detection_type": "harmful_content",
     "severity": "high",
     "reason": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
@@ -3688,25 +3745,6 @@
     "rule_name": "Violence Content",
     "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
     "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
-    "matched_keyword": null
-  },
-  {
-    "event_id": "event-1755964016-201",
-    "timestamp": 1755964016.6365829,
-    "detection_type": "harmful_content",
-    "severity": "high",
-    "reason": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39",
-    "details": {
-      "rule_id": "hc-001",
-      "rule_name": "Violence Content",
-      "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
-      "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39"
-    },
-    "content": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39",
-    "rule_id": "hc-001",
-    "rule_name": "Violence Content",
-    "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
-    "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39",
     "matched_keyword": null
   }
 ]
