@@ -719,7 +719,7 @@ async def recommend_model_rules():
                 "reason": reason
             })
 
-        return {"success": True, "recommendations": recommendations}
+        return JSONResponse(content={"success": True, "recommendations": recommendations})
     except Exception as e:
         logger.error(f"生成推荐配置失败: {e}")
         raise HTTPException(status_code=500, detail=f"生成推荐配置失败: {str(e)}")
