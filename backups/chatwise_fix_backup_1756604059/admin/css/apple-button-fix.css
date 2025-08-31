@@ -1,0 +1,75 @@
+/*
+ * 按钮对齐修复样式
+ * 用于解决规则列表中按钮对齐问题
+ */
+
+/* 操作列样式 */
+.data-table th:nth-child(8),
+.data-table td:nth-child(8) {
+  width: 180px;
+  text-align: right;
+  padding-right: 10px;
+}
+
+/* 操作按钮容器 */
+.action-buttons-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+}
+
+/* 按钮基础样式 */
+.rule-actions .button {
+  padding: 3px 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 4px;
+  white-space: nowrap;
+  min-width: 45px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0;
+  height: 24px;
+}
+
+/* 编辑按钮样式 */
+.rule-actions .button.secondary {
+  background-color: #f2f2f7;
+  color: #1c1c1e;
+  border: 1px solid #d1d1d6;
+}
+
+.rule-actions .button.secondary:hover {
+  background-color: #e5e5ea;
+}
+
+/* 删除按钮样式 */
+.rule-actions .button.danger {
+  background-color: #ff3b30;
+  color: white;
+  border: none;
+}
+
+.rule-actions .button.danger:hover {
+  background-color: #ff2d20;
+}
+
+/* 表格行样式调整 */
+.data-table tr {
+  height: 50px;
+}
+
+.data-table td {
+  vertical-align: middle;
+}
+
+/* 确保按钮在单元格中垂直居中 */
+.rule-actions {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}

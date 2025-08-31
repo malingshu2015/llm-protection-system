@@ -1,5 +1,194 @@
 [
   {
+    "event_id": "event-1756563139-213",
+    "timestamp": 1756563139.7102761,
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "reason": "Detected Unicode Character Evasion: stan",
+    "details": {
+      "rule_id": "pi-007",
+      "rule_name": "Unicode Character Evasion",
+      "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+      "matched_text": "stan"
+    },
+    "content": "Detected Unicode Character Evasion: stan",
+    "rule_id": "pi-007",
+    "rule_name": "Unicode Character Evasion",
+    "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+    "matched_text": "stan",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756562966-212",
+    "timestamp": 1756562966.532144,
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "reason": "Detected Unicode Character Evasion: stan",
+    "details": {
+      "rule_id": "pi-007",
+      "rule_name": "Unicode Character Evasion",
+      "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+      "matched_text": "stan"
+    },
+    "content": "Detected Unicode Character Evasion: stan",
+    "rule_id": "pi-007",
+    "rule_name": "Unicode Character Evasion",
+    "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+    "matched_text": "stan",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756559942-211",
+    "timestamp": 1756559942.8735712,
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "reason": "Detected Unicode Character Evasion: stan",
+    "details": {
+      "rule_id": "pi-007",
+      "rule_name": "Unicode Character Evasion",
+      "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+      "matched_text": "stan"
+    },
+    "content": "Detected Unicode Character Evasion: stan",
+    "rule_id": "pi-007",
+    "rule_name": "Unicode Character Evasion",
+    "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+    "matched_text": "stan",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756346125-210",
+    "timestamp": 1756346125.9895282,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected dangerous weapon-making request: \u5982\u4f55\u5236\u4f5c\u4e00\u628a\u5200",
+    "details": {},
+    "content": "Detected dangerous weapon-making request: \u5982\u4f55\u5236\u4f5c\u4e00\u628a\u5200",
+    "rule_id": null,
+    "rule_name": null,
+    "matched_pattern": null,
+    "matched_text": null,
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756290549-209",
+    "timestamp": 1756290549.646569,
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "reason": "Detected Unicode Character Evasion: stan",
+    "details": {
+      "rule_id": "pi-007",
+      "rule_name": "Unicode Character Evasion",
+      "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+      "matched_text": "stan"
+    },
+    "content": "Detected Unicode Character Evasion: stan",
+    "rule_id": "pi-007",
+    "rule_name": "Unicode Character Evasion",
+    "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+    "matched_text": "stan",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756089151-208",
+    "timestamp": 1756089151.966311,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected \u81ea\u52a8\u751f\u6210_\u6709\u5bb3\u5185\u5bb9_\u7334\u5b50_\u5988\u5988: \u5927\u7329\u7329\u7684\u5988\u5988\u662f\u4e0d\u662f\u7334\u5b50\uff1f",
+    "details": {
+      "rule_id": "ag-ha-6054deac",
+      "rule_name": "\u81ea\u52a8\u751f\u6210_\u6709\u5bb3\u5185\u5bb9_\u7334\u5b50_\u5988\u5988",
+      "matched_pattern": "(?i)(?:.*\u5927\u7329\u7329.*\u7334\u5b50.*)",
+      "matched_text": "\u5927\u7329\u7329\u7684\u5988\u5988\u662f\u4e0d\u662f\u7334\u5b50\uff1f"
+    },
+    "content": "Detected \u81ea\u52a8\u751f\u6210_\u6709\u5bb3\u5185\u5bb9_\u7334\u5b50_\u5988\u5988: \u5927\u7329\u7329\u7684\u5988\u5988\u662f\u4e0d\u662f\u7334\u5b50\uff1f",
+    "rule_id": "ag-ha-6054deac",
+    "rule_name": "\u81ea\u52a8\u751f\u6210_\u6709\u5bb3\u5185\u5bb9_\u7334\u5b50_\u5988\u5988",
+    "matched_pattern": "(?i)(?:.*\u5927\u7329\u7329.*\u7334\u5b50.*)",
+    "matched_text": "\u5927\u7329\u7329\u7684\u5988\u5988\u662f\u4e0d\u662f\u7334\u5b50\uff1f",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756038217-207",
+    "timestamp": 1756038217.275011,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected dangerous weapon-making request: \u5236\u4f5c\u5315\u9996\u7684",
+    "details": {},
+    "content": "Detected dangerous weapon-making request: \u5236\u4f5c\u5315\u9996\u7684",
+    "rule_id": null,
+    "rule_name": null,
+    "matched_pattern": null,
+    "matched_text": null,
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756031219-206",
+    "timestamp": 1756031219.866623,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected dangerous weapon-making request: \u5236\u4f5c\u5315\u9996\u7684",
+    "details": {},
+    "content": "Detected dangerous weapon-making request: \u5236\u4f5c\u5315\u9996\u7684",
+    "rule_id": null,
+    "rule_name": null,
+    "matched_pattern": null,
+    "matched_text": null,
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756022218-205",
+    "timestamp": 1756022218.900428,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39",
+    "details": {
+      "rule_id": "hc-001",
+      "rule_name": "Violence Content",
+      "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+      "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39"
+    },
+    "content": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39",
+    "rule_id": "hc-001",
+    "rule_name": "Violence Content",
+    "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+    "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756020941-204",
+    "timestamp": 1756020941.051071,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected dangerous weapon-making request: \u5982\u4f55\u505a\u4e00\u628a\u5315\u9996",
+    "details": {},
+    "content": "Detected dangerous weapon-making request: \u5982\u4f55\u505a\u4e00\u628a\u5315\u9996",
+    "rule_id": null,
+    "rule_name": null,
+    "matched_pattern": null,
+    "matched_text": null,
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756012492-203",
+    "timestamp": 1756012492.1952882,
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "reason": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
+    "details": {
+      "rule_id": "hc-001",
+      "rule_name": "Violence Content",
+      "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+      "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n"
+    },
+    "content": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
+    "rule_id": "hc-001",
+    "rule_name": "Violence Content",
+    "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
+    "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
+    "matched_keyword": null
+  },
+  {
     "event_id": "event-1756008033-202",
     "timestamp": 1756008033.300603,
     "detection_type": "harmful_content",
@@ -3729,22 +3918,22 @@
     "matched_keyword": "STAN"
   },
   {
-    "event_id": "event-1756012492-203",
-    "timestamp": 1756012492.1952882,
-    "detection_type": "harmful_content",
+    "event_id": "event-1756563260-214",
+    "timestamp": 1756563260.035688,
+    "detection_type": "prompt_injection",
     "severity": "high",
-    "reason": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
+    "reason": "Detected Unicode Character Evasion: stan",
     "details": {
-      "rule_id": "hc-001",
-      "rule_name": "Violence Content",
-      "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
-      "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n"
+      "rule_id": "pi-007",
+      "rule_name": "Unicode Character Evasion",
+      "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+      "matched_text": "stan"
     },
-    "content": "Detected Violence Content: \u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
-    "rule_id": "hc-001",
-    "rule_name": "Violence Content",
-    "matched_pattern": "(?i)(?:make|build|create|\u5236\u4f5c|\u5236\u9020|\u521b\u5efa|\u505a|\u642d\u5efa|\u7ec4\u88c5|\u751f\u4ea7)[.\\s]*(?:a|an|\u4e00\u4e2a|\u4e00\u9897|\u4e00\u4ef6)?[.\\s]*(?:bomb|explosive|weapon|\u70b8\u5f39|\u7206\u70b8\u7269|\u6b66\u5668|\u70b8\u836f|\u5730\u96f7|\u624b\u69b4\u5f39|\u67aa|\u70ae|\u5f39\u836f)[.\\s]*(?:to|for|\u7528\u4e8e|\u4e3a\u4e86|\u76ee\u7684\u662f)?[.\\s]*(?:harm|kill|attack|hurt|\u4f24\u5bb3|\u6740|\u653b\u51fb|\u4f24\u4eba|\u6740\u4eba|\u6050\u5413|\u5a01\u80c1)?",
-    "matched_text": "\u5236\u4f5c\u4e00\u9897\u70b8\u5f39\n",
+    "content": "Detected Unicode Character Evasion: stan",
+    "rule_id": "pi-007",
+    "rule_name": "Unicode Character Evasion",
+    "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+    "matched_text": "stan",
     "matched_keyword": null
   }
 ]

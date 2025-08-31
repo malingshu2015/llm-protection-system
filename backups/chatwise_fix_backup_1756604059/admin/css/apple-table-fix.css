@@ -1,0 +1,246 @@
+/*
+ * 表格对齐修复样式
+ * 用于解决规则列表表格对齐问题
+ */
+
+/* 表格基础样式优化 */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--apple-font-size-sm);
+  table-layout: fixed;
+  /* 固定表格布局，确保列宽一致 */
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--apple-gray-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 列宽设置 */
+.data-table th:nth-child(1),
+/* ID列 */
+.data-table td:nth-child(1) {
+  width: 80px;
+  text-align: left;
+}
+
+.data-table th:nth-child(2),
+/* 名称列 */
+.data-table td:nth-child(2) {
+  width: 20%;
+  text-align: left;
+}
+
+.data-table th:nth-child(3),
+/* 类型列 */
+.data-table td:nth-child(3) {
+  width: 12%;
+  text-align: left;
+}
+
+.data-table th:nth-child(4),
+/* 严重程度列 */
+.data-table td:nth-child(4) {
+  width: 10%;
+  text-align: center;
+}
+
+.data-table th:nth-child(5),
+/* 优先级列 */
+.data-table td:nth-child(5) {
+  width: 80px;
+  text-align: center;
+}
+
+.data-table th:nth-child(6),
+/* 分类列 */
+.data-table td:nth-child(6) {
+  width: 15%;
+  text-align: left;
+}
+
+.data-table th:nth-child(7),
+/* 状态列 */
+.data-table td:nth-child(7) {
+  width: 80px;
+  text-align: center;
+}
+
+.data-table th:nth-child(8),
+/* 操作列 */
+.data-table td:nth-child(8) {
+  width: 150px;
+  text-align: right;
+}
+
+/* 表格头部样式 */
+.data-table th {
+  background-color: var(--apple-bg-secondary);
+  color: var(--apple-text-secondary);
+  font-weight: 500;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* 表格行悬停效果 */
+.data-table tr:hover td {
+  background-color: var(--apple-gray-1);
+}
+
+/* 表格内容样式 */
+.data-table .badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: var(--apple-font-size-xs);
+  font-weight: 500;
+  text-align: center;
+  min-width: 60px;
+}
+
+/* 严重程度标签颜色 */
+.badge.critical {
+  background-color: rgba(255, 0, 0, 0.15);
+  color: #ff0000;
+}
+
+.badge.high {
+  background-color: rgba(255, 59, 48, 0.15);
+  color: #ff3b30;
+}
+
+.badge.medium {
+  background-color: rgba(255, 149, 0, 0.15);
+  color: #ff9500;
+}
+
+.badge.low {
+  background-color: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+}
+
+/* 严重程度单元格居中对齐 */
+.rule-severity-cell {
+  text-align: center;
+}
+
+/* 优先级列居中 */
+.text-center {
+  text-align: center !important;
+}
+
+/* 操作列右对齐 */
+.rule-actions {
+  text-align: right !important;
+  width: 180px !important;
+}
+
+/* 状态开关居中 */
+.rule-enabled {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 操作按钮样式 */
+.rule-actions {
+  text-align: right;
+  padding: 0;
+}
+
+.action-buttons-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.rule-actions .button {
+  padding: 4px 10px;
+  font-size: var(--apple-font-size-xs);
+  white-space: nowrap;
+  min-width: 50px;
+  border-radius: 4px;
+  margin: 0;
+}
+
+.edit-button-wrapper {
+  display: inline-block;
+}
+
+.delete-button-wrapper {
+  display: inline-block;
+}
+
+.rule-actions .button.secondary {
+  background-color: #f2f2f7;
+  color: #1c1c1e;
+  border: 1px solid #d1d1d6;
+  border-radius: 4px;
+}
+
+.rule-actions .button.danger {
+  background-color: #ff3b30;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+/* 分页样式优化 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  min-width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background-color: var(--apple-bg-primary);
+  border: 1px solid var(--apple-gray-2);
+  color: var(--apple-text-primary);
+  font-size: var(--apple-font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+}
+
+.pagination button:hover {
+  background-color: var(--apple-gray-1);
+}
+
+.pagination button.active {
+  background-color: var(--apple-primary);
+  color: white;
+  border-color: var(--apple-primary);
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 响应式调整 */
+@media (max-width: 992px) {
+  .data-table {
+    table-layout: auto;
+    /* 在小屏幕上使用自动布局 */
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

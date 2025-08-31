@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试开始推荐按钮</title>
+</head>
+<body>
+    <h1>测试开始推荐按钮问题</h1>
+    
+    <script>
+        // 等待页面完全加载后执行测试
+        window.onload = function() {
+            console.log('页面已加载完成');
+            
+            // 测试获取按钮元素
+            const button = document.getElementById('auto-recommend-btn');
+            console.log('按钮元素:', button);
+            
+            // 模拟加载页面内容进行测试
+            fetch('http://localhost:8081/static/admin/model_rules.html')
+                .then(response => response.text())
+                .then(html => {
+                    console.log('成功获取HTML内容');
+                    
+                    // 解析HTML并查找按钮
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const btn = doc.getElementById('auto-recommend-btn');
+                    console.log('在获取的HTML中找到按钮:', btn);
+                    
+                    // 测试API调用
+                    return fetch('http://localhost:8081/api/v1/model-rules-recommend', {
+                        headers: {
+                            'Authorization': 'Bearer cherry-studio-key'
+                        }
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('API响应:', data);
+                })
+                .catch(error => {
+                    console.error('测试失败:', error);
+                });
+        };
+    </script>
+</body>
+</html>

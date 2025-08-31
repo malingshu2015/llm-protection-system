@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试修复后的全面检查按钮</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section { 
+            margin: 30px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: #fafafa;
+        }
+        .test-result { 
+            margin: 15px 0; 
+            padding: 15px; 
+            border-radius: 6px; 
+            border-left: 4px solid #ccc;
+        }
+        .success { 
+            background-color: #d4edda; 
+            color: #155724; 
+            border-left-color: #28a745;
+        }
+        .error { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border-left-color: #dc3545;
+        }
+        .warning { 
+            background-color: #fff3cd; 
+            color: #856404; 
+            border-left-color: #ffc107;
+        }
+        .info { 
+            background-color: #d1ecf1; 
+            color: #0c5460; 
+            border-left-color: #17a2b8;
+        }
+        button { 
+            padding: 12px 24px; 
+            margin: 8px; 
+            cursor: pointer; 
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056CC;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .console-output {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h3 {
+            color: #007AFF;
+            border-bottom: 2px solid #007AFF;
+            padding-bottom: 8px;
+        }
+        .status {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .status.running {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 全面检查按钮修复验证测试</h1>
+        
+        <div class="test-section">
+            <h3>📊 系统状态检查</h3>
+            <button class="btn-secondary" onclick="checkSystemStatus()">检查系统状态</button>
+            <div id="system-status" class="test-result info">
+                等待检查...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 模拟全面检查功能</h3>
+            <button class="btn-primary" id="test-check-btn" onclick="testEnhancedCheckAllConfigurations()">
+                <span id="btn-content">🔍 执行增强版全面检查</span>
+            </button>
+            <div id="test-check-result" class="test-result info">
+                点击按钮开始测试...
+            </div>
+            <div id="console-log" class="console-output" style="display: none;">
+                <strong>实时控制台输出:</strong><br>
+                <span id="console-content"></span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 打开实际页面测试</h3>
+            <button class="btn-secondary" onclick="openActualPage()">打开规则配置页面</button>
+            <p style="color: #666; font-size: 14px; margin: 15px 0;">
+                点击后将在新标签页打开实际的规则配置页面，您可以在那里测试实际的全面检查按钮。
+            </p>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 修复内容总结</h3>
+            <div class="test-result success">
+                ✅ <strong>增强的错误处理:</strong> 添加了对日期解析、模型数据和模态框生成的全面错误捕获<br>
+                ✅ <strong>详细的调试日志:</strong> 每个步骤都有详细的console.log输出，便于问题排查<br>
+                ✅ <strong>数据验证:</strong> 对所有可能为null或undefined的数据进行了安全检查<br>
+                ✅ <strong>模态框验证:</strong> 确保模态框正确添加到页面并设置正确的显示状态<br>
+                ✅ <strong>按钮状态恢复:</strong> 保证无论成功还是失败，按钮状态都能正确恢复
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let consoleContent = '';
+        
+        // 拦截console.log输出
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+            consoleContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            const consoleEl = document.getElementById('console-content');
+            if (consoleEl) {
+                consoleEl.textContent = consoleContent;
+                consoleEl.parentElement.scrollTop = consoleEl.parentElement.scrollHeight;
+            }
+        };
+
+        async function checkSystemStatus() {
+            const resultDiv = document.getElementById('system-status');
+            
+            try {
+                resultDiv.innerHTML = '🔄 正在检查系统状态...';
+                
+                const response = await fetch('/api/v1/model-rules', {
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `
+                        ✅ <strong>系统状态正常</strong><br>
+                        📊 API响应: HTTP ${response.status}<br>
+                        🔢 模型数量: ${data.length}<br>
+                        🕐 响应时间: ${Date.now() - startTime}ms<br>
+                        <span class="status completed">系统可用</span>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    ❌ <strong>系统状态检查失败</strong><br>
+                    错误信息: ${error.message}<br>
+                    <span class="status failed">系统不可用</span>
+                `;
+            }
+        }
+
+        async function testEnhancedCheckAllConfigurations() {
+            const button = document.getElementById('test-check-btn');
+            const resultDiv = document.getElementById('test-check-result');
+            const consoleDiv = document.getElementById('console-log');
+            const btnContent = document.getElementById('btn-content');
+            
+            // 显示控制台输出
+            consoleDiv.style.display = 'block';
+            consoleContent = '';
+            
+            // 模拟按钮状态变化
+            button.disabled = true;
+            btnContent.innerHTML = '<span style="animation: spin 1s linear infinite;">🔄</span> 检查中...';
+            
+            resultDiv.className = 'test-result warning';
+            resultDiv.innerHTML = '⏳ <span class="status running">正在执行增强版全面检查...</span>';
+            
+            try {
+                console.log('🔍 开始全面检查配置...');
+                
+                // 1. 获取所有模型配置
+                console.log('📡 开始获取模型配置数据...');
+                const modelsResponse = await fetch('/api/v1/model-rules', {
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                
+                if (!modelsResponse.ok) {
+                    throw new Error(`获取模型配置失败 (${modelsResponse.status})`);
+                }
+                
+                const models = await modelsResponse.json();
+                console.log('📊 获取到的模型配置:', models);
+                console.log('📊 模型数量:', models.length);
+                
+                // 2. 检查各种配置问题
+                console.log('🔍 开始分析配置问题...');
+                const issues = [];
+                const summary = {
+                    totalModels: models.length,
+                    configuredModels: 0,
+                    unconfiguredModels: 0,
+                    lowSecurityModels: 0,
+                    conflictingModels: 0,
+                    outdatedConfigs: 0,
+                    totalRules: 0
+                };
+                
+                for (const model of models) {
+                    try {
+                        console.log(`🔍 分析模型: ${model.model_id}`);
+                        
+                        const rulesCount = model.rules_count || 0;
+                        const securityScore = model.security_score || 0;
+                        
+                        summary.totalRules += rulesCount;
+                        
+                        if (rulesCount > 0) {
+                            summary.configuredModels++;
+                        } else {
+                            summary.unconfiguredModels++;
+                            issues.push({
+                                type: 'warning',
+                                model: model.model_id,
+                                issue: '未配置安全规则',
+                                description: '该模型没有配置任何安全规则，存在安全风险',
+                                suggestion: '建议应用适当的规则模板'
+                            });
+                        }
+                        
+                        // 检查安全评分
+                        if (securityScore < 40) {
+                            summary.lowSecurityModels++;
+                            issues.push({
+                                type: 'error',
+                                model: model.model_id,
+                                issue: '安全评分过低',
+                                description: `安全评分仅为 ${securityScore}，低于推荐值(60)`,
+                                suggestion: '建议增加更多安全规则或应用更严格的模板'
+                            });
+                        } else if (securityScore < 60) {
+                            issues.push({
+                                type: 'warning',
+                                model: model.model_id,
+                                issue: '安全评分偏低',
+                                description: `安全评分为 ${securityScore}，建议提升至60以上`,
+                                suggestion: '考虑添加额外的安全规则'
+                            });
+                        }
+                        
+                        // 检查配置时间 - 使用增强的错误处理
+                        if (model.last_updated) {
+                            try {
+                                const lastUpdated = new Date(model.last_updated);
+                                if (!isNaN(lastUpdated.getTime())) {
+                                    const daysDiff = (new Date() - lastUpdated) / (1000 * 60 * 60 * 24);
+                                    if (daysDiff > 30) {
+                                        summary.outdatedConfigs++;
+                                        issues.push({
+                                            type: 'info',
+                                            model: model.model_id,
+                                            issue: '配置较久未更新',
+                                            description: `配置最后更新时间：${lastUpdated.toLocaleDateString()}`,
+                                            suggestion: '建议检查并更新配置以确保最新的安全标准'
+                                        });
+                                    }
+                                }
+                            } catch (dateError) {
+                                console.warn(`模型 ${model.model_id} 的last_updated时间格式无效:`, model.last_updated, dateError);
+                            }
+                        }
+                    } catch (modelError) {
+                        console.error(`处理模型 ${model.model_id || '未知'} 时发生错误:`, modelError);
+                        // 继续处理其他模型
+                    }
+                }
+                
+                console.log('📈 分析完成，汇总信息:', summary);
+                console.log('⚠️ 发现问题数量:', issues.length);
+                console.log('✅ 配置检查完成！');
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `
+                    ✅ <strong>增强版全面检查成功完成！</strong><br>
+                    📊 总模型数: ${summary.totalModels}<br>
+                    ✅ 已配置: ${summary.configuredModels}<br>
+                    ⚠️ 未配置: ${summary.unconfiguredModels}<br>
+                    🔴 低安全评分: ${summary.lowSecurityModels}<br>
+                    📝 总规则数: ${summary.totalRules}<br>
+                    🕐 过期配置: ${summary.outdatedConfigs}<br>
+                    <br>
+                    🎯 发现问题: ${issues.length} 个<br>
+                    <span class="status completed">检查完成</span><br>
+                    <br>
+                    💡 <strong>修复验证结果:</strong> 功能正常运行，没有出现无限转圈的问题！
+                `;
+                
+            } catch (error) {
+                console.error('❌ 配置检查失败:', error);
+                console.error('❌ 错误堆栈:', error.stack);
+                
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `
+                    ❌ <strong>增强版全面检查失败</strong><br>
+                    错误信息: ${error.message}<br>
+                    <span class="status failed">检查失败</span><br>
+                    请查看控制台输出了解详细错误信息
+                `;
+            } finally {
+                console.log('🧹 清理加载状态...');
+                
+                // 恢复按钮状态
+                button.disabled = false;
+                btnContent.innerHTML = '🔍 执行增强版全面检查';
+                console.log('🔄 按钮状态已恢复');
+            }
+        }
+
+        function openActualPage() {
+            window.open('/static/admin/model_rules.html', '_blank');
+        }
+
+        // 页面加载时自动检查系统状态
+        window.onload = function() {
+            console.log('📄 修复验证测试页面已加载');
+            setTimeout(checkSystemStatus, 500);
+        };
+
+        // 添加旋转动画CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

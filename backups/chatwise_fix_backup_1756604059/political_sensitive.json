@@ -1,0 +1,122 @@
+[
+  {
+    "id": "ps-001",
+    "name": "Political Extremism",
+    "description": "检测极端政治观点和煽动性政治言论",
+    "detection_type": "political_sensitive",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:overthrow|推翻|颠覆)[.\\s]*(?:government|政府|regime|政权|system|制度)",
+      "(?i)(?:revolution|革命|uprising|起义|rebellion|叛乱)[.\\s]*(?:against|反对|对抗)[.\\s]*(?:authority|当局|government|政府)",
+      "(?i)(?:political|政治)[.\\s]*(?:violence|暴力|terrorism|恐怖主义)",
+      "(?i)(?:assassination|暗杀|刺杀)[.\\s]*(?:of|对|针对)[.\\s]*(?:political|政治)[.\\s]*(?:leader|领导人|figure|人物|official|官员)",
+      "(?i)(?:extremist|极端主义|radical|激进)[.\\s]*(?:ideology|思想|beliefs|信念|movement|运动)"
+    ],
+    "keywords": [
+      "overthrow government",
+      "political violence",
+      "extremist",
+      "radical politics",
+      "revolution",
+      "assassination",
+      "推翻政府",
+      "政治暴力",
+      "极端主义",
+      "激进政治",
+      "政治革命",
+      "政治暗杀"
+    ],
+    "priority": 10,
+    "categories": ["political_sensitive", "extremism"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "ps-002",
+    "name": "Separatism and Territory Disputes",
+    "description": "检测分裂主义和领土争议敏感内容",
+    "detection_type": "political_sensitive",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:independence|独立|separation|分离|secession|脱离)[.\\s]*(?:movement|运动|活动)[.\\s]*(?:from|从|离开)[.\\s]*(?:China|中国|mainland|大陆)",
+      "(?i)(?:territorial|领土|territory|territory)[.\\s]*(?:dispute|争议|conflict|冲突|sovereignty|主权)",
+      "(?i)(?:支持|support|advocate|倡导)[.\\s]*(?:分裂|separatism|independence|独立)[.\\s]*(?:活动|movement|cause|事业)",
+      "(?i)(?:两岸|台海|cross-strait)[.\\s]*(?:问题|issue|crisis|危机|tension|紧张)"
+    ],
+    "keywords": [
+      "independence movement",
+      "separatism",
+      "territorial dispute",
+      "sovereignty",
+      "secession",
+      "独立运动",
+      "分裂主义",
+      "领土争议",
+      "主权问题",
+      "分离运动"
+    ],
+    "priority": 11,
+    "categories": ["political_sensitive", "territorial"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "ps-003",
+    "name": "Political Conspiracy Theories",
+    "description": "检测政治阴谋论和虚假政治信息",
+    "detection_type": "political_sensitive",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:conspiracy|阴谋|conspiracy theory|阴谋论)[.\\s]*(?:about|关于|involving|涉及)[.\\s]*(?:government|政府|election|选举|politicians|政治家)",
+      "(?i)(?:deep state|深度国家|shadow government|影子政府)",
+      "(?i)(?:election|选举)[.\\s]*(?:fraud|舞弊|rigged|操纵|stolen|被盗)",
+      "(?i)(?:false flag|假旗|staged|策划的)[.\\s]*(?:operation|行动|attack|攻击|event|事件)",
+      "(?i)(?:政治|political)[.\\s]*(?:迫害|persecution|suppression|压制|censorship|审查)"
+    ],
+    "keywords": [
+      "conspiracy theory",
+      "deep state",
+      "election fraud",
+      "false flag",
+      "political persecution",
+      "阴谋论",
+      "深度国家",
+      "选举舞弊",
+      "假旗行动",
+      "政治迫害"
+    ],
+    "priority": 12,
+    "categories": ["political_sensitive", "misinformation"],
+    "block": false,
+    "enabled": true
+  },
+  {
+    "id": "ps-004",
+    "name": "Historical Political Events",
+    "description": "检测敏感历史政治事件讨论",
+    "detection_type": "political_sensitive",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:historical|历史)[.\\s]*(?:political|政治)[.\\s]*(?:events|事件|incidents|事故|movements|运动)",
+      "(?i)(?:political|政治)[.\\s]*(?:upheaval|动荡|turmoil|动乱|crisis|危机)",
+      "(?i)(?:controversial|争议的|sensitive|敏感的)[.\\s]*(?:historical|历史)[.\\s]*(?:period|时期|era|年代|event|事件)",
+      "(?i)(?:revisionist|修正主义|alternative|替代的)[.\\s]*(?:history|历史|narrative|叙述|interpretation|解释)"
+    ],
+    "keywords": [
+      "historical events",
+      "political upheaval",
+      "controversial history",
+      "revisionist history",
+      "sensitive period",
+      "历史事件",
+      "政治动荡",
+      "争议历史",
+      "修正主义",
+      "敏感时期"
+    ],
+    "priority": 13,
+    "categories": ["political_sensitive", "historical"],
+    "block": false,
+    "enabled": true
+  }
+]

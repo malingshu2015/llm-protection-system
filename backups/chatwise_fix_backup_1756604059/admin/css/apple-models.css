@@ -1,0 +1,414 @@
+/*
+ * 苹果风格的大模型防火墙模型管理页面
+ * 模型管理特定的样式
+ */
+
+/* ===== 模型管理布局 ===== */
+.models-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--apple-spacing-xl);
+}
+
+/* ===== 模型列表 ===== */
+.models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--apple-spacing-lg);
+}
+
+.model-item {
+  background-color: var(--apple-bg-primary);
+  border-radius: var(--apple-border-radius);
+  box-shadow: var(--apple-shadow-sm);
+  padding: var(--apple-spacing-lg);
+  transition: transform var(--apple-transition-normal), box-shadow var(--apple-transition-normal);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.model-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--apple-shadow-md);
+}
+
+.model-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--apple-spacing-md);
+}
+
+.model-name {
+  font-size: var(--apple-font-size-md);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+  margin: 0;
+}
+
+.model-actions {
+  display: flex;
+  gap: var(--apple-spacing-sm);
+}
+
+.model-details {
+  color: var(--apple-text-secondary);
+  font-size: var(--apple-font-size-sm);
+  margin-bottom: var(--apple-spacing-md);
+  flex: 1;
+}
+
+.model-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--apple-spacing-md);
+  margin-top: var(--apple-spacing-md);
+}
+
+.model-stat {
+  flex: 1;
+  min-width: 100px;
+  background-color: var(--apple-bg-secondary);
+  padding: var(--apple-spacing-sm);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.model-stat-label {
+  font-size: var(--apple-font-size-xs);
+  color: var(--apple-text-secondary);
+  margin-bottom: var(--apple-spacing-xs);
+}
+
+.model-stat-value {
+  font-size: var(--apple-font-size-md);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+}
+
+/* ===== 模型库 ===== */
+.model-library-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.model-library-title {
+  font-size: var(--apple-font-size-lg);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+  margin: 0;
+}
+
+.model-library-actions {
+  display: flex;
+  gap: var(--apple-spacing-md);
+}
+
+.model-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--apple-spacing-lg);
+}
+
+.model-library-item {
+  background-color: var(--apple-bg-primary);
+  border-radius: var(--apple-border-radius);
+  box-shadow: var(--apple-shadow-sm);
+  padding: var(--apple-spacing-lg);
+  transition: transform var(--apple-transition-normal), box-shadow var(--apple-transition-normal);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.model-library-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--apple-shadow-md);
+}
+
+.model-library-item.installed {
+  border: 2px solid var(--apple-success);
+}
+
+.model-library-item.installed::after {
+  content: "已安装";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--apple-success);
+  color: white;
+  font-size: var(--apple-font-size-xs);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.model-library-item .model-name {
+  font-size: var(--apple-font-size-md);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+  margin-bottom: var(--apple-spacing-sm);
+}
+
+.model-library-item .model-description {
+  color: var(--apple-text-secondary);
+  font-size: var(--apple-font-size-sm);
+  margin-bottom: var(--apple-spacing-md);
+}
+
+.model-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--apple-spacing-xs);
+  margin-top: var(--apple-spacing-md);
+}
+
+.model-tag {
+  background-color: var(--apple-bg-secondary);
+  color: var(--apple-text-secondary);
+  font-size: var(--apple-font-size-xs);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.model-tag.tag-text {
+  background-color: rgba(0, 122, 255, 0.1);
+  color: var(--apple-primary);
+}
+
+.model-tag.tag-chat {
+  background-color: rgba(52, 199, 89, 0.1);
+  color: var(--apple-success);
+}
+
+.model-tag.tag-code {
+  background-color: rgba(255, 149, 0, 0.1);
+  color: var(--apple-warning);
+}
+
+.model-tag.tag-vision {
+  background-color: rgba(175, 82, 222, 0.1);
+  color: #AF52DE;
+  /* 紫色 */
+}
+
+.model-tag.tag-multimodal {
+  background-color: rgba(255, 45, 85, 0.1);
+  color: #FF2D55;
+  /* 粉色 */
+}
+
+.model-tag.tag-small {
+  background-color: rgba(88, 86, 214, 0.1);
+  color: #5856D6;
+  /* 靛蓝色 */
+}
+
+.model-tag.tag-general {
+  background-color: rgba(90, 200, 250, 0.1);
+  color: var(--apple-info);
+}
+
+/* ===== 模型过滤器 ===== */
+.model-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--apple-spacing-sm);
+  margin-bottom: var(--apple-spacing-lg);
+  padding: var(--apple-spacing-md);
+  background-color: var(--apple-bg-secondary);
+  border-radius: var(--apple-border-radius);
+}
+
+.filter-button {
+  background-color: var(--apple-bg-primary);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: var(--apple-font-size-sm);
+  color: #333;
+  /* 确保文字颜色深色 */
+  cursor: pointer;
+  transition: all var(--apple-transition-normal);
+}
+
+.filter-button:hover {
+  background-color: rgba(0, 122, 255, 0.1);
+  color: var(--apple-primary);
+}
+
+.filter-button.active {
+  background-color: var(--apple-primary);
+  color: white;
+}
+
+/* ===== 模型拉取表单 ===== */
+.model-pull-form {
+  display: flex;
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-lg);
+  padding: var(--apple-spacing-lg);
+  background-color: var(--apple-bg-primary);
+  border-radius: var(--apple-border-radius);
+  box-shadow: var(--apple-shadow-sm);
+}
+
+.model-pull-input {
+  flex: 1;
+}
+
+.model-pull-input input {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--apple-gray-3);
+  font-size: var(--apple-font-size-md);
+}
+
+.model-pull-input input:focus {
+  outline: none;
+  border-color: var(--apple-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.model-pull-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background-color: var(--apple-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: var(--apple-font-size-md);
+  cursor: pointer;
+  transition: background-color var(--apple-transition-normal);
+}
+
+.model-pull-button:hover {
+  background-color: #0062cc;
+}
+
+/* ===== 状态消息 ===== */
+.status {
+  padding: var(--apple-spacing-md);
+  border-radius: var(--apple-border-radius);
+  margin-bottom: var(--apple-spacing-lg);
+  font-size: var(--apple-font-size-sm);
+}
+
+.status.success {
+  background-color: rgba(52, 199, 89, 0.1);
+  color: var(--apple-success);
+  border: 1px solid rgba(52, 199, 89, 0.2);
+}
+
+.status.error {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: var(--apple-danger);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+}
+
+.status.warning {
+  background-color: rgba(255, 149, 0, 0.1);
+  color: var(--apple-warning);
+  border: 1px solid rgba(255, 149, 0, 0.2);
+}
+
+.status.info {
+  background-color: rgba(90, 200, 250, 0.1);
+  color: var(--apple-info);
+  border: 1px solid rgba(90, 200, 250, 0.2);
+}
+
+.status.loading {
+  background-color: rgba(142, 142, 147, 0.1);
+  color: var(--apple-text-secondary);
+  border: 1px solid rgba(142, 142, 147, 0.2);
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-sm);
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 122, 255, 0.1);
+  border-top-color: var(--apple-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== 空状态 ===== */
+.empty-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--apple-spacing-xl);
+  text-align: center;
+  color: var(--apple-text-secondary);
+  background-color: var(--apple-bg-secondary);
+  border-radius: var(--apple-border-radius);
+  min-height: 200px;
+}
+
+.empty-message-icon {
+  font-size: 48px;
+  margin-bottom: var(--apple-spacing-md);
+  color: var(--apple-gray-4);
+}
+
+.empty-message-text {
+  font-size: var(--apple-font-size-md);
+  margin-bottom: var(--apple-spacing-md);
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 992px) {
+
+  .models-grid,
+  .model-library-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .model-pull-form {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .models-grid,
+  .model-library-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .model-library-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .model-library-actions {
+    margin-top: var(--apple-spacing-md);
+    width: 100%;
+  }
+
+  .model-filter {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-button {
+    width: 100%;
+  }
+}

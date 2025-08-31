@@ -1,0 +1,117 @@
+[
+  {
+    "id": "ac-001",
+    "name": "Explicit Sexual Content",
+    "description": "检测明确的性内容和色情描述",
+    "detection_type": "adult_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:explicit|graphic|detailed|明确的|详细的|生动的)[.\\s]*(?:sex|sexual|porn|色情|性行为|性交|做爱|性爱)[.\\s]*(?:description|content|material|描述|内容|材料)",
+      "(?i)(?:how|怎么|如何|教我|告诉我)[.\\s]*(?:to|才能|可以)[.\\s]*(?:have|进行|发生)[.\\s]*(?:sex|sexual|intercourse|性行为|性交|做爱|性关系)",
+      "(?i)(?:nude|naked|裸体|裸露|脱衣)[.\\s]*(?:photos|pictures|images|videos|照片|图片|视频|录像)",
+      "(?i)(?:sexual|性的|色情的)[.\\s]*(?:roleplay|角色扮演|情景模拟|simulation|模拟)",
+      "(?i)(?:erotic|色情|情色|性感)[.\\s]*(?:story|stories|narrative|小说|故事|叙述|描写)"
+    ],
+    "keywords": [
+      "porn",
+      "pornography",
+      "explicit",
+      "erotic",
+      "sexual",
+      "nude",
+      "naked",
+      "xxx",
+      "色情",
+      "裸体",
+      "性爱",
+      "做爱",
+      "情色",
+      "成人内容"
+    ],
+    "priority": 5,
+    "categories": ["adult_content", "nsfw"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "ac-002",
+    "name": "Sexual Roleplay",
+    "description": "检测性角色扮演和不当性暗示",
+    "detection_type": "adult_content",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:pretend|假装|扮演|角色扮演)[.\\s]*(?:to be|是|成为)[.\\s]*(?:my|我的)[.\\s]*(?:girlfriend|boyfriend|lover|女朋友|男朋友|恋人|情人)",
+      "(?i)(?:act|表现|行为)[.\\s]*(?:like|像|如同)[.\\s]*(?:a|an|一个)[.\\s]*(?:seductive|charming|sexy|诱人的|迷人的|性感的)[.\\s]*(?:character|角色|人物)",
+      "(?i)(?:sexual|性的|色情的)[.\\s]*(?:fantasy|幻想|想象|场景)",
+      "(?i)(?:intimate|亲密的|私人的)[.\\s]*(?:conversation|对话|谈话|chat|聊天)"
+    ],
+    "keywords": [
+      "roleplay",
+      "fantasy",
+      "intimate",
+      "seductive",
+      "sexy",
+      "角色扮演",
+      "性幻想",
+      "亲密",
+      "诱惑"
+    ],
+    "priority": 6,
+    "categories": ["adult_content", "inappropriate"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "ac-003",
+    "name": "Adult Services",
+    "description": "检测成人服务和不当商业内容",
+    "detection_type": "adult_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:escort|prostitution|sex work|陪伴服务|性工作|卖淫)",
+      "(?i)(?:adult|成人)[.\\s]*(?:services|entertainment|服务|娱乐)",
+      "(?i)(?:strip|脱衣)[.\\s]*(?:club|俱乐部|场所)",
+      "(?i)(?:massage|按摩)[.\\s]*(?:parlor|店|院|中心)[.\\s]*(?:with|附带|包含)[.\\s]*(?:special|特殊|额外|additional|服务)"
+    ],
+    "keywords": [
+      "escort",
+      "prostitution",
+      "sex work",
+      "adult services",
+      "strip club",
+      "陪伴服务",
+      "性工作",
+      "成人服务",
+      "特殊按摩"
+    ],
+    "priority": 7,
+    "categories": ["adult_content", "commercial"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "ac-004",
+    "name": "Inappropriate Age Content",
+    "description": "检测涉及未成年人的不当内容",
+    "detection_type": "adult_content",
+    "severity": "critical",
+    "patterns": [
+      "(?i)(?:minor|child|kid|teenager|underage|未成年|儿童|孩子|青少年)[.\\s]*(?:in|involved|参与)[.\\s]*(?:sexual|adult|性的|成人)[.\\s]*(?:context|situation|scenario|语境|情况|场景)",
+      "(?i)(?:sexual|性的)[.\\s]*(?:content|material|内容|材料)[.\\s]*(?:involving|涉及|包含)[.\\s]*(?:minor|child|未成年|儿童)",
+      "(?i)(?:age|年龄)[.\\s]*(?:inappropriate|不当|不合适)[.\\s]*(?:relationship|关系|interactions|互动)"
+    ],
+    "keywords": [
+      "minor sexual",
+      "child inappropriate",
+      "underage",
+      "age inappropriate",
+      "未成年性",
+      "儿童不当",
+      "年龄不当"
+    ],
+    "priority": 1,
+    "categories": ["adult_content", "child_safety", "critical"],
+    "block": true,
+    "enabled": true
+  }
+]

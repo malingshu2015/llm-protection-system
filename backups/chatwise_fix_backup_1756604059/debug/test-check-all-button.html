@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试全面检查按钮</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 3px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; margin: 10px; border: 2px solid #007AFF; }
+        .modal-backdrop { background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; display: none; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0; }
+        .stat-card { background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center; }
+        .issue-item { border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <h1>测试全面检查按钮功能</h1>
+    
+    <div class="test-section">
+        <h3>1. 测试API连接</h3>
+        <button onclick="testApiConnection()">测试模型规则API</button>
+        <div id="api-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. 直接测试checkAllConfigurations方法</h3>
+        <button onclick="testCheckAllConfigurations()">调用checkAllConfigurations方法</button>
+        <div id="check-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. 模拟全面检查按钮点击</h3>
+        <button id="simulate-check-btn" onclick="simulateCheckAllButton()">模拟全面检查按钮</button>
+        <div id="simulate-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. 打开实际规则配置页面</h3>
+        <button onclick="openModelRulesPage()">打开规则配置页面测试实际按钮</button>
+    </div>
+
+    <!-- 模拟模态框 -->
+    <div class="modal-backdrop" id="test-modal">
+        <div class="modal-content">
+            <h3>配置检查报告</h3>
+            <div id="modal-content"></div>
+            <button onclick="closeModal()">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let testModelRulesManager = null;
+
+        async function testApiConnection() {
+            const resultDiv = document.getElementById('api-result');
+            try {
+                const response = await fetch('/api/v1/model-rules', {
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `✅ API连接成功，找到 ${data.length} 个模型配置<br>` +
+                        `模型详情: ${data.map(m => `${m.model_id}(安全评分:${m.security_score})`).join(', ')}`;
+                } else {
+                    resultDiv.className = 'test-result error';
+                    resultDiv.innerHTML = `❌ API连接失败，状态码: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `❌ 连接错误: ${error.message}`;
+            }
+        }
+
+        async function testCheckAllConfigurations() {
+            const resultDiv = document.getElementById('check-result');
+            
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = '🔍 开始执行配置检查...';
+
+            try {
+                // 模拟checkAllConfigurations方法的逻辑
+                console.log('🔍 开始全面检查配置...');
+                
+                // 1. 获取所有模型配置
+                const modelsResponse = await fetch('/api/v1/model-rules', {
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                
+                if (!modelsResponse.ok) {
+                    throw new Error(`获取模型配置失败 (${modelsResponse.status})`);
+                }
+                
+                const models = await modelsResponse.json();
+                console.log('📊 获取到的模型配置:', models);
+                
+                // 2. 检查各种配置问题
+                const issues = [];
+                const summary = {
+                    totalModels: models.length,
+                    configuredModels: 0,
+                    unconfiguredModels: 0,
+                    lowSecurityModels: 0,
+                    conflictingModels: 0,
+                    outdatedConfigs: 0,
+                    totalRules: 0
+                };
+                
+                for (const model of models) {
+                    summary.totalRules += model.rules_count || 0;
+                    
+                    if (model.rules_count > 0) {
+                        summary.configuredModels++;
+                    } else {
+                        summary.unconfiguredModels++;
+                        issues.push({
+                            type: 'warning',
+                            model: model.model_id,
+                            issue: '未配置安全规则',
+                            description: '该模型没有配置任何安全规则，存在安全风险',
+                            suggestion: '建议应用适当的规则模板'
+                        });
+                    }
+                    
+                    // 检查安全评分
+                    if (model.security_score < 40) {
+                        summary.lowSecurityModels++;
+                        issues.push({
+                            type: 'error',
+                            model: model.model_id,
+                            issue: '安全评分过低',
+                            description: `安全评分仅为 ${model.security_score}，低于推荐值(60)`,
+                            suggestion: '建议增加更多安全规则或应用更严格的模板'
+                        });
+                    } else if (model.security_score < 60) {
+                        issues.push({
+                            type: 'warning',
+                            model: model.model_id,
+                            issue: '安全评分偏低',
+                            description: `安全评分为 ${model.security_score}，建议提升至60以上`,
+                            suggestion: '考虑添加额外的安全规则'
+                        });
+                    }
+                    
+                    // 检查配置时间
+                    const lastUpdated = new Date(model.last_updated);
+                    const daysDiff = (new Date() - lastUpdated) / (1000 * 60 * 60 * 24);
+                    if (daysDiff > 30) {
+                        summary.outdatedConfigs++;
+                        issues.push({
+                            type: 'info',
+                            model: model.model_id,
+                            issue: '配置较久未更新',
+                            description: `配置最后更新时间：${lastUpdated.toLocaleDateString()}`,
+                            suggestion: '建议检查并更新配置以确保最新的安全标准'
+                        });
+                    }
+                }
+                
+                // 显示检查结果
+                showConfigCheckResults(summary, issues);
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = `✅ 配置检查完成！<br>` +
+                    `总模型: ${summary.totalModels}, 已配置: ${summary.configuredModels}, 发现问题: ${issues.length}个<br>` +
+                    `检查报告已显示在模态框中`;
+                
+            } catch (error) {
+                console.error('❌ 配置检查失败:', error);
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `❌ 配置检查失败: ${error.message}`;
+            }
+        }
+
+        function showConfigCheckResults(summary, issues) {
+            const modalContent = document.getElementById('modal-content');
+            
+            const html = `
+                <div style="margin-bottom: 24px;">
+                    <h4 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">📊 检查概况</h4>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div style="font-size: 24px; font-weight: bold; color: #007AFF;">${summary.totalModels}</div>
+                            <div style="font-size: 12px; color: #666;">总模型数</div>
+                        </div>
+                        <div class="stat-card" style="background: #d4edda;">
+                            <div style="font-size: 24px; font-weight: bold; color: #28a745;">${summary.configuredModels}</div>
+                            <div style="font-size: 12px; color: #666;">已配置</div>
+                        </div>
+                        <div class="stat-card" style="background: #fff3cd;">
+                            <div style="font-size: 24px; font-weight: bold; color: #ffc107;">${summary.unconfiguredModels}</div>
+                            <div style="font-size: 12px; color: #666;">未配置</div>
+                        </div>
+                        <div class="stat-card" style="background: #f8d7da;">
+                            <div style="font-size: 24px; font-weight: bold; color: #dc3545;">${summary.lowSecurityModels}</div>
+                            <div style="font-size: 12px; color: #666;">低安全评分</div>
+                        </div>
+                        <div class="stat-card">
+                            <div style="font-size: 24px; font-weight: bold; color: #6c757d;">${summary.totalRules}</div>
+                            <div style="font-size: 12px; color: #666;">总规则数</div>
+                        </div>
+                        <div class="stat-card" style="background: #cce5ff;">
+                            <div style="font-size: 24px; font-weight: bold; color: #0066cc;">${summary.outdatedConfigs}</div>
+                            <div style="font-size: 12px; color: #666;">过期配置</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <h4 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">⚠️ 发现的问题 (${issues.length})</h4>
+                    ${issues.length === 0 ? 
+                        '<div style="text-align: center; padding: 40px; color: #28a745;"><i class="fas fa-check-circle" style="font-size: 48px; margin-bottom: 16px;"></i><br>🎉 恭喜！没有发现任何配置问题</div>' :
+                        issues.map(issue => `
+                            <div class="issue-item" style="border-color: ${issue.type === 'error' ? '#f5c6cb' : issue.type === 'warning' ? '#ffeaa7' : '#bee5eb'}; 
+                                        background-color: ${issue.type === 'error' ? '#f8d7da' : issue.type === 'warning' ? '#fff3cd' : '#d4edda'};">
+                                <div style="display: flex; align-items: start; gap: 12px;">
+                                    <div style="color: ${issue.type === 'error' ? '#721c24' : issue.type === 'warning' ? '#856404' : '#155724'};">
+                                        ${issue.type === 'error' ? '🚨' : issue.type === 'warning' ? '⚠️' : 'ℹ️'}
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h5 style="margin: 0 0 8px 0; color: ${issue.type === 'error' ? '#721c24' : issue.type === 'warning' ? '#856404' : '#155724'};">
+                                            ${issue.model} - ${issue.issue}
+                                        </h5>
+                                        <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">${issue.description}</p>
+                                        <p style="margin: 0; color: ${issue.type === 'error' ? '#721c24' : issue.type === 'warning' ? '#856404' : '#155724'}; font-size: 13px; font-style: italic;">
+                                            💡 ${issue.suggestion}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')
+                    }
+                </div>
+            `;
+            
+            modalContent.innerHTML = html;
+            document.getElementById('test-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('test-modal').style.display = 'none';
+        }
+
+        async function simulateCheckAllButton() {
+            const button = document.getElementById('simulate-check-btn');
+            const resultDiv = document.getElementById('simulate-result');
+            
+            // 模拟按钮状态变化
+            button.disabled = true;
+            button.innerHTML = '<span style="animation: spin 1s linear infinite;">🔄</span> 检查中...';
+            
+            resultDiv.className = 'test-result info';
+            resultDiv.innerHTML = '🔄 模拟全面检查按钮点击，正在执行检查...';
+            
+            try {
+                // 调用实际的检查方法
+                await testCheckAllConfigurations();
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = '✅ 模拟按钮点击成功！检查已完成并显示结果';
+                
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `❌ 模拟按钮点击失败: ${error.message}`;
+            } finally {
+                // 恢复按钮状态
+                button.disabled = false;
+                button.innerHTML = '模拟全面检查按钮';
+            }
+        }
+
+        function openModelRulesPage() {
+            window.open('/static/admin/model_rules.html', '_blank');
+        }
+
+        // 页面加载时自动运行基础测试
+        window.onload = function() {
+            console.log('全面检查测试页面已加载');
+            testApiConnection();
+        };
+
+        // 添加旋转动画CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

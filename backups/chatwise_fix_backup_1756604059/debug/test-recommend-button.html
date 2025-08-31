@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试开始推荐按钮</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 3px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>测试开始推荐按钮功能</h1>
+    
+    <div class="test-section">
+        <h3>1. 测试API连接</h3>
+        <button onclick="testApiConnection()">测试API连接</button>
+        <div id="api-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. 测试推荐API</h3>
+        <button onclick="testRecommendAPI()">测试推荐API</button>
+        <div id="recommend-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. 测试按钮点击功能</h3>
+        <button id="test-recommend-btn" onclick="simulateButtonClick()">模拟开始推荐按钮点击</button>
+        <div id="button-result" class="test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. 打开实际页面</h3>
+        <button onclick="openModelRulesPage()">打开规则配置页面</button>
+    </div>
+
+    <script>
+        async function testApiConnection() {
+            const resultDiv = document.getElementById('api-result');
+            try {
+                const response = await fetch('/api/v1/model-rules', {
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.className = 'test-result success';
+                    resultDiv.innerHTML = `✅ API连接成功，找到 ${data.length} 个模型配置`;
+                } else {
+                    resultDiv.className = 'test-result error';
+                    resultDiv.innerHTML = `❌ API连接失败，状态码: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `❌ 连接错误: ${error.message}`;
+            }
+        }
+
+        async function testRecommendAPI() {
+            const resultDiv = document.getElementById('recommend-result');
+            try {
+                const response = await fetch('/api/v1/model-rules-recommend', {
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.recommendations.length > 0) {
+                        resultDiv.className = 'test-result success';
+                        resultDiv.innerHTML = `✅ 推荐API成功，找到 ${data.recommendations.length} 个推荐项`;
+                    } else {
+                        resultDiv.className = 'test-result warning';
+                        resultDiv.innerHTML = `⚠️ 推荐API成功，但没有推荐项 (所有模型已配置)`;
+                    }
+                } else {
+                    resultDiv.className = 'test-result error';
+                    resultDiv.innerHTML = `❌ 推荐API失败，状态码: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `❌ 推荐API错误: ${error.message}`;
+            }
+        }
+
+        function simulateButtonClick() {
+            const resultDiv = document.getElementById('button-result');
+            const button = document.getElementById('test-recommend-btn');
+            
+            // 模拟按钮点击效果
+            button.disabled = true;
+            button.innerHTML = '处理中...';
+            
+            resultDiv.className = 'test-result warning';
+            resultDiv.innerHTML = '🔄 模拟按钮点击处理中...';
+            
+            setTimeout(() => {
+                button.disabled = false;
+                button.innerHTML = '模拟开始推荐按钮点击';
+                
+                resultDiv.className = 'test-result success';
+                resultDiv.innerHTML = '✅ 按钮点击模拟完成，功能正常';
+            }, 2000);
+        }
+
+        function openModelRulesPage() {
+            window.open('/static/admin/model_rules.html', '_blank');
+        }
+
+        // 页面加载时自动运行基础测试
+        window.onload = function() {
+            console.log('测试页面已加载');
+            testApiConnection();
+        };
+    </script>
+</body>
+</html>

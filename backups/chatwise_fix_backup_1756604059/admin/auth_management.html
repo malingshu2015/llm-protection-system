@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>授权管理 - 本地大模型防护系统</title>
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/apple-components.css">
+    <link rel="stylesheet" href="/static/admin/css/apple-filters.css">
+    <link rel="stylesheet" href="/static/admin/css/apple-layout.css">
+    <script src="/static/admin/js/apple-ui.js" defer></script>
+    <style>
+        .api-key-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .api-key-table th,
+        .api-key-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--apple-border-color);
+        }
+
+        .api-key-table th {
+            background-color: var(--apple-surface-secondary);
+            font-weight: 600;
+            color: var(--apple-text-primary);
+        }
+
+        .api-key-table tr:hover {
+            background-color: var(--apple-surface-hover);
+        }
+
+        .api-key-value {
+            font-family: 'Courier New', monospace;
+            background-color: var(--apple-surface-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .permission-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 2px;
+            background-color: var(--apple-surface-secondary);
+            color: var(--apple-text-secondary);
+        }
+
+        .permission-badge.all {
+            background-color: var(--apple-success-light);
+            color: var(--apple-success-dark);
+        }
+
+        .license-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .license-badge.standard {
+            background-color: var(--apple-info-light);
+            color: var(--apple-info-dark);
+        }
+
+        .license-badge.premium {
+            background-color: var(--apple-warning-light);
+            color: var(--apple-warning-dark);
+        }
+
+        .license-badge.enterprise {
+            background-color: var(--apple-success-light);
+            color: var(--apple-success-dark);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.active {
+            background-color: var(--apple-success);
+        }
+
+        .status-indicator.inactive {
+            background-color: var(--apple-danger);
+        }
+
+        .create-api-key-form {
+            background-color: var(--apple-surface-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--apple-text-primary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--apple-border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: var(--apple-surface-primary);
+            color: var(--apple-text-primary);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--apple-primary);
+            box-shadow: 0 0 0 2px var(--apple-primary-light);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            margin: 8% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid #e0e0e0;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--apple-border-color);
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #333333;
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--apple-text-secondary);
+        }
+
+        .close-modal:hover {
+            color: var(--apple-text-primary);
+        }
+
+        .api-key-display {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+
+        .api-key-text {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0066cc;
+            word-break: break-all;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .copy-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            margin: 10px;
+        }
+
+        .copy-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        .button.large {
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .modal-actions {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .api-key-details {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .detail-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .detail-group label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            color: #212529;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .detail-value.code {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background-color: #ffffff;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .usage-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .usage-stat {
+            background-color: var(--apple-surface-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .usage-stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--apple-primary);
+            margin-bottom: 5px;
+        }
+
+        .usage-stat-label {
+            font-size: 0.9rem;
+            color: var(--apple-text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJjdXJyZW50Q29sb3IiIHN0cm9rZT0ibm9uZSI+PHBhdGggZD0iTTEyIDFsOCAzdjdjMCA4LTggMTMtOCAxM3MtOC01LTgtMTNWNGw4LTN6IiBmaWxsPSJjdXJyZW50Q29sb3IiIG9wYWNpdHk9IjAuOSIvPjxwYXRoIGQ9Ik0xMiAyLjVsNi41IDIuNXY2LjVjMCA2LjUtNi41IDExLTYuNSAxMXMtNi41LTQuNS02LjUtMTFWNWw2LjUtMi41eiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSI5IiByPSIyLjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjEuMiIvPjxwYXRoIGQ9Ik0xMiAxM3Y1IiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPgo="
+                        alt="Logo">
+                    <h2>本地大模型防护系统</h2>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="monitor.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-desktop"></i></span>
+                        <span class="sidebar-menu-text">监控中心</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="realtime_monitor.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-eye"></i></span>
+                        <span class="sidebar-menu-text">实时监控</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="sidebar-menu-text">规则管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="model_rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-cogs"></i></span>
+                        <span class="sidebar-menu-text">规则配置</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="events.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="sidebar-menu-text">安全事件</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="models.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-brain"></i></span>
+                        <span class="sidebar-menu-text">模型管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item active">
+                    <a href="auth_management.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-key"></i></span>
+                        <span class="sidebar-menu-text">授权管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/index.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-comment-dots"></i></span>
+                        <span class="sidebar-menu-text">模型测试</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center justify-content-center gap-sm">
+                    <span>暗色模式</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="mt-sm">版本 1.1.0</div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部导航栏 -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="navbar-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="navbar-title">授权管理</h1>
+                </div>
+                <div class="navbar-right">
+                    <span id="current-time"></span>
+                </div>
+            </nav>
+
+            <!-- 页面标题 -->
+            <header class="page-header">
+                <h1 class="page-title">API密钥管理</h1>
+                <div class="page-actions">
+                    <button class="button" id="refresh-data">
+                        <i class="fas fa-sync-alt"></i> 刷新数据
+                    </button>
+                    <button class="button primary" id="create-api-key-btn">
+                        <i class="fas fa-plus"></i> 创建API密钥
+                    </button>
+                </div>
+            </header>
+
+            <!-- 使用统计 -->
+            <section class="usage-stats">
+                <div class="usage-stat">
+                    <div class="usage-stat-value" id="total-api-keys">--</div>
+                    <div class="usage-stat-label">总API密钥数</div>
+                </div>
+                <div class="usage-stat">
+                    <div class="usage-stat-value" id="active-clients">--</div>
+                    <div class="usage-stat-label">活跃客户端</div>
+                </div>
+                <div class="usage-stat">
+                    <div class="usage-stat-value" id="total-requests-today">--</div>
+                    <div class="usage-stat-label">今日请求数</div>
+                </div>
+                <div class="usage-stat">
+                    <div class="usage-stat-value" id="blocked-requests-today">--</div>
+                    <div class="usage-stat-label">今日阻止请求</div>
+                </div>
+            </section>
+
+            <!-- API密钥列表 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2>API密钥列表</h2>
+                    <div class="card-actions">
+                        <input type="text" id="search-api-keys" placeholder="搜索API密钥..." class="search-input">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="loading" id="loading-api-keys">
+                        <div class="loading-spinner"></div>
+                        <span>加载API密钥中...</span>
+                    </div>
+                    <table class="api-key-table" id="api-key-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>名称</th>
+                                <th>API密钥</th>
+                                <th>权限</th>
+                                <th>许可证类型</th>
+                                <th>客户端限制</th>
+                                <th>创建时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="api-key-list">
+                            <!-- API密钥数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 创建API密钥表单 -->
+            <div class="create-api-key-form" id="create-api-key-form" style="display: none;">
+                <h3>创建新的API密钥</h3>
+                <form id="api-key-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="api-key-name">密钥名称 *</label>
+                            <input type="text" id="api-key-name" required placeholder="例如: 生产环境API密钥">
+                        </div>
+                        <div class="form-group">
+                            <label for="api-key-description">描述</label>
+                            <textarea id="api-key-description" rows="2" placeholder="密钥用途描述..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="rate-limit">速率限制 (每分钟请求数) *</label>
+                            <input type="number" id="rate-limit" required min="1" max="1000" value="60">
+                        </div>
+                        <div class="form-group">
+                            <label for="max-clients">最大客户端数 *</label>
+                            <input type="number" id="max-clients" required min="1" max="100" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="license-type">许可证类型 *</label>
+                            <select id="license-type" required>
+                                <option value="standard">标准版</option>
+                                <option value="premium">高级版</option>
+                                <option value="enterprise">企业版</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>权限设置 *</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="permission-all" name="permissions" value="*">
+                                <label for="permission-all">所有权限</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="permission-chat" name="permissions" value="chat" checked>
+                                <label for="permission-chat">聊天权限</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="permission-models" name="permissions" value="models" checked>
+                                <label for="permission-models">模型管理</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="permission-admin" name="permissions" value="admin">
+                                <label for="permission-admin">管理权限</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="permission-monitor" name="permissions" value="monitor">
+                                <label for="permission-monitor">监控权限</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="allowed-models">允许访问的模型</label>
+                        <input type="text" id="allowed-models" placeholder="输入模型名称，用逗号分隔 (* 表示所有模型)" value="*">
+                        <small>例如: llama2, mistral, * (所有模型)</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="button secondary" id="cancel-create">取消</button>
+                        <button type="submit" class="button primary">创建API密钥</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 新建API密钥模态框 -->
+            <div class="modal" id="api-key-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">API密钥创建成功</h2>
+                        <button class="close-modal" id="close-modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>请妥善保存您的API密钥，此密钥只会显示一次：</p>
+                        <div class="api-key-display">
+                            <div class="api-key-text" id="new-api-key"></div>
+                            <button class="copy-btn" id="copy-api-key">复制密钥</button>
+                        </div>
+                        <p><strong>警告：</strong>此密钥一旦关闭将无法再次查看，请确保已妥善保存。</p>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="button primary large" id="confirm-api-key">
+                            <i class="fas fa-check"></i> 我已保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 查看API密钥详情模态框 -->
+            <div class="modal" id="view-api-key-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">API密钥详情</h2>
+                        <button class="close-modal" id="close-view-modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="api-key-details">
+                            <div class="detail-group">
+                                <label>密钥名称:</label>
+                                <div class="detail-value" id="view-api-key-name">-</div>
+                            </div>
+                            
+                            <div class="detail-group">
+                                <label>API密钥:</label>
+                                <div class="api-key-display">
+                                    <div class="api-key-text" id="view-api-key-value"></div>
+                                    <button class="copy-btn" id="copy-view-api-key">复制密钥</button>
+                                </div>
+                            </div>
+
+                            <div class="detail-group">
+                                <label>描述:</label>
+                                <div class="detail-value" id="view-api-key-description">-</div>
+                            </div>
+
+                            <div class="detail-group">
+                                <label>权限:</label>
+                                <div class="detail-value" id="view-api-key-permissions">-</div>
+                            </div>
+
+                            <div class="detail-group">
+                                <label>速率限制:</label>
+                                <div class="detail-value" id="view-api-key-rate-limit">-</div>
+                            </div>
+
+                            <div class="detail-group">
+                                <label>许可证类型:</label>
+                                <div class="detail-value" id="view-api-key-license-type">-</div>
+                            </div>
+
+                            <div class="detail-group">
+                                <label>最大客户端数:</label>
+                                <div class="detail-value" id="view-api-key-max-clients">-</div>
+                            </div>
+
+                            <div class="detail-group">
+                                <label>允许访问的模型:</label>
+                                <div class="detail-value" id="view-api-key-models">-</div>
+                            </div>
+
+                            <div class="detail-group">
+                                <label>创建时间:</label>
+                                <div class="detail-value" id="view-api-key-created">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="button secondary" id="close-view-details">
+                            <i class="fas fa-times"></i> 关闭
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 全局函数定义
+        // 加载API密钥数据
+        async function loadApiKeys() {
+            const loadingElement = document.getElementById('loading-api-keys');
+            const tableElement = document.getElementById('api-key-table');
+            const listElement = document.getElementById('api-key-list');
+
+            loadingElement.style.display = 'flex';
+            tableElement.style.display = 'none';
+
+            try {
+                // 这里需要实现获取API密钥列表的API调用
+                // 暂时使用模拟数据
+                const apiKeys = await fetchApiKeys();
+                
+                if (apiKeys.length === 0) {
+                    listElement.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">暂无API密钥</td></tr>';
+                } else {
+                    listElement.innerHTML = apiKeys.map(apiKey => {
+                        const createdDate = new Date(apiKey.created_at * 1000);
+                        const formattedDate = createdDate.toLocaleDateString('zh-CN');
+                        
+                        const permissions = Array.isArray(apiKey.permissions) ? apiKey.permissions : [];
+                        const hasAllPermissions = permissions.includes('*');
+                        
+                        const licenseType = apiKey.license?.license_type || 'standard';
+                        const maxClients = apiKey.license?.max_clients || 10;
+                        
+                        return `
+                            <tr>
+                                <td>${apiKey.name || '未命名'}</td>
+                                <td><span class="api-key-value">${apiKey.key.substring(0, 8)}...</span></td>
+                                <td>
+                                    ${hasAllPermissions ? 
+                                        '<span class="permission-badge all">所有权限</span>' : 
+                                        permissions.map(perm => `<span class="permission-badge">${perm}</span>`).join('')
+                                    }
+                                </td>
+                                <td>
+                                    <span class="license-badge ${licenseType}">
+                                        ${licenseType === 'standard' ? '标准版' : 
+                                         licenseType === 'premium' ? '高级版' : '企业版'}
+                                    </span>
+                                </td>
+                                <td>${maxClients} 客户端</td>
+                                <td>${formattedDate}</td>
+                                <td>
+                                    <span class="status-indicator active"></span>
+                                    活跃
+                                </td>
+                                <td>
+                                    <button class="button small" onclick="viewApiKey('${apiKey.full_key}')">查看</button>
+                                    <button class="button small danger" onclick="deleteApiKey('${apiKey.full_key}')">删除</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+
+                // 更新统计信息
+                document.getElementById('total-api-keys').textContent = apiKeys.length;
+
+            } catch (error) {
+                console.error('加载API密钥失败:', error);
+                listElement.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--apple-danger); padding: 20px;">加载失败: ' + error.message + '</td></tr>';
+            } finally {
+                loadingElement.style.display = 'none';
+                tableElement.style.display = 'table';
+            }
+        }
+
+        // 获取API密钥数据
+        async function fetchApiKeys() {
+            try {
+                const response = await fetch('/api/v1/auth/api-keys', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'  // 使用管理员密钥
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`获取API密钥失败: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                return data.api_keys || [];
+            } catch (error) {
+                console.error('获取API密钥失败:', error);
+                // 如果API调用失败，返回空数组而不是抛出错误
+                return [];
+            }
+        }
+
+        // 查看API密钥详情
+        async function viewApiKey(apiKey) {
+            try {
+                // 获取API密钥列表来查找详细信息
+                const apiKeys = await fetchApiKeys();
+                const keyDetails = apiKeys.find(key => key.full_key === apiKey);
+                
+                if (!keyDetails) {
+                    alert('未找到API密钥详情');
+                    return;
+                }
+                
+                // 填充模态框内容
+                document.getElementById('view-api-key-name').textContent = keyDetails.name || '未命名';
+                document.getElementById('view-api-key-value').textContent = keyDetails.full_key;
+                document.getElementById('view-api-key-description').textContent = keyDetails.description || '无描述';
+                
+                // 处理权限显示
+                const permissions = keyDetails.permissions || [];
+                const hasAllPermissions = permissions.includes('*');
+                if (hasAllPermissions) {
+                    document.getElementById('view-api-key-permissions').innerHTML = '<span class="permission-badge all">所有权限</span>';
+                } else {
+                    document.getElementById('view-api-key-permissions').innerHTML = permissions.map(perm => 
+                        `<span class="permission-badge">${perm}</span>`
+                    ).join(' ');
+                }
+                
+                document.getElementById('view-api-key-rate-limit').textContent = (keyDetails.rate_limit || 0) + ' 请求/分钟';
+                
+                // 处理许可证信息
+                const license = keyDetails.license || {};
+                const licenseType = license.license_type || 'standard';
+                const licenseTypeMap = {
+                    'standard': '标准版',
+                    'premium': '高级版', 
+                    'enterprise': '企业版'
+                };
+                document.getElementById('view-api-key-license-type').textContent = licenseTypeMap[licenseType] || '标准版';
+                document.getElementById('view-api-key-max-clients').textContent = (license.max_clients || 10) + ' 个';
+                
+                // 处理模型访问权限
+                const models = keyDetails.models || [];
+                const hasAllModels = models.includes('*');
+                document.getElementById('view-api-key-models').textContent = hasAllModels ? '所有模型' : models.join(', ');
+                
+                // 处理创建时间
+                const createdDate = new Date(keyDetails.created_at * 1000);
+                document.getElementById('view-api-key-created').textContent = createdDate.toLocaleString('zh-CN');
+                
+                // 显示模态框
+                document.getElementById('view-api-key-modal').style.display = 'block';
+                
+            } catch (error) {
+                console.error('获取API密钥详情失败:', error);
+                alert('获取API密钥详情失败: ' + error.message);
+            }
+        }
+
+        // 删除API密钥
+        async function deleteApiKey(apiKey) {
+            if (confirm('确定要删除这个API密钥吗？此操作不可撤销。')) {
+                try {
+                    const response = await fetch(`/api/v1/auth/api-keys/${encodeURIComponent(apiKey)}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': 'Bearer cherry-studio-key'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.detail || `删除失败: ${response.status} ${response.statusText}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    // 显示成功消息
+                    alert('API密钥删除成功！');
+                    
+                    // 重新加载API密钥列表
+                    loadApiKeys();
+                    
+                } catch (error) {
+                    console.error('删除API密钥失败:', error);
+                    alert('删除API密钥失败: ' + error.message);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // 更新当前时间
+            function updateCurrentTime() {
+                const now = new Date();
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                document.getElementById('current-time').textContent = now.toLocaleDateString('zh-CN', options);
+            }
+
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 60000);
+
+            // 加载使用统计
+            async function loadUsageStats() {
+                try {
+                    // 获取活跃客户端数
+                    const clientsResponse = await fetch('/api/v1/license/stats');
+                    if (clientsResponse.ok) {
+                        const stats = await clientsResponse.json();
+                        document.getElementById('active-clients').textContent = 
+                            stats.usage.current_clients + '/' + stats.usage.max_clients;
+                    }
+
+                    // 获取今日请求统计（需要实现相应的API端点）
+                    document.getElementById('total-requests-today').textContent = '0';
+                    document.getElementById('blocked-requests-today').textContent = '0';
+
+                } catch (error) {
+                    console.error('加载使用统计失败:', error);
+                }
+            }
+
+            // 显示/隐藏创建表单
+            document.getElementById('create-api-key-btn').addEventListener('click', function () {
+                const form = document.getElementById('create-api-key-form');
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            });
+
+            document.getElementById('cancel-create').addEventListener('click', function () {
+                document.getElementById('create-api-key-form').style.display = 'none';
+            });
+
+            // 表单提交
+            document.getElementById('api-key-form').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const formData = {
+                    name: document.getElementById('api-key-name').value,
+                    description: document.getElementById('api-key-description').value,
+                    rate_limit: parseInt(document.getElementById('rate-limit').value),
+                    max_clients: parseInt(document.getElementById('max-clients').value),
+                    license_type: document.getElementById('license-type').value,
+                    permissions: Array.from(document.querySelectorAll('input[name="permissions"]:checked')).map(cb => cb.value),
+                    models: document.getElementById('allowed-models').value.split(',').map(m => m.trim())
+                };
+
+                try {
+                    // 这里需要实现创建API密钥的API调用
+                    const newApiKey = await createApiKey(formData);
+                    
+                    // 显示新建的API密钥
+                    document.getElementById('new-api-key').textContent = newApiKey;
+                    document.getElementById('api-key-modal').style.display = 'block';
+                    
+                    // 重置表单
+                    document.getElementById('api-key-form').reset();
+                    document.getElementById('create-api-key-form').style.display = 'none';
+                    
+                } catch (error) {
+                    console.error('创建API密钥失败:', error);
+                    alert('创建API密钥失败: ' + error.message);
+                }
+            });
+
+            // 创建API密钥
+            async function createApiKey(data) {
+                const response = await fetch('/api/v1/auth/api-keys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer cherry-studio-key'  // 使用管理员密钥
+                    },
+                    body: JSON.stringify({
+                        name: data.name,
+                        description: data.description,
+                        permissions: data.permissions,
+                        rate_limit: data.rate_limit,
+                        models: data.models,
+                        max_clients: data.max_clients,
+                        license_type: data.license_type
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                return result.api_key;
+            }
+
+            // 模态框操作
+            document.getElementById('close-modal').addEventListener('click', function () {
+                document.getElementById('api-key-modal').style.display = 'none';
+                // 重新加载API密钥列表
+                loadApiKeys();
+            });
+
+            // 查看模态框操作
+            document.getElementById('close-view-modal').addEventListener('click', function () {
+                document.getElementById('view-api-key-modal').style.display = 'none';
+            });
+
+            document.getElementById('close-view-details').addEventListener('click', function () {
+                document.getElementById('view-api-key-modal').style.display = 'none';
+            });
+
+            // 查看模态框的复制按钮
+            document.getElementById('copy-view-api-key').addEventListener('click', function () {
+                const apiKey = document.getElementById('view-api-key-value').textContent;
+                navigator.clipboard.writeText(apiKey).then(() => {
+                    const btn = this;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    btn.style.backgroundColor = '#28a745';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.backgroundColor = '';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败，请手动复制API密钥');
+                });
+            });
+
+            document.getElementById('confirm-api-key').addEventListener('click', function () {
+                document.getElementById('api-key-modal').style.display = 'none';
+                // 重新加载API密钥列表以显示新创建的密钥
+                loadApiKeys();
+            });
+
+            document.getElementById('copy-api-key').addEventListener('click', function () {
+                const apiKey = document.getElementById('new-api-key').textContent;
+                navigator.clipboard.writeText(apiKey).then(() => {
+                    const btn = this;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    btn.style.backgroundColor = '#28a745';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.backgroundColor = '';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败，请手动复制API密钥');
+                });
+            });
+
+            // 刷新按钮
+            document.getElementById('refresh-data').addEventListener('click', function () {
+                loadApiKeys();
+                loadUsageStats();
+            });
+
+            // 搜索功能
+            document.getElementById('search-api-keys').addEventListener('input', function (e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#api-key-list tr');
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+
+            // 初始加载
+            loadApiKeys();
+            loadUsageStats();
+        });
+    </script>
+</body>
+
+</html>

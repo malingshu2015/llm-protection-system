@@ -1,0 +1,250 @@
+/* 
+ * 苹果风格的大模型防火墙模型规则配置页面
+ * 模型规则配置特定的样式
+ */
+
+/* ===== 模型规则摘要表格 ===== */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--apple-gray-2);
+}
+
+.data-table th {
+  font-weight: 600;
+  color: var(--apple-text-secondary);
+  background-color: var(--apple-bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.data-table th:first-child {
+  border-top-left-radius: var(--apple-border-radius);
+}
+
+.data-table th:last-child {
+  border-top-right-radius: var(--apple-border-radius);
+}
+
+.data-table tbody tr {
+  transition: background-color var(--apple-transition-normal);
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--apple-bg-hover);
+}
+
+.data-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: var(--apple-border-radius);
+}
+
+.data-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: var(--apple-border-radius);
+}
+
+/* 表格列宽设置 */
+.data-table th.checkbox-column,
+.data-table td.checkbox-column {
+  width: 40px;
+  text-align: center;
+}
+
+.data-table th.model-name-column,
+.data-table td.model-name-column {
+  width: 20%;
+  min-width: 150px;
+}
+
+.data-table th.template-column,
+.data-table td.template-column {
+  width: 15%;
+  min-width: 120px;
+}
+
+.data-table th.rules-count-column,
+.data-table td.rules-count-column {
+  width: 10%;
+  min-width: 80px;
+  text-align: center;
+}
+
+.data-table th.enabled-rules-column,
+.data-table td.enabled-rules-column {
+  width: 10%;
+  min-width: 80px;
+  text-align: center;
+}
+
+.data-table th.security-score-column,
+.data-table td.security-score-column {
+  width: 10%;
+  min-width: 80px;
+  text-align: center;
+}
+
+.data-table th.last-updated-column,
+.data-table td.last-updated-column {
+  width: 15%;
+  min-width: 120px;
+}
+
+.data-table th.actions-column,
+.data-table td.actions-column {
+  width: 15%;
+  min-width: 120px;
+  text-align: right;
+}
+
+/* 模型规则配置模态框 */
+.model-info-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-lg);
+  padding: var(--apple-spacing-md);
+  background-color: var(--apple-bg-secondary);
+  border-radius: var(--apple-border-radius);
+}
+
+.model-info-item {
+  flex: 1;
+  min-width: 150px;
+}
+
+.model-info-item .label {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-secondary);
+  margin-bottom: var(--apple-spacing-xs);
+  display: block;
+}
+
+.model-info-item .value {
+  font-size: var(--apple-font-size-md);
+  font-weight: 600;
+  color: var(--apple-text-primary);
+}
+
+.config-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+/* 规则集模板表格 */
+.templates-table th.template-name-column,
+.templates-table td.template-name-column {
+  width: 20%;
+  min-width: 150px;
+}
+
+.templates-table th.description-column,
+.templates-table td.description-column {
+  width: 30%;
+  min-width: 200px;
+}
+
+.templates-table th.rules-count-column,
+.templates-table td.rules-count-column {
+  width: 10%;
+  min-width: 80px;
+  text-align: center;
+}
+
+.templates-table th.category-column,
+.templates-table td.category-column {
+  width: 15%;
+  min-width: 100px;
+}
+
+.templates-table th.created-at-column,
+.templates-table td.created-at-column {
+  width: 15%;
+  min-width: 120px;
+}
+
+.templates-table th.actions-column,
+.templates-table td.actions-column {
+  width: 10%;
+  min-width: 100px;
+  text-align: right;
+}
+
+/* 模型选择列表 */
+.model-selection-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--apple-gray-3);
+  border-radius: var(--apple-border-radius);
+  margin-top: var(--apple-spacing-sm);
+}
+
+.model-selection-item {
+  display: flex;
+  align-items: center;
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+  border-bottom: 1px solid var(--apple-gray-2);
+}
+
+.model-selection-item:last-child {
+  border-bottom: none;
+}
+
+.model-selection-item label {
+  margin-left: var(--apple-spacing-sm);
+  flex: 1;
+  cursor: pointer;
+}
+
+/* 安全评分显示 */
+.security-score {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  border-radius: 50%;
+  font-weight: 600;
+  color: white;
+}
+
+.security-score.high {
+  background-color: var(--apple-success);
+}
+
+.security-score.medium {
+  background-color: var(--apple-warning);
+}
+
+.security-score.low {
+  background-color: var(--apple-danger);
+}
+
+/* 响应式设计 */
+@media (max-width: 992px) {
+  .model-info-panel {
+    flex-direction: column;
+  }
+  
+  .config-actions {
+    flex-direction: column;
+  }
+  
+  .config-actions .button {
+    width: 100%;
+  }
+  
+  .data-table {
+    display: block;
+    overflow-x: auto;
+  }
+}

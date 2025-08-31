@@ -1,0 +1,128 @@
+[
+  {
+    "id": "hs-001",
+    "name": "Racial Discrimination",
+    "description": "检测种族歧视和仇恨言论",
+    "detection_type": "hate_speech",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:racial|种族)[.\\s]*(?:superiority|优越|supremacy|至上|discrimination|歧视|hatred|仇恨)",
+      "(?i)(?:ethnic|民族)[.\\s]*(?:cleansing|清洗|purification|净化|elimination|消除)",
+      "(?i)(?:inferior|低等|superior|高等)[.\\s]*(?:race|种族|ethnicity|民族)",
+      "(?i)(?:racial|种族)[.\\s]*(?:slur|侮辱|derogatory|贬损|offensive|冒犯)[.\\s]*(?:terms|词汇|language|语言)",
+      "(?i)(?:genocide|种族灭绝|mass killing|大屠杀)[.\\s]*(?:of|对|against|针对)[.\\s]*(?:ethnic|民族|racial|种族)[.\\s]*(?:group|群体|people|人民)"
+    ],
+    "keywords": [
+      "racial superiority",
+      "ethnic cleansing",
+      "racial discrimination",
+      "racial slur",
+      "genocide",
+      "supremacy",
+      "种族优越",
+      "民族清洗",
+      "种族歧视",
+      "种族侮辱",
+      "种族灭绝",
+      "种族至上"
+    ],
+    "priority": 5,
+    "categories": ["hate_speech", "discrimination"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "hs-002",
+    "name": "Religious Hatred",
+    "description": "检测宗教仇恨和宗教歧视言论",
+    "detection_type": "hate_speech",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:religious|宗教)[.\\s]*(?:hatred|仇恨|intolerance|不容忍|persecution|迫害)",
+      "(?i)(?:kill|杀死|eliminate|消灭|destroy|摧毁)[.\\s]*(?:all|所有)[.\\s]*(?:believers|信徒|followers|追随者)[.\\s]*(?:of|的|from|来自)",
+      "(?i)(?:holy war|圣战|religious war|宗教战争|jihad|吉哈德)[.\\s]*(?:against|反对|对抗)[.\\s]*(?:infidels|异教徒|非信徒)",
+      "(?i)(?:blasphemy|亵渎|sacrilege|渎神)[.\\s]*(?:against|反对|of|对)[.\\s]*(?:religion|宗教|god|神|allah|真主|buddha|佛陀)",
+      "(?i)(?:religious|宗教)[.\\s]*(?:extremism|极端主义|fundamentalism|原教旨主义|terrorism|恐怖主义)"
+    ],
+    "keywords": [
+      "religious hatred",
+      "religious persecution",
+      "holy war",
+      "religious extremism",
+      "blasphemy",
+      "infidel",
+      "宗教仇恨",
+      "宗教迫害",
+      "圣战",
+      "宗教极端",
+      "亵渎",
+      "异教徒"
+    ],
+    "priority": 6,
+    "categories": ["hate_speech", "religious"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "hs-003",
+    "name": "Gender and Sexual Orientation Discrimination",
+    "description": "检测性别和性取向歧视言论",
+    "detection_type": "hate_speech",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:women|女性|girls|女孩)[.\\s]*(?:are|是)[.\\s]*(?:inferior|低等|weak|软弱|stupid|愚蠢|useless|无用)",
+      "(?i)(?:gay|同性恋|lesbian|女同|transgender|跨性别|LGBT)[.\\s]*(?:people|人|individuals|个体)[.\\s]*(?:are|是)[.\\s]*(?:disgusting|恶心|abnormal|不正常|sick|变态|perverted|堕落)",
+      "(?i)(?:sexual|性的)[.\\s]*(?:orientation|取向|preference|偏好)[.\\s]*(?:is|是)[.\\s]*(?:a choice|选择|disease|疾病|disorder|障碍)",
+      "(?i)(?:gender|性别)[.\\s]*(?:roles|角色|stereotypes|刻板印象)[.\\s]*(?:should|应该|must|必须)[.\\s]*(?:be|被)[.\\s]*(?:enforced|强制|maintained|保持)",
+      "(?i)(?:conversion|转换|cure|治疗)[.\\s]*(?:therapy|疗法|treatment|治疗)[.\\s]*(?:for|对于|to fix|修复)[.\\s]*(?:homosexuality|同性恋|LGBT|跨性别)"
+    ],
+    "keywords": [
+      "gender discrimination",
+      "sexual orientation",
+      "homophobia",
+      "transphobia",
+      "conversion therapy",
+      "LGBT hatred",
+      "性别歧视",
+      "性取向歧视",
+      "恐同",
+      "恐跨",
+      "转换疗法",
+      "LGBT仇恨"
+    ],
+    "priority": 7,
+    "categories": ["hate_speech", "gender", "lgbtq"],
+    "block": true,
+    "enabled": true
+  },
+  {
+    "id": "hs-004",
+    "name": "Disability and Appearance Discrimination",
+    "description": "检测针对残疾人和外貌的歧视言论",
+    "detection_type": "hate_speech",
+    "severity": "medium",
+    "patterns": [
+      "(?i)(?:disabled|残疾|handicapped|残障|crippled|瘸子)[.\\s]*(?:people|人|individuals|个体)[.\\s]*(?:are|是)[.\\s]*(?:burden|负担|useless|无用|inferior|低等)",
+      "(?i)(?:mental|精神)[.\\s]*(?:disability|残疾|illness|疾病|retardation|智障)[.\\s]*(?:makes|使得|means|意味着)[.\\s]*(?:worthless|无价值|stupid|愚蠢)",
+      "(?i)(?:ugly|丑陋|fat|肥胖|skinny|瘦弱)[.\\s]*(?:people|人)[.\\s]*(?:don't deserve|不配|shouldn't|不应该)[.\\s]*(?:love|爱|respect|尊重|rights|权利)",
+      "(?i)(?:appearance|外貌|looks|长相)[.\\s]*(?:based|基于)[.\\s]*(?:discrimination|歧视|judgment|判断|harassment|骚扰)",
+      "(?i)(?:genetic|基因)[.\\s]*(?:defects|缺陷|disorders|疾病)[.\\s]*(?:should be|应该被)[.\\s]*(?:eliminated|消除|prevented|预防|cured|治愈)"
+    ],
+    "keywords": [
+      "disability discrimination",
+      "appearance discrimination",
+      "ableism",
+      "body shaming",
+      "genetic discrimination",
+      "残疾歧视",
+      "外貌歧视",
+      "能力主义",
+      "身材羞辱",
+      "基因歧视"
+    ],
+    "priority": 8,
+    "categories": ["hate_speech", "disability", "appearance"],
+    "block": true,
+    "enabled": true
+  }
+]
