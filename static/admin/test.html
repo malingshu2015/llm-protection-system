@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型市场测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .button.primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-color: transparent;
+        }
+        .button.primary:hover {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #4facfe;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 模型市场测试工具</h1>
+        <p>选择测试方式：</p>
+        
+        <div class="status">
+            <strong>💡 提示：</strong> 如果你看到 API 连接错误，请确保后端服务器正在运行：<br>
+            <code>python -m uvicorn src.main:app --host 0.0.0.0 --port 8081</code>
+        </div>
+        
+        <a href="/test_model_market_fix.html" class="button primary">
+            🎨 访问优化版测试页面
+        </a>
+        
+        <a href="/static/admin/models.html" class="button">
+            🧠 测试模型管理页面
+        </a>
+        
+        <div style="margin-top: 30px; font-size: 14px; opacity: 0.8;">
+            <p>📝 修复内容：</p>
+            <ul style="text-align: left; display: inline-block;">
+                <li>✅ 修复 API 路由配置</li>
+                <li>✅ 优化用户界面设计</li>
+                <li>✅ 完善错误处理机制</li>
+                <li>✅ 添加可视化测试结果</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

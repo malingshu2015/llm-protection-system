@@ -44,6 +44,11 @@ from src.web.enhanced_models_api import router as enhanced_models_router
 # from src.web.models_api import router as models_router
 from src.web.ollama_proxy_api import router as ollama_proxy_router
 from src.web.rule_generator_api import router as rule_generator_router
+from src.web.realtime_api import router as realtime_router
+from src.web.realtime_update_service import start_realtime_service, stop_realtime_service
+from src.web.test_websocket import router as test_websocket_router
+from src.web.model_market_api import router as model_market_router
+from src.web.trending_models_api import router as trending_models_router
 
 
 app = FastAPI(
@@ -82,6 +87,9 @@ app.include_router(realtime_monitor_router)
 # app.include_router(models_router)
 app.include_router(ollama_proxy_router)
 app.include_router(rule_generator_router)
+app.include_router(realtime_router)
+app.include_router(model_market_router, prefix="/api/v1")
+app.include_router(trending_models_router)
 
 # Mount static files
 static_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static")
@@ -113,6 +121,13 @@ async def startup_event():
         logger.info("缓存系统初始化成功")
     except Exception as e:
         logger.error(f"缓存系统初始化失败: {e}")
+    
+    # 启动实时更新服务
+    try:
+        await start_realtime_service()
+        logger.info("实时更新服务启动成功")
+    except Exception as e:
+        logger.error(f"实时更新服务启动失败: {e}")
 
 
 @app.on_event("shutdown")
@@ -128,6 +143,13 @@ async def shutdown_event():
         except Exception as e:
             logger.error(f"数据库关闭失败: {e}")
     
+    # 停止实时更新服务
+    try:
+        await stop_realtime_service()
+        logger.info("实时更新服务已停止")
+    except Exception as e:
+        logger.error(f"实时更新服务停止失败: {e}")
+
     logger.info("应用已安全关闭")
 
 # 添加 favicon.ico 路由
@@ -140,6 +162,11 @@ async def favicon():
 @app.get("/")
 async def root():
     return RedirectResponse(url="/static/index.html")
+
+# 模型市场页面路由
+@app.get("/model-market")
+async def model_market():
+    return RedirectResponse(url="/static/admin/models.html?tab=market")
 
 # 添加Ollama原生API重定向路由
 @app.api_route("/v1/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])

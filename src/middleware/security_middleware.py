@@ -207,6 +207,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             "/api/v1/register",
             "/static/",
             "/favicon.ico",
+            "/ws/",  # WebSocket连接
         ]
 
         for public_path in public_paths:

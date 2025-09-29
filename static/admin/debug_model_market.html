@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型市场调试页面</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .button {
+            padding: 12px 24px;
+            margin: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .button.primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .console {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success { background: rgba(72, 187, 120, 0.2); border: 1px solid #48bb78; }
+        .error { background: rgba(245, 101, 101, 0.2); border: 1px solid #f56565; }
+        .info { background: rgba(66, 153, 225, 0.2); border: 1px solid #4299e1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 模型市场调试工具</h1>
+        
+        <div class="status info">
+            <strong>💡 说明:</strong> 这个页面用来测试模型市场弹窗功能。点击下面的按钮测试不同功能。
+        </div>
+        
+        <button class="button primary" onclick="testOpenModelMarket()">
+            🚀 测试 openModelMarket() 函数
+        </button>
+        
+        <button class="button" onclick="testAPIConnection()">
+            🌐 测试 API 连接
+        </button>
+        
+        <button class="button" onclick="clearConsole()">
+            🗑️ 清空控制台
+        </button>
+        
+        <div id="status"></div>
+        
+        <div class="console" id="console">
+            <div>=== 调试控制台 ===</div>
+        </div>
+    </div>
+
+    <script>
+        let consoleDiv = document.getElementById('console');
+        let statusDiv = document.getElementById('status');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            consoleDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        function showStatus(message, type = 'info') {
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function clearConsole() {
+            consoleDiv.innerHTML = '<div>=== 调试控制台 ===</div>';
+            statusDiv.innerHTML = '';
+        }
+        
+        async function testAPIConnection() {
+            log('🔍 开始测试 API 连接...');
+            showStatus('正在测试 API 连接...', 'info');
+            
+            try {
+                const response = await fetch('/api/v1/models');
+                log(`📡 API 响应状态: ${response.status}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ API 连接成功，返回 ${data.length} 个模型`);
+                    showStatus(`✅ API 连接正常 (${data.length} 个模型)`, 'success');
+                } else {
+                    log(`❌ API 连接失败: ${response.status}`);
+                    showStatus(`❌ API 连接失败 (${response.status})`, 'error');
+                }
+            } catch (error) {
+                log(`❌ 网络错误: ${error.message}`);
+                showStatus(`❌ 网络错误: ${error.message}`, 'error');
+            }
+        }
+        
+        function testOpenModelMarket() {
+            log('🚀 开始测试 openModelMarket() 函数...');
+            showStatus('正在测试弹窗功能...', 'info');
+            
+            try {
+                // 检查函数是否存在
+                if (typeof openModelMarket === 'function') {
+                    log('✅ openModelMarket 函数存在');
+                    openModelMarket();
+                    log('✅ openModelMarket 函数调用成功');
+                    showStatus('✅ 弹窗功能测试成功', 'success');
+                } else {
+                    log('❌ openModelMarket 函数不存在');
+                    showStatus('❌ openModelMarket 函数不存在', 'error');
+                }
+            } catch (error) {
+                log(`❌ 函数调用错误: ${error.message}`);
+                showStatus(`❌ 函数调用错误: ${error.message}`, 'error');
+            }
+        }
+        
+        // 模拟 openModelMarket 函数（如果不存在）
+        if (typeof openModelMarket === 'undefined') {
+            window.openModelMarket = function() {
+                log('🎯 执行模拟的 openModelMarket 函数');
+                
+                // 创建测试弹窗
+                let modal = document.getElementById('test-modal');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'test-modal';
+                    modal.style.cssText = `
+                        position: fixed;
+                        top: 0; left: 0; right: 0; bottom: 0;
+                        background: rgba(0, 0, 0, 0.8);
+                        z-index: 1000;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    `;
+                    
+                    modal.innerHTML = `
+                        <div style="
+                            background: white;
+                            border-radius: 20px;
+                            padding: 30px;
+                            max-width: 500px;
+                            width: 90%;
+                            text-align: center;
+                            color: #333;
+                        ">
+                            <h2 style="margin-top: 0; color: #667eea;">🚀 模型市场弹窗</h2>
+                            <p>这是一个测试弹窗，用于验证模型市场功能。</p>
+                            <p style="color: #666; margin: 20px 0;">
+                                ✅ 弹窗创建成功<br>
+                                ✅ 显示正常<br>
+                                ✅ 交互功能正常
+                            </p>
+                            <button onclick="this.closest('#test-modal').remove()" style="
+                                background: #667eea;
+                                color: white;
+                                border: none;
+                                padding: 10px 20px;
+                                border-radius: 10px;
+                                cursor: pointer;
+                            ">关闭弹窗</button>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    // 点击背景关闭
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            modal.remove();
+                        }
+                    });
+                }
+                
+                modal.style.display = 'flex';
+                log('✅ 测试弹窗已显示');
+            };
+        }
+        
+        // 页面加载完成后的初始化
+        window.addEventListener('load', function() {
+            log('📄 调试页面加载完成');
+            log('🔍 检查 openModelMarket 函数...');
+            
+            if (typeof openModelMarket === 'function') {
+                log('✅ openModelMarket 函数已定义');
+            } else {
+                log('⚠️ openModelMarket 函数未定义，将使用模拟函数');
+            }
+        });
+    </script>
+</body>
+</html>

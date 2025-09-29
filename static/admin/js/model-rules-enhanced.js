@@ -1138,7 +1138,62 @@ class ModelRulesManager {
 
     editTemplate(templateId) {
         console.log('编辑模板:', templateId);
-        // TODO: 打开编辑模板modal
+        
+        // 查找模板数据
+        const template = this.templates.find(t => t.id === templateId);
+        if (!template) {
+            console.error('模板未找到:', templateId);
+            return;
+        }
+
+        // 打开编辑模态框
+        this.openEditTemplateModal(template);
+    }
+
+    openEditTemplateModal(template) {
+        // 填充模态框表单
+        document.getElementById('edit-template-id').value = template.id;
+        document.getElementById('edit-template-name').value = template.name;
+        document.getElementById('edit-template-description').value = template.description || '';
+        document.getElementById('edit-template-rules').value = JSON.stringify(template.rules, null, 2);
+        
+        // 显示模态框
+        $('#editTemplateModal').modal('show');
+    }
+
+    async saveTemplateEdit() {
+        const templateId = document.getElementById('edit-template-id').value;
+        const name = document.getElementById('edit-template-name').value;
+        const description = document.getElementById('edit-template-description').value;
+        const rulesJson = document.getElementById('edit-template-rules').value;
+
+        try {
+            // 验证JSON格式
+            const rules = JSON.parse(rulesJson);
+            
+            // 更新模板
+            const template = this.templates.find(t => t.id === templateId);
+            if (template) {
+                template.name = name;
+                template.description = description;
+                template.rules = rules;
+                
+                // 保存到服务器
+                await this.saveTemplateToServer(template);
+                
+                // 刷新界面
+                this.renderTemplates();
+                
+                // 关闭模态框
+                $('#editTemplateModal').modal('hide');
+                
+                // 显示成功消息
+                this.showToast('模板更新成功', 'success');
+            }
+        } catch (error) {
+            console.error('保存模板失败:', error);
+            this.showToast('保存失败: JSON格式错误', 'error');
+        }
     }
 
     duplicateTemplate(templateId) {
@@ -1662,4 +1717,34 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     console.log('🧪 推荐测试函数已添加，可在控制台运行: testAutoRecommend()');
+    
+    // 添加模板保存功能到类
+    ModelRulesManager.prototype.saveTemplateToServer = async function(template) {
+        try {
+            const response = await fetch(`/api/v1/rule-templates/${template.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer cherry-studio-key'
+                },
+                body: JSON.stringify({
+                    name: template.name,
+                    description: template.description,
+                    rules: template.rules,
+                    category: template.category || 'security'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`保存失败: ${response.status} ${response.statusText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('保存模板到服务器失败:', error);
+            throw error;
+        }
+    };
+    
+    console.log('💾 模板保存函数已添加到类: saveTemplateToServer()');
 });

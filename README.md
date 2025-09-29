@@ -86,7 +86,7 @@ pip install -e .
 ```bash
 # 使用Docker运行
 docker pull malingshu2015/llm-protection-system:1.1.0
-docker run -p 8080:8080 -p 8081:8081 malingshu2015/llm-protection-system:1.1.0
+docker run -p 8080:8080 -p 8082:8082 malingshu2015/llm-protection-system:1.1.0
 ```
 
 ## 使用
@@ -148,21 +148,21 @@ http://localhost:8080/static/chat/index.html
 
 #### Cherry Studio 配置
 ```
-API地址: http://localhost:8081
+API地址: http://localhost:8082
 API密钥: cherry-studio-key
 模型: tinyllama:latest
 ```
 
 #### ChatBox 配置
 ```
-API Host: http://localhost:8081/v1
+API Host: http://localhost:8082/v1
 API Key: cherry-studio-key
 Model: tinyllama:latest
 ```
 
 #### 通用OpenAI兼容客户端
 ```
-Base URL: http://localhost:8081/v1
+Base URL: http://localhost:8082/v1
 API Key: cherry-studio-key
 ```
 

@@ -58,7 +58,8 @@
       "(?i)(?:详细|具体|精确|分步|step-by-step|detailed|specific|precise)[.\\s]*(?:制作|制造|打造|锻造|make|create|forge)[.\\s]*(?:刀|刀具|匕首|剑|knife|blade|dagger|sword)[.\\s]*(?:的|方法|过程|步骤|教程|指南|process|method|steps|tutorial|guide)",
       "(?i)(?:制作|制造|做|打造|锻造|生产|组装|建造|make|create|build|forge|craft|assemble|manufacture)[.\\s]*(?:一把|一个|一支|一件|一副|a|an|some)?[.\\s]*(?:刀|刀具|匕首|剑|刺刀|军刀|小刀|knife|blade|dagger|sword)[.\\s]*(?:的|方法|过程|步骤|教程|指南|工艺|技术|流程|process|method|steps|tutorial|guide|technique|procedure)",
       "(?i)(?:自制|DIY|homemade|improvised)[.\\s]*(?:刀|刀具|匕首|武器|knife|blade|weapon)[.\\s]*(?:制作|方法|教程|making|tutorial|guide)",
-      "(?i)(?:磨|磨制|打磨|削尖|sharpen|grind|hone)[.\\s]*(?:刀|刀具|匕首|knife|blade)[.\\s]*(?:使其|让其|变得|to make it|to become)[.\\s]*(?:更|更加|extremely|very)[.\\s]*(?:锋利|尖锐|危险|sharp|pointed|lethal)"
+      "(?i)(?:磨|磨制|打磨|削尖|sharpen|grind|hone)[.\\s]*(?:刀|刀具|匕首|knife|blade)[.\\s]*(?:使其|让其|变得|to make it|to become)[.\\s]*(?:更|更加|extremely|very)[.\\s]*(?:锋利|尖锐|危险|sharp|pointed|lethal)",
+      "(?i)(?:刀|刀具|匕首|剑|刺刀|军刀|小刀|折刀|弹簧刀|knife|blade|dagger|sword|dirk|stiletto|machete|cleaver)[.\\s]*(?:的|de|des|del|di|della)[.\\s]*(?:制作|制造|工艺|方法|过程|步骤|教程|指南|technique|process|method|steps|tutorial|guide|making|manufacturing|crafting|creation)"
     ],
     "keywords": [
       "刀",
@@ -479,15 +480,21 @@
     "detection_type": "content_monitoring",
     "severity": "high",
     "patterns": [
-      "(?i).*黄色笑话.*一个.*",
+      "(?i).*黄色.*(?:笑话|故事|小说).*",
+      "(?i)黄色.*(?:content|内容|material)",
+      "(?i)(?:tell|讲|说|编).*黄色.*(?:story|故事|joke|笑话)",
       "(?i)黄色笑话",
+      "(?i)黄色故事",
       "(?i)一个"
     ],
     "keywords": [
-      "黄色笑话"
+      "黄色笑话",
+      "黄色故事",
+      "黄色小说",
+      "成人内容"
     ],
     "enabled": true,
-    "block": false,
+    "block": true,
     "priority": 50,
     "categories": [
       "content_monitoring",
@@ -649,6 +656,60 @@
       "auto_generated"
     ],
     "created_at": "2025-08-25T10:32:20.993376",
+    "created_by": "auto_generator"
+  },
+  {
+    "id": "ag-ha-e080c6a0",
+    "name": "自动生成_有害内容_一个_黄色",
+    "description": "基于已允许事件 rt_1756813683543_0 自动生成的阻止规则",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:\\\\b黄色\\\\b)",
+      "(?i)(?:\\\\b故事\\\\b)",
+      "(?i)(?:\\\\b一个\\\\b)",
+      "(?i)(?:.*黄色.*故事.*)"
+    ],
+    "keywords": [
+      "一个",
+      "黄色",
+      "故事"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 100,
+    "categories": [
+      "harmful_content",
+      "auto_generated"
+    ],
+    "created_at": "2025-09-02T19:48:50.076866",
+    "created_by": "auto_generator"
+  },
+  {
+    "id": "ag-ha-907edd1f",
+    "name": "自动生成_有害内容_一个_黄色",
+    "description": "基于已允许事件 rt_1756813746982_1 自动生成的阻止规则",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:\\\\b黄色\\\\b)",
+      "(?i)(?:\\\\b故事\\\\b)",
+      "(?i)(?:\\\\b一个\\\\b)",
+      "(?i)(?:.*黄色.*故事.*)"
+    ],
+    "keywords": [
+      "一个",
+      "黄色",
+      "故事"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 100,
+    "categories": [
+      "harmful_content",
+      "auto_generated"
+    ],
+    "created_at": "2025-09-02T19:49:52.908669",
     "created_by": "auto_generator"
   }
 ]

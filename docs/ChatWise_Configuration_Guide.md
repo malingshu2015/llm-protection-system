@@ -6,8 +6,8 @@
 ## ⚙️ 推荐配置设置
 
 ### 基本连接配置
-- **API Base URL**: `http://localhost:8081/v1`
-- **备用URL**: `http://localhost:8081/api/v1/ollama/v1` (如果主URL有问题)
+- **API Base URL**: `http://localhost:8082/v1`
+- **备用URL**: `http://localhost:8082/api/v1/ollama/v1` (如果主URL有问题)
 - **API密钥**: 使用以下任一密钥
   - `chatwise-key` (专为ChatWise优化，推荐)
   - `api_key_123456` (兼容格式)
@@ -23,7 +23,7 @@
 
 ### 步骤1: 在ChatWise中设置API Base URL
 ```
-API Base URL: http://localhost:8081/v1
+API Base URL: http://localhost:8082/v1
 ```
 
 ### 步骤2: 配置API密钥
@@ -57,27 +57,27 @@ api_key_123456
 
 1. **确认服务状态**
    ```bash
-   curl http://localhost:8081/health
+   curl http://localhost:8082/health
    ```
    应该返回`{"status": "healthy"}`
 
 2. **测试API密钥**
    ```bash
-   curl -H "Authorization: Bearer chatwise-key" http://localhost:8081/v1/models
+   curl -H "Authorization: Bearer chatwise-key" http://localhost:8082/v1/models
    ```
 
 3. **测试聊天功能**
    ```bash
    curl -H "Authorization: Bearer chatwise-key" \
         -H "Content-Type: application/json" \
-        -X POST http://localhost:8081/v1/chat/completions \
+        -X POST http://localhost:8082/v1/chat/completions \
         -d '{"model": "qwen3:latest", "messages": [{"role": "user", "content": "你好"}], "stream": false}'
    ```
 
 ### 常见问题解决方案
 
 **问题1: 连接超时**
-- 解决方案：使用备用URL `http://localhost:8081/api/v1/ollama/v1`
+- 解决方案：使用备用URL `http://localhost:8082/api/v1/ollama/v1`
 
 **问题2: API密钥无效**
 - 解决方案：确认使用正确的密钥格式，不要添加额外的空格或字符

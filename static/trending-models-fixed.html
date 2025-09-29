@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 热门AI模型 - 第三方平台精选</title>
+    <link rel="stylesheet" href="/static/admin/css/apple-style.css">
+    <style>
+        /* 全局重置和基础样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+
+        .trending-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 40px;
+            border-radius: 0 0 40px 40px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+        }
+
+        .trending-header h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .trending-header p {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .trending-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .trending-stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .trending-stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .trending-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .model-market-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        .platform-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .platform-tab {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+
+        .platform-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .platform-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .filters-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e5e5e5;
+            border-radius: 50px;
+            font-size: 16px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .filters-grid select {
+            padding: 12px 15px;
+            border: 2px solid #e5e5e5;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filters-grid select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .model-trending-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 1px solid #f0f0f0;
+        }
+
+        .model-trending-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+        }
+
+        .trending-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+        }
+
+        .model-header-img {
+            height: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5em;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-header-img::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%);
+            background-size: 20px 20px;
+        }
+
+        .model-info-section {
+            padding: 25px;
+        }
+
+        .model-platform {
+            display: inline-block;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2d3436;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .model-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .model-description {
+            color: #636e72;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .model-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 3px;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #636e72;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 15px 0;
+        }
+
+        .feature-tag {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: 500;
+            border: 1px solid rgba(25, 118, 210, 0.2);
+        }
+
+        .model-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 1px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .update-time {
+            text-align: center;
+            color: #666;
+            margin: 30px 0;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #636e72;
+            font-size: 16px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .trending-header {
+                padding: 40px 15px;
+                margin-bottom: 20px;
+            }
+            
+            .trending-header h1 {
+                font-size: 2em;
+            }
+            
+            .trending-stats {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .model-market-container {
+                padding: 0 15px 30px;
+            }
+            
+            .platform-tabs {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 10px;
+                gap: 8px;
+            }
+            
+            .platform-tab {
+                flex-shrink: 0;
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+            
+            .models-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .model-trending-card {
+                margin: 0 5px;
+            }
+            
+            .model-info-section {
+                padding: 20px;
+            }
+            
+            .model-metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .model-actions {
+                flex-direction: column;
+                gap: 6px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .trending-header {
+                padding: 30px 10px;
+            }
+            
+            .trending-header h1 {
+                font-size: 1.8em;
+            }
+            
+            .model-name {
+                font-size: 1.2em;
+            }
+            
+            .model-description {
+                font-size: 12px;
+            }
+            
+            .filters-section {
+                padding: 20px;
+            }
+        }
+
+        /* 修复文本溢出 */
+        .model-name, .model-description {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* 修复按钮组 */
+        .model-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .model-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .model-trending-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .model-trending-card:nth-child(1) { animation-delay: 0.1s; }
+        .model-trending-card:nth-child(2) { animation-delay: 0.2s; }
+        .model-trending-card:nth-child(3) { animation-delay: 0.3s; }
+
+        /* 修复滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="trending-header">
+        <h1>🔥 热门AI模型精选</h1>
+        <p>来自Hugging Face、Meta、DeepSeek等顶级平台的最新流行大模型</p>
+        
+        <div class="trending-stats">
+            <div class="trending-stat-card">
+                <div class="trending-number" id="totalModels">8</div>
+                <div>热门模型</div>
+            </div>
+            <div class="trending-stat-card">
+                <div class="trending-number" id="totalDownloads">3.2M</div>
+                <div>总下载量</div>
+            </div>
+            <div class="trending-stat-card">
+                <div class="trending-number" id="lastUpdated">刚刚</div>
+                <div>最后更新</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="model-market-container">
+        <div class="platform-tabs">
+            <div class="platform-tab active" data-platform="all">全部平台</div>
+            <div class="platform-tab" data-platform="huggingface">Hugging Face</div>
+            <div class="platform-tab" data-platform="meta">Meta</div>
+            <div class="platform-tab" data-platform="deepseek">DeepSeek</div>
+            <div class="platform-tab" data-platform="mistral">Mistral</div>
+            <div class="platform-tab" data-platform="cohere">Cohere</div>
+        </div>
+
+        <div class="filters-section">
+            <div class="search-box">
+                <input type="text" id="searchModels" placeholder="搜索模型名称、类型或功能...">
+            </div>
+            
+            <div class="filters-grid">
+                <select id="sizeFilter">
+                    <option value="">所有规模</option>
+                    <option value="small">小型 (< 10B)</option>
+                    <option value="medium">中型 (10-50B)</option>
+                    <option value="large">大型 (> 50B)</option>
+                </select>
+                <select id="typeFilter">
+                    <option value="">所有类型</option>
+                    <option value="chat">对话模型</option>
+                    <option value="code">代码生成</option>
+                    <option value="multimodal">多模态</option>
+                    <option value="reasoning">推理模型</option>
+                </select>
+                <select id="sortBy">
+                    <option value="popularity">按热度排序</option>
+                    <option value="downloads">按下载量</option>
+                    <option value="recent">按最新发布</option>
+                    <option value="rating">按评分</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="modelsGrid" class="models-grid">
+            <!-- 模型卡片将通过JavaScript动态生成 -->
+        </div>
+
+        <div class="update-time">
+            数据每小时更新一次 • 最后同步: <span id="syncTime">--</span>
+        </div>
+    </div>
+
+    <script>
+        // 完整的第三方热门模型数据
+        const trendingModels = [
+            {
+                id: "deepseek-r1",
+                name: "DeepSeek-R1",
+                platform: "deepseek",
+                description: "革命性的开源推理模型，性能媲美OpenAI-o1，训练成本降低15倍",
+                size: "671B (MoE)",
+                downloads: "2.8M",
+                rating: 4.9,
+                recentDownloads: "+450K",
+                releaseDate: "2025-01-20",
+                features: ["推理能力", "链式思考", "多语言", "代码生成"],
+                trending: "🔥",
+                license: "MIT",
+                framework: "PyTorch"
+            },
+            {
+                id: "llama-3.3-70b",
+                name: "Llama 3.3 70B",
+                platform: "meta",
+                description: "Meta最新旗舰模型，128K上下文，多语言支持，性能超越GPT-3.5",
+                size: "70B",
+                downloads: "1.2M",
+                rating: 4.8,
+                recentDownloads: "+280K",
+                releaseDate: "2024-12-06",
+                features: ["超长上下文", "多语言", "工具调用", "安全对齐"],
+                trending: "⭐",
+                license: "Llama 3.3",
+                framework: "PyTorch"
+            },
+            {
+                id: "qwen2.5-72b",
+                name: "Qwen2.5-72B",
+                platform: "alibaba",
+                description: "阿里巴巴开源的顶级模型，支持29种语言，代码和数学能力突出",
+                size: "72B",
+                downloads: "1.1M",
+                rating: 4.8,
+                recentDownloads: "+220K",
+                releaseDate: "2024-09-19",
+                features: ["多语言", "代码生成", "数学推理", "工具调用"],
+                trending: "⭐",
+                license: "Apache 2.0",
+                framework: "PyTorch"
+            },
+            {
+                id: "exaone-4.0-32b",
+                name: "EXAONE-4.0-32B",
+                platform: "lg",
+                description: "LG最新开源模型，集成推理模式，支持英韩西三语，131K上下文",
+                size: "32B",
+                downloads: "890K",
+                rating: 4.7,
+                recentDownloads: "+156K",
+                releaseDate: "2025-07-26",
+                features: ["混合注意力", "推理模式", "多语言", "长上下文"],
+                trending: "🆕",
+                license: "Apache 2.0",
+                framework: "PyTorch"
+            },
+            {
+                id: "mistral-large-2",
+                name: "Mistral Large 2",
+                platform: "mistral",
+                description: "Mistral最新旗舰模型，128K上下文，代码和推理能力大幅提升",
+                size: "123B",
+                downloads: "780K",
+                rating: 4.7,
+                recentDownloads: "+134K",
+                releaseDate: "2024-07-24",
+                features: ["代码生成", "推理能力", "长上下文", "函数调用"],
+                trending: "🔥",
+                license: "Mistral Research",
+                framework: "PyTorch"
+            },
+            {
+                id: "gemma-2-27b",
+                name: "Gemma 2 27B",
+                platform: "google",
+                description: "Google开源的轻量级但强大的模型，27B参数实现SOTA性能",
+                size: "27B",
+                downloads: "920K",
+                rating: 4.6,
+                recentDownloads: "+180K",
+                releaseDate: "2024-06-27",
+                features: ["轻量级", "高效", "多语言", "移动端优化"],
+                trending: "📱",
+                license: "Gemma",
+                framework: "JAX/TensorFlow"
+            },
+            {
+                id: "command-r-08-2024",
+                name: "Command R 08-2024",
+                platform: "cohere",
+                description: "Cohere开源的32B参数模型，专为RAG优化，10语言支持",
+                size: "32B",
+                downloads: "650K",
+                rating: 4.6,
+                recentDownloads: "+98K",
+                releaseDate: "2024-08-26",
+                features: ["RAG优化", "多语言", "长上下文", "工具调用"],
+                trending: "📈",
+                license: "CC-BY-NC",
+                framework: "PyTorch"
+            },
+            {
+                id: "phi-3.5-mini",
+                name: "Phi-3.5-mini",
+                platform: "microsoft",
+                description: "微软超轻量级模型，3.8B参数但性能媲美更大模型，移动端友好",
+                size: "3.8B",
+                downloads: "1.5M",
+                rating: 4.5,
+                recentDownloads: "+290K",
+                releaseDate: "2024-08-20",
+                features: ["轻量级", "移动端", "低延迟", "量化支持"],
+                trending: "📱",
+                license: "MIT",
+                framework: "ONNX"
+            }
+        ];
+
+        let filteredModels = [...trendingModels];
+
+        function renderModels(models) {
+            const grid = document.getElementById('modelsGrid');
+            
+            if (models.length === 0) {
+                grid.innerHTML = '<div class="loading">没有找到匹配的模型</div>';
+                return;
+            }
+
+            const modelsHtml = models.map(model => `
+                <div class="model-trending-card">
+                    <div class="trending-badge">${model.trending}</div>
+                    <div class="model-header-img">
+                        ${model.name.charAt(0)}
+                    </div>
+                    <div class="model-info-section">
+                        <div class="model-platform">${model.platform.toUpperCase()}</div>
+                        <h3 class="model-name">${model.name}</h3>
+                        <p class="model-description">${model.description}</p>
+                        
+                        <div class="model-metrics">
+                            <div class="metric-item">
+                                <div class="metric-value">${model.size}</div>
+                                <div class="metric-label">参数规模</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">${model.downloads}</div>
+                                <div class="metric-label">总下载</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">${model.rating}</div>
+                                <div class="metric-label">评分</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">${model.recentDownloads}</div>
+                                <div class="metric-label">本周新增</div>
+                            </div>
+                        </div>
+
+                        <div class="feature-tags">
+                            ${model.features.map(feature => `<span class="feature-tag">${feature}</span>`).join('')}
+                            <span class="feature-tag">${model.framework}</span>
+                            <span class="feature-tag">${model.license}</span>
+                        </div>
+
+                        <div class="model-actions">
+                            <button class="btn btn-primary" onclick="viewModelDetails('${model.id}')">查看详情</button>
+                            <button class="btn btn-secondary" onclick="openModelPage('${model.id}')">访问平台</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            grid.innerHTML = `<div class="models-grid">${modelsHtml}</div>`;
+        }
+
+        function filterModels() {
+            const searchTerm = document.getElementById('searchModels').value.toLowerCase();
+            const sizeFilter = document.getElementById('sizeFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            const platformFilter = document.querySelector('.platform-tab.active').dataset.platform;
+
+            filteredModels = trendingModels.filter(model => {
+                const matchesSearch = model.name.toLowerCase().includes(searchTerm) || 
+                                    model.description.toLowerCase().includes(searchTerm) ||
+                                    model.features.some(f => f.toLowerCase().includes(searchTerm));
+                
+                const matchesSize = !sizeFilter || 
+                    (sizeFilter === 'small' && parseInt(model.size) < 10) ||
+                    (sizeFilter === 'medium' && parseInt(model.size) >= 10 && parseInt(model.size) <= 50) ||
+                    (sizeFilter === 'large' && parseInt(model.size) > 50);
+
+                const matchesPlatform = platformFilter === 'all' || model.platform === platformFilter;
+
+                return matchesSearch && matchesSize && matchesPlatform;
+            });
+
+            renderModels(filteredModels);
+        }
+
+        function sortModels() {
+            const sortBy = document.getElementById('sortBy').value;
+            
+            filteredModels.sort((a, b) => {
+                switch(sortBy) {
+                    case 'downloads':
+                        return parseInt(b.downloads.replace('M', '000000').replace('K', '000')) - 
+                               parseInt(a.downloads.replace('M', '000000').replace('K', '000'));
+                    case 'rating':
+                        return b.rating - a.rating;
+                    case 'recent':
+                        return new Date(b.releaseDate) - new Date(a.releaseDate);
+                    default:
+                        return 0;
+                }
+            });
+
+            renderModels(filteredModels);
+        }
+
+        function viewModelDetails(modelId) {
+            const model = trendingModels.find(m => m.id === modelId);
+            if (model) {
+                alert(`模型详情：${model.name}\n\n平台：${model.platform.toUpperCase()}\n规模：${model.size}\n发布日期：${model.releaseDate}\n许可证：${model.license}\n\n功能特色：\n${model.features.join(', ')}`);
+            }
+        }
+
+        function openModelPage(modelId) {
+            const modelUrls = {
+                'deepseek-r1': 'https://huggingface.co/deepseek-ai/DeepSeek-R1',
+                'llama-3.3-70b': 'https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct',
+                'exaone-4.0-32b': 'https://huggingface.co/LGAI-EXAONE/EXAONE-4.0-32B',
+                'command-r-08-2024': 'https://huggingface.co/CohereLabs/c4ai-command-r-08-2024',
+                'mistral-large-2': 'https://huggingface.co/mistralai/Mistral-Large-Instruct-2407',
+                'qwen2.5-72b': 'https://huggingface.co/Qwen/Qwen2.5-72B-Instruct',
+                'gemma-2-27b': 'https://huggingface.co/google/gemma-2-27b-it',
+                'phi-3.5-mini': 'https://huggingface.co/microsoft/Phi-3.5-mini-instruct'
+            };
+
+            const url = modelUrls[modelId];
+            if (url) {
+                window.open(url, '_blank');
+            }
+        }
+
+        // 事件监听器
+        document.getElementById('searchModels').addEventListener('input', filterModels);
+        document.getElementById('sizeFilter').addEventListener('change', filterModels);
+        document.getElementById('typeFilter').addEventListener('change', filterModels);
+        document.getElementById('sortBy').addEventListener('change', () => {
+            sortModels();
+        });
+
+        // 平台标签切换
+        document.querySelectorAll('.platform-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                filterModels();
+            });
+        });
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            renderModels(trendingModels);
+            
+            // 更新时间
+            const now = new Date();
+            document.getElementById('syncTime').textContent = now.toLocaleString('zh-CN');
+            
+            // 模拟实时更新
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('syncTime').textContent = now.toLocaleString('zh-CN');
+            }, 60000);
+        });
+    </script>
+</body>
+</html>

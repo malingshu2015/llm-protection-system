@@ -412,3 +412,203 @@
     width: 100%;
   }
 }
+
+/* ===== 模型市场样式 ===== */
+.market-content {
+  display: none;
+}
+
+.market-content.active {
+  display: block;
+}
+
+.market-search {
+  margin-bottom: var(--apple-spacing-xl);
+  position: relative;
+}
+
+.market-search input {
+  width: 100%;
+  padding: var(--apple-spacing-md) var(--apple-spacing-xl) var(--apple-spacing-md) var(--apple-spacing-md);
+  border: 2px solid var(--apple-border-color);
+  border-radius: var(--apple-border-radius);
+  background: var(--apple-bg-primary);
+  font-size: var(--apple-font-size-md);
+  transition: all var(--apple-transition-normal);
+}
+
+.market-search input:focus {
+  outline: none;
+  border-color: var(--apple-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.market-filters {
+  display: flex;
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-xl);
+  flex-wrap: wrap;
+}
+
+.market-filters select {
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+  border: 1px solid var(--apple-border-color);
+  border-radius: var(--apple-border-radius-sm);
+  background: var(--apple-bg-primary);
+  font-size: var(--apple-font-size-sm);
+  min-width: 120px;
+}
+
+.market-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--apple-spacing-md);
+  margin-bottom: var(--apple-spacing-xl);
+  padding: var(--apple-spacing-lg);
+  background: var(--apple-bg-secondary);
+  border-radius: var(--apple-border-radius);
+}
+
+.market-stat {
+  text-align: center;
+  padding: var(--apple-spacing-md);
+}
+
+.stat-value {
+  display: block;
+  font-size: var(--apple-font-size-2xl);
+  font-weight: 700;
+  color: var(--apple-primary);
+  margin-bottom: var(--apple-spacing-xs);
+}
+
+.stat-label {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-secondary);
+}
+
+.market-models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--apple-spacing-lg);
+  margin-bottom: var(--apple-spacing-xl);
+}
+
+.model-card {
+  background: var(--apple-bg-primary);
+  border-radius: var(--apple-border-radius);
+  box-shadow: var(--apple-shadow-sm);
+  overflow: hidden;
+  transition: all var(--apple-transition-normal);
+  border: 1px solid var(--apple-border-color);
+}
+
+.model-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--apple-shadow-md);
+  border-color: var(--apple-primary);
+}
+
+.model-card-header {
+  padding: var(--apple-spacing-lg);
+  border-bottom: 1px solid var(--apple-border-color);
+  background: linear-gradient(135deg, var(--apple-bg-secondary), var(--apple-bg-tertiary));
+}
+
+.model-card-name {
+  font-size: var(--apple-font-size-lg);
+  font-weight: 700;
+  color: var(--apple-text-primary);
+  margin-bottom: var(--apple-spacing-xs);
+}
+
+.model-card-description {
+  color: var(--apple-text-secondary);
+  line-height: 1.5;
+  margin-bottom: var(--apple-spacing-md);
+  font-size: var(--apple-font-size-sm);
+}
+
+.model-card-meta {
+  display: flex;
+  gap: var(--apple-spacing-md);
+  font-size: var(--apple-font-size-xs);
+  color: var(--apple-text-secondary);
+}
+
+.model-card-body {
+  padding: var(--apple-spacing-lg);
+}
+
+.model-card-stats {
+  display: flex;
+  gap: var(--apple-spacing-lg);
+  margin-bottom: var(--apple-spacing-md);
+}
+
+.model-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.model-stat-value {
+  font-size: var(--apple-font-size-lg);
+  font-weight: 700;
+  color: var(--apple-primary);
+}
+
+.model-stat-label {
+  font-size: var(--apple-font-size-xs);
+  color: var(--apple-text-secondary);
+}
+
+.model-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--apple-spacing-xs);
+  margin-bottom: var(--apple-spacing-md);
+}
+
+.model-tag {
+  background: var(--apple-bg-secondary);
+  padding: var(--apple-spacing-xs) var(--apple-spacing-sm);
+  border-radius: var(--apple-border-radius-sm);
+  font-size: var(--apple-font-size-xs);
+  color: var(--apple-text-secondary);
+}
+
+.model-card-actions {
+  display: flex;
+  gap: var(--apple-spacing-xs);
+}
+
+.market-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--apple-spacing-md);
+  margin-top: var(--apple-spacing-xl);
+}
+
+.page-info {
+  font-size: var(--apple-font-size-sm);
+  color: var(--apple-text-secondary);
+}
+
+
+
+/* 加载状态 */
+.loading {
+  text-align: center;
+  padding: var(--apple-spacing-2xl);
+  color: var(--apple-text-secondary);
+  font-style: italic;
+}
+
+.error {
+  text-align: center;
+  padding: var(--apple-spacing-2xl);
+  color: var(--apple-red);
+  font-weight: 500;
+}

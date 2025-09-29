@@ -128,7 +128,7 @@ class WebConfig(BaseSettings):
     """Web interface configuration."""
 
     host: str = Field(default="0.0.0.0")
-    port: int = Field(default=8081)
+    port: int = Field(default=8082)
     secret_key: str = Field(default_factory=lambda: os.urandom(24).hex())
     token_expire_minutes: int = Field(default=60)
 

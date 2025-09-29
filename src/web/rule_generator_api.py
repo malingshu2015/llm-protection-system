@@ -79,8 +79,30 @@ class RuleGeneratorService:
             try:
                 with open(rule_file, 'r', encoding='utf-8') as f:
                     rules = json.load(f)
-                    for rule in rules:
-                        self.existing_rules[rule['id']] = rule
+                    
+                    # 处理不同格式的规则文件
+                    if rule_file == 'rules/sensitive_info.json':
+                        # sensitive_info.json 是字典格式，需要转换为规则格式
+                        for rule_id, patterns in rules.items():
+                            rule = {
+                                'id': f'si-{rule_id}',
+                                'name': f'敏感信息: {rule_id}',
+                                'description': f'检测文本中的敏感信息: {rule_id}',
+                                'detection_type': 'sensitive_info',
+                                'severity': 'high',
+                                'patterns': patterns,
+                                'keywords': [rule_id],
+                                'enabled': True,
+                                'block': True
+                            }
+                            self.existing_rules[rule['id']] = rule
+                    else:
+                        # 其他文件是规则数组格式
+                        if isinstance(rules, list):
+                            for rule in rules:
+                                self.existing_rules[rule['id']] = rule
+                        else:
+                            logger.warning(f"规则文件格式不正确: {rule_file}")
             except FileNotFoundError:
                 logger.warning(f"规则文件不存在: {rule_file}")
             except Exception as e:

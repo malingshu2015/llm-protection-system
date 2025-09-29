@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>JavaScript错误调试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .error { color: red; background: #ffe6e6; padding: 10px; margin: 5px 0; border: 1px solid red; }
+        .success { color: green; background: #e8f5e8; padding: 10px; margin: 5px 0; border: 1px solid green; }
+    </style>
+</head>
+<body>
+    <h1>JavaScript错误调试器</h1>
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        // 捕获所有错误
+        window.addEventListener('error', (e) => {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `
+                <strong>JavaScript错误:</strong><br>
+                消息: ${e.message}<br>
+                文件: ${e.filename}<br>
+                行号: ${e.lineno}<br>
+                列号: ${e.colno}
+            `;
+            output.appendChild(errorDiv);
+            console.error('捕获到错误:', e);
+        });
+
+        // 捕获Promise拒绝
+        window.addEventListener('unhandledrejection', (e) => {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `
+                <strong>Promise拒绝:</strong><br>
+                原因: ${e.reason}
+            `;
+            output.appendChild(errorDiv);
+            console.error('捕获到Promise拒绝:', e.reason);
+        });
+
+        // 测试加载模型市场脚本
+        const script = document.createElement('script');
+        script.src = '/static/js/model-market-integration.js';
+        script.onload = () => {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.innerHTML = '✓ 模型市场脚本加载成功';
+            output.appendChild(successDiv);
+            
+            // 检查全局对象
+            setTimeout(() => {
+                if (typeof window.modelMarket !== 'undefined') {
+                    const objDiv = document.createElement('div');
+                    objDiv.className = 'success';
+                    objDiv.innerHTML = '✓ modelMarket全局对象已创建';
+                    output.appendChild(objDiv);
+                } else {
+                    const objDiv = document.createElement('div');
+                    objDiv.className = 'error';
+                    objDiv.innerHTML = '✗ modelMarket全局对象未创建';
+                    output.appendChild(objDiv);
+                }
+            }, 100);
+        };
+
+        script.onerror = (e) => {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = '✗ 模型市场脚本加载失败';
+            output.appendChild(errorDiv);
+            console.error('脚本加载失败:', e);
+        };
+
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

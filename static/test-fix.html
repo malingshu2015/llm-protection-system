@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修复验证测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>模型市场修复验证</h1>
+    
+    <div>
+        <button onclick="testAllAPIs()">测试所有API端点</button>
+        <button onclick="testJavaScript()">测试JavaScript功能</button>
+        <button onclick="location.href='/static/admin/models.html?model-market'">直接访问模型市场</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        async function testAllAPIs() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="test-result">正在测试API端点...</div>';
+
+            const endpoints = [
+                { url: '/api/v1/models/stats/summary', name: '统计API' },
+                { url: '/api/v1/models?page=1&page_size=3', name: '模型列表API' },
+                { url: '/api/v1/ollama/models', name: 'Ollama模型API' }
+            ];
+
+            for (const endpoint of endpoints) {
+                const result = await testAPI(endpoint.url, endpoint.name);
+                resultsDiv.innerHTML += result;
+            }
+        }
+
+        async function testAPI(url, name) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': 'Bearer cherry-studio-key'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return `
+                        <div class="test-result success">
+                            ✅ ${name} 测试成功
+                            <div>URL: ${url}</div>
+                            <div>状态: ${response.status}</div>
+                            <div>数据: ${JSON.stringify(data).substring(0, 100)}...</div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="test-result error">
+                            ❌ ${name} 测试失败
+                            <div>URL: ${url}</div>
+                            <div>状态: ${response.status}</div>
+                            <div>错误: ${await response.text()}</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                return `
+                    <div class="test-result error">
+                        ❌ ${name} 测试异常
+                        <div>URL: ${url}</div>
+                        <div>错误: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function testJavaScript() {
+            const resultsDiv = document.getElementById('results');
+            
+            // 动态加载修复后的JavaScript文件
+            const script = document.createElement('script');
+            script.src = '/static/js/model-market-integration-fixed.js';
+            
+            script.onload = function() {
+                if (typeof modelMarket !== 'undefined') {
+                    resultsDiv.innerHTML = `
+                        <div class="test-result success">
+                            ✅ JavaScript加载成功
+                            <div>modelMarket对象已创建</div>
+                            <div>类型: ${typeof modelMarket}</div>
+                        </div>
+                    `;
+                    
+                    // 测试API调用
+                    testMarketStats();
+                }
+            };
+            
+            script.onerror = function() {
+                resultsDiv.innerHTML = `
+                    <div class="test-result error">
+                        ❌ JavaScript加载失败
+                        <div>文件路径: /static/js/model-market-integration-fixed.js</div>
+                        <div>请检查文件是否存在</div>
+                    </div>
+                `;
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        async function testMarketStats() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                const stats = await modelMarket.fetchMarketStats();
+                resultsDiv.innerHTML += `
+                    <div class="test-result success">
+                        ✅ 模型统计API调用成功
+                        <div>总模型数: ${stats.total_models}</div>
+                        <div>总下载数: ${stats.total_downloads}</div>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="test-result error">
+                        ❌ 模型统计API调用失败
+                        <div>错误: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

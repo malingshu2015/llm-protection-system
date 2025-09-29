@@ -1,5 +1,43 @@
 [
   {
+    "event_id": "event-1756709213-215",
+    "timestamp": 1756709213.7209668,
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "reason": "Detected Unicode Character Evasion: stan",
+    "details": {
+      "rule_id": "pi-007",
+      "rule_name": "Unicode Character Evasion",
+      "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+      "matched_text": "stan"
+    },
+    "content": "Detected Unicode Character Evasion: stan",
+    "rule_id": "pi-007",
+    "rule_name": "Unicode Character Evasion",
+    "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+    "matched_text": "stan",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756563260-214",
+    "timestamp": 1756563260.035688,
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "reason": "Detected Unicode Character Evasion: stan",
+    "details": {
+      "rule_id": "pi-007",
+      "rule_name": "Unicode Character Evasion",
+      "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+      "matched_text": "stan"
+    },
+    "content": "Detected Unicode Character Evasion: stan",
+    "rule_id": "pi-007",
+    "rule_name": "Unicode Character Evasion",
+    "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
+    "matched_text": "stan",
+    "matched_keyword": null
+  },
+  {
     "event_id": "event-1756563139-213",
     "timestamp": 1756563139.7102761,
     "detection_type": "prompt_injection",
@@ -3918,22 +3956,41 @@
     "matched_keyword": "STAN"
   },
   {
-    "event_id": "event-1756563260-214",
-    "timestamp": 1756563260.035688,
-    "detection_type": "prompt_injection",
+    "event_id": "event-1756814811-216",
+    "timestamp": 1756814811.1571782,
+    "detection_type": "content_monitoring",
     "severity": "high",
-    "reason": "Detected Unicode Character Evasion: stan",
+    "reason": "Detected \u81ea\u52a8\u751f\u6210_\u672a\u77e5\u7c7b\u578b_\u9ec4\u8272\u7b11\u8bdd_\u4e00\u4e2a: \u7ed9\u6211\u8bb2\u4e00\u4e2a\u9ec4\u8272\u5c0f\u6545\u4e8b",
     "details": {
-      "rule_id": "pi-007",
-      "rule_name": "Unicode Character Evasion",
-      "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
-      "matched_text": "stan"
+      "rule_id": "ag-mo-ba79fde2",
+      "rule_name": "\u81ea\u52a8\u751f\u6210_\u672a\u77e5\u7c7b\u578b_\u9ec4\u8272\u7b11\u8bdd_\u4e00\u4e2a",
+      "matched_pattern": "(?i).*\u9ec4\u8272.*(?:\u7b11\u8bdd|\u6545\u4e8b|\u5c0f\u8bf4).*",
+      "matched_text": "\u7ed9\u6211\u8bb2\u4e00\u4e2a\u9ec4\u8272\u5c0f\u6545\u4e8b"
     },
-    "content": "Detected Unicode Character Evasion: stan",
-    "rule_id": "pi-007",
-    "rule_name": "Unicode Character Evasion",
-    "matched_pattern": "(?i)\\u0053\\u0054\\u0041\\u004e",
-    "matched_text": "stan",
+    "content": "Detected \u81ea\u52a8\u751f\u6210_\u672a\u77e5\u7c7b\u578b_\u9ec4\u8272\u7b11\u8bdd_\u4e00\u4e2a: \u7ed9\u6211\u8bb2\u4e00\u4e2a\u9ec4\u8272\u5c0f\u6545\u4e8b",
+    "rule_id": "ag-mo-ba79fde2",
+    "rule_name": "\u81ea\u52a8\u751f\u6210_\u672a\u77e5\u7c7b\u578b_\u9ec4\u8272\u7b11\u8bdd_\u4e00\u4e2a",
+    "matched_pattern": "(?i).*\u9ec4\u8272.*(?:\u7b11\u8bdd|\u6545\u4e8b|\u5c0f\u8bf4).*",
+    "matched_text": "\u7ed9\u6211\u8bb2\u4e00\u4e2a\u9ec4\u8272\u5c0f\u6545\u4e8b",
+    "matched_keyword": null
+  },
+  {
+    "event_id": "event-1756814827-217",
+    "timestamp": 1756814827.683889,
+    "detection_type": "content_monitoring",
+    "severity": "high",
+    "reason": "Detected \u81ea\u52a8\u751f\u6210_\u672a\u77e5\u7c7b\u578b_\u9ec4\u8272\u7b11\u8bdd_\u4e00\u4e2a: \u4e00\u4e2a",
+    "details": {
+      "rule_id": "ag-mo-ba79fde2",
+      "rule_name": "\u81ea\u52a8\u751f\u6210_\u672a\u77e5\u7c7b\u578b_\u9ec4\u8272\u7b11\u8bdd_\u4e00\u4e2a",
+      "matched_pattern": "(?i)\u4e00\u4e2a",
+      "matched_text": "\u4e00\u4e2a"
+    },
+    "content": "Detected \u81ea\u52a8\u751f\u6210_\u672a\u77e5\u7c7b\u578b_\u9ec4\u8272\u7b11\u8bdd_\u4e00\u4e2a: \u4e00\u4e2a",
+    "rule_id": "ag-mo-ba79fde2",
+    "rule_name": "\u81ea\u52a8\u751f\u6210_\u672a\u77e5\u7c7b\u578b_\u9ec4\u8272\u7b11\u8bdd_\u4e00\u4e2a",
+    "matched_pattern": "(?i)\u4e00\u4e2a",
+    "matched_text": "\u4e00\u4e2a",
     "matched_keyword": null
   }
 ]

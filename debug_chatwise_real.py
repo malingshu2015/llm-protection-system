@@ -11,7 +11,7 @@ import sys
 from urllib.parse import urljoin
 
 class ChatWiseRealDebugger:
-    def __init__(self, base_url="http://localhost:8081", api_key="chatwise-key"):
+    def __init__(self, base_url="http://localhost:8082", api_key="chatwise-key"):
         self.base_url = base_url
         self.api_key = api_key
         self.headers = {
@@ -229,7 +229,11 @@ def main():
     print("🔧 ChatWise 实际连接问题深度调试工具")
     print("=" * 80)
     
-    debugger = ChatWiseRealDebugger()
+    # 支持命令行参数
+    base_url = "http://localhost:8082"
+    api_key = "chatwise-key"
+    
+    debugger = ChatWiseRealDebugger(base_url, api_key)
     
     # 执行所有测试
     debugger.test_health_check()

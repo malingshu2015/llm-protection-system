@@ -43,8 +43,10 @@ demo-key-12345       # 演示和测试密钥
 
 **API基础地址:**
 ```
-http://localhost:8081/v1
+http://localhost:8082/v1
 ```
+
+**注意**: 如果您之前配置的是8081端口，请更新为8082端口。
 
 **API密钥 (选择其一):**
 ```
@@ -93,7 +95,7 @@ Content-Type: application/json
 
 ```bash
 # 测试chatwise-key
-curl -X POST "http://localhost:8081/v1/chat/completions" \
+curl -X POST "http://localhost:8082/v1/chat/completions" \
   -H "Authorization: Bearer chatwise-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -103,7 +105,7 @@ curl -X POST "http://localhost:8081/v1/chat/completions" \
   }'
 
 # 测试api_key_123456  
-curl -X POST "http://localhost:8081/v1/chat/completions" \
+curl -X POST "http://localhost:8082/v1/chat/completions" \
   -H "Authorization: Bearer api_key_123456" \
   -H "Content-Type: application/json" \
   -d '{
@@ -117,7 +119,7 @@ curl -X POST "http://localhost:8081/v1/chat/completions" \
 
 ```bash
 curl -H "Authorization: Bearer chatwise-key" \
-  http://localhost:8081/v1/models
+  http://localhost:8082/v1/models
 ```
 
 ## 🚀 性能优化建议
@@ -150,8 +152,8 @@ curl -H "Authorization: Bearer chatwise-key" \
 #### 2. 连接超时
 **原因**: 防火墙系统未启动或端口被占用
 **解决方案**:
-- 确认防火墙系统在 http://localhost:8081 正常运行
-- 检查端口8081是否被其他程序占用
+- 确认防火墙系统在 http://localhost:8082 正常运行
+- 检查端口8082是否被其他程序占用
 
 #### 3. 模型不可用
 **原因**: 请求的模型未安装或服务异常
@@ -170,17 +172,17 @@ curl -H "Authorization: Bearer chatwise-key" \
 ### 1. 系统监控
 访问管理界面查看实时状态:
 ```
-http://localhost:8081/static/admin/index.html
+http://localhost:8082/static/admin/index.html
 ```
 
 ### 2. API状态检查
 ```bash
-curl http://localhost:8081/health
+curl http://localhost:8082/health
 ```
 
 ### 3. 实时监控
 ```
-http://localhost:8081/static/admin/monitor.html
+http://localhost:8082/static/admin/monitor.html
 ```
 
 ## 🔒 安全注意事项
@@ -204,7 +206,7 @@ http://localhost:8081/static/admin/monitor.html
 
 如果遇到问题，请按以下步骤操作：
 
-1. **检查系统状态**: 访问 http://localhost:8081/health
+1. **检查系统状态**: 访问 http://localhost:8082/health
 2. **查看错误日志**: 检查系统终端输出或 server.log 文件
 3. **测试API连接**: 使用curl命令验证基本连接
 4. **查看监控数据**: 访问管理界面检查实时状态

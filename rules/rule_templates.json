@@ -1,8 +1,8 @@
 [
   {
     "id": "high_security",
-    "name": "高安全级别模板",
-    "description": "适用于高安全要求场景的规则集，启用所有关键安全规则，严格控制模型输出",
+    "name": "\u9ad8\u5b89\u5168\u7ea7\u522b\u6a21\u677f",
+    "description": "\u9002\u7528\u4e8e\u9ad8\u5b89\u5168\u8981\u6c42\u573a\u666f\u7684\u89c4\u5219\u96c6\uff0c\u542f\u7528\u6240\u6709\u5173\u952e\u5b89\u5168\u89c4\u5219\uff0c\u4e25\u683c\u63a7\u5236\u6a21\u578b\u8f93\u51fa",
     "rules": [
       {
         "rule_id": "pi-001",
@@ -81,67 +81,28 @@
       }
     ],
     "category": "security",
-    "created_at": "2025-04-21T07:30:00Z"
+    "created_at": "2025-04-21T07:30:00Z",
+    "updated_at": "2025-08-31T11:20:33.861559"
   },
   {
     "id": "medium_security",
-    "name": "中安全级别模板",
-    "description": "适用于一般安全要求场景的规则集，平衡安全性和模型功能性",
+    "name": "Medium Security Updated",
+    "description": "Updated medium security template",
     "rules": [
       {
         "rule_id": "pi-001",
         "enabled": true,
         "priority": 10
-      },
-      {
-        "rule_id": "pi-003",
-        "enabled": true,
-        "priority": 5
-      },
-      {
-        "rule_id": "jb-001",
-        "enabled": true,
-        "priority": 5
-      },
-      {
-        "rule_id": "jb-002",
-        "enabled": true,
-        "priority": 5
-      },
-      {
-        "rule_id": "hc-001",
-        "enabled": true,
-        "priority": 15
-      },
-      {
-        "rule_id": "hc-004",
-        "enabled": true,
-        "priority": 18
-      },
-      {
-        "rule_id": "hc-005",
-        "enabled": true,
-        "priority": 19
-      },
-      {
-        "rule_id": "si-001",
-        "enabled": true,
-        "priority": 20
-      },
-      {
-        "rule_id": "comp-001",
-        "enabled": true,
-        "priority": 30
       }
     ],
     "category": "security",
     "created_at": "2025-04-21T07:30:00Z",
-    "updated_at": "2025-04-27T09:30:00Z"
+    "updated_at": "2025-08-31T11:49:45.268785"
   },
   {
     "id": "low_security",
-    "name": "低安全级别模板",
-    "description": "适用于低安全要求场景的规则集，仅启用基本安全规则，最大化模型功能性",
+    "name": "\u4f4e\u5b89\u5168\u7ea7\u522b\u6a21\u677f",
+    "description": "\u9002\u7528\u4e8e\u4f4e\u5b89\u5168\u8981\u6c42\u573a\u666f\u7684\u89c4\u5219\u96c6\uff0c\u4ec5\u542f\u7528\u57fa\u672c\u5b89\u5168\u89c4\u5219\uff0c\u6700\u5927\u5316\u6a21\u578b\u529f\u80fd\u6027",
     "rules": [
       {
         "rule_id": "jb-001",
@@ -175,8 +136,8 @@
   },
   {
     "id": "custom_template",
-    "name": "自定义安全模板",
-    "description": "可根据特定需求自定义的规则集模板，默认包含一些常用规则",
+    "name": "\u81ea\u5b9a\u4e49\u5b89\u5168\u6a21\u677f",
+    "description": "\u53ef\u6839\u636e\u7279\u5b9a\u9700\u6c42\u81ea\u5b9a\u4e49\u7684\u89c4\u5219\u96c6\u6a21\u677f\uff0c\u9ed8\u8ba4\u5305\u542b\u4e00\u4e9b\u5e38\u7528\u89c4\u5219",
     "rules": [
       {
         "rule_id": "pi-001",
@@ -200,12 +161,13 @@
       }
     ],
     "category": "custom",
-    "created_at": "2025-04-21T07:30:00Z"
+    "created_at": "2025-04-21T07:30:00Z",
+    "updated_at": "2025-08-31T11:20:33.861571"
   },
   {
     "id": "strict_security",
-    "name": "严格安全模板",
-    "description": "适用于最高安全要求场景的规则集，启用所有安全规则，严格控制模型输出",
+    "name": "\u4e25\u683c\u5b89\u5168\u6a21\u677f",
+    "description": "\u9002\u7528\u4e8e\u6700\u9ad8\u5b89\u5168\u8981\u6c42\u573a\u666f\u7684\u89c4\u5219\u96c6\uff0c\u542f\u7528\u6240\u6709\u5b89\u5168\u89c4\u5219\uff0c\u4e25\u683c\u63a7\u5236\u6a21\u578b\u8f93\u51fa",
     "rules": [
       {
         "rule_id": "pi-001",
@@ -309,8 +271,8 @@
   },
   {
     "id": "education_template",
-    "name": "教育场景模板",
-    "description": "适用于教育场景的规则集，平衡安全性和教育功能，允许讨论敏感话题但防止有害内容",
+    "name": "\u6559\u80b2\u573a\u666f\u6a21\u677f",
+    "description": "\u9002\u7528\u4e8e\u6559\u80b2\u573a\u666f\u7684\u89c4\u5219\u96c6\uff0c\u5e73\u8861\u5b89\u5168\u6027\u548c\u6559\u80b2\u529f\u80fd\uff0c\u5141\u8bb8\u8ba8\u8bba\u654f\u611f\u8bdd\u9898\u4f46\u9632\u6b62\u6709\u5bb3\u5185\u5bb9",
     "rules": [
       {
         "rule_id": "jb-001",
@@ -344,12 +306,13 @@
       }
     ],
     "category": "education",
-    "created_at": "2025-04-27T09:30:00Z"
+    "created_at": "2025-04-27T09:30:00Z",
+    "updated_at": "2025-08-31T11:20:33.861577"
   },
   {
     "id": "research_template",
-    "name": "研究场景模板",
-    "description": "适用于研究场景的规则集，最小化限制但保留关键安全规则，适合学术研究和技术探索",
+    "name": "\u7814\u7a76\u573a\u666f\u6a21\u677f",
+    "description": "\u9002\u7528\u4e8e\u7814\u7a76\u573a\u666f\u7684\u89c4\u5219\u96c6\uff0c\u6700\u5c0f\u5316\u9650\u5236\u4f46\u4fdd\u7559\u5173\u952e\u5b89\u5168\u89c4\u5219\uff0c\u9002\u5408\u5b66\u672f\u7814\u7a76\u548c\u6280\u672f\u63a2\u7d22",
     "rules": [
       {
         "rule_id": "jb-001",
@@ -373,12 +336,13 @@
       }
     ],
     "category": "research",
-    "created_at": "2025-04-27T09:30:00Z"
+    "created_at": "2025-04-27T09:30:00Z",
+    "updated_at": "2025-08-31T11:20:33.861579"
   },
   {
     "id": "adult_content_template",
-    "name": "成人内容检测模板",
-    "description": "专门检测色情、成人内容和不当性暗示的规则模板，适用于需要严格内容审核的场景",
+    "name": "\u6210\u4eba\u5185\u5bb9\u68c0\u6d4b\u6a21\u677f",
+    "description": "\u4e13\u95e8\u68c0\u6d4b\u8272\u60c5\u3001\u6210\u4eba\u5185\u5bb9\u548c\u4e0d\u5f53\u6027\u6697\u793a\u7684\u89c4\u5219\u6a21\u677f\uff0c\u9002\u7528\u4e8e\u9700\u8981\u4e25\u683c\u5185\u5bb9\u5ba1\u6838\u7684\u573a\u666f",
     "rules": [
       {
         "rule_id": "ac-001",
@@ -408,13 +372,12 @@
     ],
     "category": "content-safety",
     "created_at": "2025-08-05T10:00:00Z",
-    "icon": "🔞",
-    "wizard_description": "检测色情和成人内容相关输入"
+    "updated_at": "2025-08-31T11:20:33.861581"
   },
   {
     "id": "political_sensitive_template",
-    "name": "政治敏感内容检测模板",
-    "description": "检测政治敏感言论、极端政治观点和可能引起争议的政治内容，维护平台中立性",
+    "name": "\u653f\u6cbb\u654f\u611f\u5185\u5bb9\u68c0\u6d4b\u6a21\u677f",
+    "description": "\u68c0\u6d4b\u653f\u6cbb\u654f\u611f\u8a00\u8bba\u3001\u6781\u7aef\u653f\u6cbb\u89c2\u70b9\u548c\u53ef\u80fd\u5f15\u8d77\u4e89\u8bae\u7684\u653f\u6cbb\u5185\u5bb9\uff0c\u7ef4\u62a4\u5e73\u53f0\u4e2d\u7acb\u6027",
     "rules": [
       {
         "rule_id": "ps-001",
@@ -444,13 +407,12 @@
     ],
     "category": "compliance",
     "created_at": "2025-08-05T10:00:00Z",
-    "icon": "🏛️",
-    "wizard_description": "检测政治敏感和争议性政治言论"
+    "updated_at": "2025-08-31T11:20:33.861583"
   },
   {
     "id": "hate_speech_template",
-    "name": "仇恨言论检测模板",
-    "description": "识别和阻止基于种族、性别、宗教、性取向等的仇恨言论和歧视性内容",
+    "name": "\u4ec7\u6068\u8a00\u8bba\u68c0\u6d4b\u6a21\u677f",
+    "description": "\u8bc6\u522b\u548c\u963b\u6b62\u57fa\u4e8e\u79cd\u65cf\u3001\u6027\u522b\u3001\u5b97\u6559\u3001\u6027\u53d6\u5411\u7b49\u7684\u4ec7\u6068\u8a00\u8bba\u548c\u6b67\u89c6\u6027\u5185\u5bb9",
     "rules": [
       {
         "rule_id": "hs-001",
@@ -480,13 +442,12 @@
     ],
     "category": "content-safety",
     "created_at": "2025-08-05T10:00:00Z",
-    "icon": "⚖️",
-    "wizard_description": "检测仇恨言论和歧视性内容"
+    "updated_at": "2025-08-31T11:20:33.861585"
   },
   {
     "id": "violence_content_template",
-    "name": "暴力内容检测模板",
-    "description": "检测暴力威胁、伤害指导和极端暴力内容，保护用户安全",
+    "name": "\u66b4\u529b\u5185\u5bb9\u68c0\u6d4b\u6a21\u677f",
+    "description": "\u68c0\u6d4b\u66b4\u529b\u5a01\u80c1\u3001\u4f24\u5bb3\u6307\u5bfc\u548c\u6781\u7aef\u66b4\u529b\u5185\u5bb9\uff0c\u4fdd\u62a4\u7528\u6237\u5b89\u5168",
     "rules": [
       {
         "rule_id": "vc-001",
@@ -516,13 +477,12 @@
     ],
     "category": "content-safety",
     "created_at": "2025-08-05T10:00:00Z",
-    "icon": "⚠️",
-    "wizard_description": "检测暴力威胁和极端暴力内容"
+    "updated_at": "2025-08-31T11:20:33.861588"
   },
   {
     "id": "drug_substance_template",
-    "name": "毒品药物滥用检测模板",
-    "description": "检测毒品制造、药物滥用和非法物质相关内容，防止有害信息传播",
+    "name": "\u6bd2\u54c1\u836f\u7269\u6ee5\u7528\u68c0\u6d4b\u6a21\u677f",
+    "description": "\u68c0\u6d4b\u6bd2\u54c1\u5236\u9020\u3001\u836f\u7269\u6ee5\u7528\u548c\u975e\u6cd5\u7269\u8d28\u76f8\u5173\u5185\u5bb9\uff0c\u9632\u6b62\u6709\u5bb3\u4fe1\u606f\u4f20\u64ad",
     "rules": [
       {
         "rule_id": "ds-001",
@@ -547,13 +507,12 @@
     ],
     "category": "content-safety",
     "created_at": "2025-08-05T10:00:00Z",
-    "icon": "💊",
-    "wizard_description": "检测毒品和药物滥用相关内容"
+    "updated_at": "2025-08-31T11:20:33.861592"
   },
   {
     "id": "financial_fraud_template",
-    "name": "金融诈骗检测模板",
-    "description": "识别金融诈骗、投资欺诈和非法金融活动相关内容，保护用户财产安全",
+    "name": "\u91d1\u878d\u8bc8\u9a97\u68c0\u6d4b\u6a21\u677f",
+    "description": "\u8bc6\u522b\u91d1\u878d\u8bc8\u9a97\u3001\u6295\u8d44\u6b3a\u8bc8\u548c\u975e\u6cd5\u91d1\u878d\u6d3b\u52a8\u76f8\u5173\u5185\u5bb9\uff0c\u4fdd\u62a4\u7528\u6237\u8d22\u4ea7\u5b89\u5168",
     "rules": [
       {
         "rule_id": "ff-001",
@@ -578,13 +537,12 @@
     ],
     "category": "security",
     "created_at": "2025-08-05T10:00:00Z",
-    "icon": "🏦",
-    "wizard_description": "检测金融诈骗和投资欺诈内容"
+    "updated_at": "2025-08-31T11:20:33.861595"
   },
   {
     "id": "minor_protection_template",
-    "name": "未成年人保护模板",
-    "description": "专门保护未成年人的安全规则模板，严格过滤可能对儿童有害的内容",
+    "name": "\u672a\u6210\u5e74\u4eba\u4fdd\u62a4\u6a21\u677f",
+    "description": "\u4e13\u95e8\u4fdd\u62a4\u672a\u6210\u5e74\u4eba\u7684\u5b89\u5168\u89c4\u5219\u6a21\u677f\uff0c\u4e25\u683c\u8fc7\u6ee4\u53ef\u80fd\u5bf9\u513f\u7ae5\u6709\u5bb3\u7684\u5185\u5bb9",
     "rules": [
       {
         "rule_id": "mp-001",
@@ -619,7 +577,6 @@
     ],
     "category": "child-safety",
     "created_at": "2025-08-05T10:00:00Z",
-    "icon": "👶",
-    "wizard_description": "针对未成年人的全面安全保护"
+    "updated_at": "2025-08-31T11:20:33.861597"
   }
 ]

@@ -11,7 +11,7 @@ import time
 from urllib.parse import urljoin
 
 class ChatWiseTroubleshooter:
-    def __init__(self, base_url="http://localhost:8081", api_key="chatwise-key"):
+    def __init__(self, base_url="http://localhost:8082", api_key="chatwise-key"):
         self.base_url = base_url
         self.api_key = api_key
         self.headers = {
@@ -269,7 +269,7 @@ def main():
     print("=" * 80)
     
     # 支持命令行参数
-    base_url = "http://localhost:8081"
+    base_url = "http://localhost:8082"
     api_key = "chatwise-key"
     
     if len(sys.argv) > 1:
