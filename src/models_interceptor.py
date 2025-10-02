@@ -97,6 +97,7 @@ class InterceptedRequest(BaseModel):
     timestamp: float = 0.0
     client_ip: str = ""
     provider: str = ""
+    path: str = ""  # 添加path字段，默认为空字符串
 
 
 class InterceptedResponse(BaseModel):
