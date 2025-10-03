@@ -8,7 +8,12 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>模型管理 - 本地大模型防护系统</title>
+
+    <!-- 认证模块 (必须最先加载) -->
+    <script src="/static/admin/js/auth-check.js"></script>
+
     <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/auth-header.css">
     <link rel="stylesheet" href="/static/admin/css/wizard.css">
     <script src="/static/admin/js/apple-ui.js" defer></script>
     <script src="/static/admin/js/model-config-wizard.js" defer></script>
@@ -1373,6 +1378,15 @@
 </head>
 
 <body>
+    <!-- 认证头部 -->
+    <div class="auth-header">
+        <div class="auth-header-logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>LLM 防护系统 - 模型管理</span>
+        </div>
+        <div id="currentUser"></div>
+    </div>
+
     <div class="container">
         <!-- 侧边栏 -->
         <aside class="sidebar">
@@ -1744,10 +1758,24 @@
         let modelsData = [];
         let summaryData = null;
 
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeModelsPage();
-            handleUrlParameters();
+        // 初始化认证和页面
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 先进行认证检查
+            const authenticated = await authManager.init({
+                userElementId: 'currentUser',
+                autoRefresh: true,
+                requiredRole: 'developer',
+                onAuthSuccess: (user) => {
+                    console.log('用户认证成功:', user.username);
+                    // 认证成功后初始化模型管理页面
+                    initializeModelsPage();
+                    handleUrlParameters();
+                }
+            });
+
+            if (!authenticated) {
+                return; // 认证失败会自动跳转到登录页
+            }
         });
         
         // 处理URL参数
@@ -1774,7 +1802,7 @@
 
         async function loadSummaryData() {
             try {
-                const response = await fetch('/api/v1/enhanced-models/summary');
+                const response = await authManager.authenticatedFetch('/api/v1/enhanced-models/summary');
                 if (!response.ok) throw new Error('获取概览数据失败');
                 summaryData = await response.json();
             } catch (error) {
@@ -1791,11 +1819,7 @@
 
         async function loadModelsData() {
             try {
-                const response = await fetch('/api/v1/ollama/models', {
-                    headers: {
-                        'Authorization': 'Bearer cherry-studio-key'
-                    }
-                });
+                const response = await authManager.authenticatedFetch('/api/v1/ollama/models');
                 if (!response.ok) throw new Error('获取模型列表失败');
                 const data = await response.json();
                 modelsData = data.data || []; // OpenAI格式使用data字段
@@ -1815,7 +1839,7 @@
                 // 为每个模型获取安全评分
                 for (let model of modelsData) {
                     try {
-                        const scoreResponse = await fetch(`/api/v1/enhanced-models/security-score/${model.model}`);
+                        const scoreResponse = await authManager.authenticatedFetch(`/api/v1/enhanced-models/security-score/${model.model}`);
                         if (scoreResponse.ok) {
                             const scoreData = await scoreResponse.json();
                             model.securityScore = scoreData.risk_score;
@@ -2295,10 +2319,10 @@
         async function loadMarketModels() {
             const modalContent = document.getElementById('modal-content');
             if (!modalContent) return;
-            
+
             try {
                 console.log('🔍 正在请求模型市场数据...');
-                const response = await fetch('/api/v1/models');
+                const response = await authManager.authenticatedFetch('/api/v1/models');
                 console.log('📡 响应状态:', response.status);
                 
                 if (!response.ok) {
@@ -2525,7 +2549,7 @@
         async function downloadMarketModel(modelId) {
             try {
                 console.log('🔍 开始下载模型:', modelId);
-                const response = await fetch(`/api/v1/models/${modelId}/download`, {
+                const response = await authManager.authenticatedFetch(`/api/v1/models/${modelId}/download`, {
                     method: 'POST'
                 });
                 
@@ -2791,11 +2815,8 @@
             try {
                 for (const modelName of modelNames) {
                     try {
-                        const response = await fetch(`/api/v1/ollama/delete/${modelName}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'Authorization': 'Bearer cherry-studio-key'
-                            }
+                        const response = await authManager.authenticatedFetch(`/api/v1/ollama/delete/${modelName}`, {
+                            method: 'DELETE'
                         });
 
                         if (!response.ok) {
@@ -2904,11 +2925,7 @@
         async function loadModelConfig(modelName) {
             try {
                 // 尝试从API加载配置
-                const response = await fetch(`/api/v1/models/${modelName}/config`, {
-                    headers: {
-                        'Authorization': 'Bearer cherry-studio-key'
-                    }
-                });
+                const response = await authManager.authenticatedFetch(`/api/v1/models/${modelName}/config`);
                 
                 if (response.ok) {
                     const config = await response.json();
@@ -3005,12 +3022,11 @@
 
             try {
                 showLoading();
-                
-                const response = await fetch(`/api/v1/models/${currentConfigModel}/config`, {
+
+                const response = await authManager.authenticatedFetch(`/api/v1/models/${currentConfigModel}/config`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer cherry-studio-key'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(config)
                 });
@@ -3044,13 +3060,9 @@
             
             try {
                 showLoading();
-                
+
                 // 获取模型详细信息
-                const response = await fetch(`/api/v1/models/${modelName}/details`, {
-                    headers: {
-                        'Authorization': 'Bearer cherry-studio-key'
-                    }
-                });
+                const response = await authManager.authenticatedFetch(`/api/v1/models/${modelName}/details`);
 
                 let modelDetails;
                 if (response.ok) {
@@ -3163,11 +3175,8 @@
             
             showLoading();
             try {
-                const response = await fetch(`/api/v1/ollama/delete/${modelName}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer cherry-studio-key'
-                    }
+                const response = await authManager.authenticatedFetch(`/api/v1/ollama/delete/${modelName}`, {
+                    method: 'DELETE'
                 });
                 
                 if (!response.ok) {

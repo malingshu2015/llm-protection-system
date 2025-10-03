@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>实时客户端输入监控 - 大模型防火墙</title>
+
+    <!-- 认证模块 (必须最先加载) -->
+    <script src="/static/admin/js/auth-check.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/auth-header.css">
     <link rel="stylesheet" href="/static/admin/css/apple-dashboard.css">
     <script src="/static/admin/js/apple-ui.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -284,6 +289,15 @@
     </style>
 </head>
 <body>
+    <!-- 认证头部 -->
+    <div class="auth-header">
+        <div class="auth-header-logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>LLM 防护系统 - 实时监控</span>
+        </div>
+        <div id="currentUser"></div>
+    </div>
+
     <!-- 侧边栏导航 -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -867,10 +881,23 @@
             // 这里可以添加重新加载数据的逻辑
         }
 
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📊 实时监控页面已加载');
-            initWebSocket();
+        // 初始化认证和页面
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 先进行认证检查
+            const authenticated = await authManager.init({
+                userElementId: 'currentUser',
+                autoRefresh: true,
+                onAuthSuccess: (user) => {
+                    console.log('用户认证成功:', user.username);
+                    // 认证成功后初始化实时监控
+                    console.log('📊 实时监控页面已加载');
+                    initWebSocket();
+                }
+            });
+
+            if (!authenticated) {
+                return; // 认证失败会自动跳转到登录页
+            }
         });
 
         // 全局变量存储当前生成的规则
@@ -885,7 +912,7 @@
             showLoading();
             
             try {
-                const response = await fetch('/api/v1/rules/generate', {
+                const response = await authManager.authenticatedFetch('/api/v1/rules/generate', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1093,7 +1120,7 @@
                 saveBtn.disabled = true;
                 saveBtn.textContent = '保存中...';
                 
-                const response = await fetch('/api/v1/rules/save-generated', {
+                const response = await authManager.authenticatedFetch('/api/v1/rules/save-generated', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

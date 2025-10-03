@@ -8,8 +8,13 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>规则管理 - 本地大模型防护系统</title>
+
+    <!-- 认证模块 (必须最先加载) -->
+    <script src="/static/admin/js/auth-check.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/auth-header.css">
     <link rel="stylesheet" href="/static/admin/css/rule-wizard.css">
     <script src="/static/admin/js/apple-ui.js" defer></script>
     <script src="/static/admin/js/rules-v2.js" defer></script>
@@ -1570,6 +1575,15 @@
 </head>
 
 <body>
+    <!-- 认证头部 -->
+    <div class="auth-header">
+        <div class="auth-header-logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>LLM 防护系统 - 规则管理</span>
+        </div>
+        <div id="currentUser"></div>
+    </div>
+
     <div class="container">
         <!-- 侧边栏 -->
         <aside class="sidebar">
@@ -2033,9 +2047,24 @@
         let batchMode = false;
         let currentFilter = 'all';
 
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function () {
-            initializeRulesPage();
+        // 初始化认证和页面
+        document.addEventListener('DOMContentLoaded', async function () {
+            // 先进行认证检查
+            const authenticated = await authManager.init({
+                userElementId: 'currentUser',
+                autoRefresh: true,
+                requiredRole: 'security_analyst',
+                onAuthSuccess: (user) => {
+                    console.log('用户认证成功:', user.username);
+                    // 认证成功后初始化规则页面
+                    initializeRulesPage();
+                    initializeWizardEvents();
+                }
+            });
+
+            if (!authenticated) {
+                return; // 认证失败会自动跳转到登录页
+            }
         });
 
         async function initializeRulesPage() {
@@ -2057,7 +2086,7 @@
 
         async function loadRules() {
             try {
-                const response = await fetch('/api/v1/rules');
+                const response = await authManager.authenticatedFetch('/api/v1/rules');
                 if (!response.ok) throw new Error('获取规则列表失败');
                 rules = await response.json();
                 filteredRules = [...rules];
@@ -2338,14 +2367,14 @@
                     switch (operation) {
                         case 'enable':
                         case 'disable':
-                            await fetch(`/api/v1/rules/${ruleId}`, {
+                            await authManager.authenticatedFetch(`/api/v1/rules/${ruleId}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ enabled: operation === 'enable' })
                             });
                             break;
                         case 'delete':
-                            await fetch(`/api/v1/rules/${ruleId}`, { method: 'DELETE' });
+                            await authManager.authenticatedFetch(`/api/v1/rules/${ruleId}`, { method: 'DELETE' });
                             break;
                     }
                     successCount++;
@@ -2380,7 +2409,7 @@
 
         async function toggleRuleStatus(ruleId, enabled) {
             try {
-                const response = await fetch(`/api/v1/rules/${ruleId}`, {
+                const response = await authManager.authenticatedFetch(`/api/v1/rules/${ruleId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ enabled })
@@ -3247,7 +3276,7 @@
             showLoading('正在创建安全规则...');
 
             try {
-                const response = await fetch('/api/v1/rules', {
+                const response = await authManager.authenticatedFetch('/api/v1/rules', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -3285,12 +3314,6 @@
             bindToggleSwitches();
         }
 
-        // 在页面初始化时调用
-        document.addEventListener('DOMContentLoaded', function () {
-            initializeRulesPage();
-            initializeWizardEvents();
-        });
-
         function editRule(ruleId) {
             console.log('editRule函数被调用，规则ID:', ruleId);
             openRuleEditModal(ruleId);
@@ -3301,7 +3324,7 @@
                 console.log('开始打开规则编辑模态框，规则ID:', ruleId);
 
                 // 获取规则详细信息
-                const response = await fetch(`/api/v1/rules/${ruleId}`, {
+                const response = await authManager.authenticatedFetch(`/api/v1/rules/${ruleId}`, {
                     headers: {
                         'Authorization': 'Bearer cherry-studio-key'
                     }
@@ -3436,7 +3459,7 @@
                 }
 
                 // 保存规则
-                const response = await fetch(`/api/v1/rules/${ruleData.id}`, {
+                const response = await authManager.authenticatedFetch(`/api/v1/rules/${ruleData.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3585,7 +3608,7 @@
                         requestBody.rule_id = ruleId;
                     }
 
-                    const response = await fetch('/api/v1/rules/test', {
+                    const response = await authManager.authenticatedFetch('/api/v1/rules/test', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -3730,7 +3753,7 @@
             showLoading(`正在删除规则 "${rule.name}"...`);
 
             try {
-                const response = await fetch(`/api/v1/rules/${ruleId}`, { method: 'DELETE' });
+                const response = await authManager.authenticatedFetch(`/api/v1/rules/${ruleId}`, { method: 'DELETE' });
                 if (!response.ok) throw new Error('删除规则失败');
 
                 showSuccess(`规则 "${rule.name}" 已删除`, {

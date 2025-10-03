@@ -8,7 +8,12 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>安全事件中心 - 本地大模型防护系统</title>
+
+    <!-- 认证模块 (必须最先加载) -->
+    <script src="/static/admin/js/auth-check.js"></script>
+
     <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/auth-header.css">
     <script src="/static/admin/js/apple-ui.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -582,6 +587,15 @@
 </head>
 
 <body>
+    <!-- 认证头部 -->
+    <div class="auth-header">
+        <div class="auth-header-logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>LLM 防护系统 - 安全事件中心</span>
+        </div>
+        <div id="currentUser"></div>
+    </div>
+
     <div class="container">
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -883,11 +897,24 @@
         let autoRefreshEnabled = true;
         let autoRefreshInterval;
 
-        // 页面初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeEventsPage();
-            setupEventListeners();
-            startAutoRefresh();
+        // 初始化认证和页面
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 先进行认证检查
+            const authenticated = await authManager.init({
+                userElementId: 'currentUser',
+                autoRefresh: true,
+                onAuthSuccess: (user) => {
+                    console.log('用户认证成功:', user.username);
+                    // 认证成功后初始化事件页面
+                    initializeEventsPage();
+                    setupEventListeners();
+                    startAutoRefresh();
+                }
+            });
+
+            if (!authenticated) {
+                return; // 认证失败会自动跳转到登录页
+            }
         });
 
         // 初始化事件页面
@@ -905,7 +932,7 @@
         // 加载事件数据
         async function loadEvents() {
             try {
-                const response = await fetch('/api/v1/events?limit=1000');
+                const response = await authManager.authenticatedFetch('/api/v1/events?limit=1000');
                 if (!response.ok) throw new Error('获取事件数据失败');
                 
                 const data = await response.json();
