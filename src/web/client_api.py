@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-from src.auth.services.auth_service import get_current_user
+from src.auth.middleware import get_current_user
 from src.auth.models.user import User
 
 router = APIRouter(prefix="/api/v1/client", tags=["客户端API"])

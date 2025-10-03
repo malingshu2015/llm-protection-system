@@ -10,7 +10,7 @@ import asyncio
 import logging
 from datetime import datetime
 
-from src.auth.services.auth_service import verify_token
+from src.auth.services.auth_service import auth_service
 from src.auth.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ async def websocket_endpoint(
 
     try:
         # 1. 验证 token
-        user = await verify_token(token)
+        user = await auth_service.verify_token(token)
         if not user:
             await websocket.close(code=4001, reason="未授权")
             return
