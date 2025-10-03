@@ -49,6 +49,16 @@ from src.web.realtime_update_service import start_realtime_service, stop_realtim
 from src.web.test_websocket import router as test_websocket_router
 from src.web.model_market_api import router as model_market_router
 from src.web.trending_models_api import router as trending_models_router
+from src.web.auth.auth_api import router as auth_router
+from src.web.auth.users_api import router as users_router
+from src.web.auth.api_keys_api import router as api_keys_router
+from src.web.auth.audit_api import router as audit_router
+from src.web.auth.two_factor_api import router as two_factor_router
+from src.web.auth.oauth_api import router as oauth_router
+from src.web.auth.statistics_api import router as statistics_router
+from src.web.auth.webauthn_api import router as webauthn_router
+from src.web.client_gateway import router as client_gateway_router
+from src.web.client_api import router as client_api_router
 
 
 app = FastAPI(
@@ -90,6 +100,18 @@ app.include_router(rule_generator_router)
 app.include_router(realtime_router)
 app.include_router(model_market_router, prefix="/api/v1")
 app.include_router(trending_models_router)
+# 用户认证和管理路由
+app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(api_keys_router)
+app.include_router(audit_router)
+app.include_router(two_factor_router)
+app.include_router(oauth_router)
+app.include_router(statistics_router)
+app.include_router(webauthn_router)
+# 客户端网关路由
+app.include_router(client_gateway_router)
+app.include_router(client_api_router)
 
 # Mount static files
 static_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static")
@@ -104,7 +126,7 @@ else:
 async def startup_event():
     """应用启动事件处理"""
     logger.info("应用正在启动...")
-    
+
     # 初始化数据库
     if DATABASE_AVAILABLE:
         try:
@@ -112,7 +134,15 @@ async def startup_event():
             logger.info("数据库初始化成功")
         except Exception as e:
             logger.error(f"数据库初始化失败: {e}")
-    
+
+    # 初始化用户数据库
+    try:
+        from src.auth.services.user_db import user_db
+        await user_db.initialize()
+        logger.info("用户数据库初始化成功")
+    except Exception as e:
+        logger.error(f"用户数据库初始化失败: {e}")
+
     # 初始化缓存系统
     try:
         from src.security.smart_cache import cache_manager
@@ -121,7 +151,7 @@ async def startup_event():
         logger.info("缓存系统初始化成功")
     except Exception as e:
         logger.error(f"缓存系统初始化失败: {e}")
-    
+
     # 启动实时更新服务
     try:
         await start_realtime_service()
