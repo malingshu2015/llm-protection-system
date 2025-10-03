@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双因素认证 - 登录验证</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .verify-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 100%;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .code-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 24px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.5em;
+            transition: all 0.3s;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #0c5460;
+        }
+
+        .backup-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .backup-link a {
+            color: #667eea;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .backup-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-card">
+        <div class="header">
+            <div class="icon">🔐</div>
+            <h1>双因素认证</h1>
+            <p>请输入您的身份验证应用显示的验证码</p>
+        </div>
+
+        <div id="alert" class="alert alert-error"></div>
+
+        <div class="info-box">
+            ℹ️ 验证码每30秒更新一次
+        </div>
+
+        <form id="verifyForm">
+            <div class="form-group">
+                <label for="code">6位验证码</label>
+                <input
+                    type="text"
+                    id="code"
+                    class="code-input"
+                    maxlength="6"
+                    placeholder="000000"
+                    pattern="[0-9]{6}"
+                    autocomplete="off"
+                    autofocus
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="verifyBtn">
+                验证并登录
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="cancel()">
+                取消
+            </button>
+        </form>
+
+        <div class="backup-link">
+            无法访问身份验证应用? <a onclick="useBackupCode()">使用备用码</a>
+        </div>
+    </div>
+
+    <script>
+        // 从 localStorage 获取临时登录信息
+        const loginData = JSON.parse(localStorage.getItem('pending_2fa_login') || '{}');
+
+        if (!loginData.username) {
+            window.location.href = '/static/admin/login.html';
+        }
+
+        const form = document.getElementById('verifyForm');
+        const codeInput = document.getElementById('code');
+        const verifyBtn = document.getElementById('verifyBtn');
+
+        // 自动格式化输入
+        codeInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        // 提交验证
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const code = codeInput.value.trim();
+
+            if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+                showAlert('请输入 6 位数字验证码');
+                return;
+            }
+
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = '验证中...';
+
+            try {
+                // 先验证 2FA 码
+                const verifyResponse = await fetch('/api/v1/2fa/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${loginData.tempToken}`
+                    },
+                    body: JSON.stringify({ code })
+                });
+
+                if (!verifyResponse.ok) {
+                    const error = await verifyResponse.json();
+                    throw new Error(error.detail || '验证码无效');
+                }
+
+                // 验证成功,保存真实令牌
+                localStorage.setItem('access_token', loginData.access_token);
+                localStorage.setItem('refresh_token', loginData.refresh_token);
+                localStorage.removeItem('pending_2fa_login');
+
+                // 重定向到首页
+                window.location.href = '/static/index.html';
+            } catch (error) {
+                showAlert(error.message);
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = '验证并登录';
+                codeInput.value = '';
+                codeInput.focus();
+            }
+        });
+
+        // 使用备用码
+        function useBackupCode() {
+            const backupCode = prompt('请输入您的 8 位备用码:');
+
+            if (!backupCode) return;
+
+            if (backupCode.length !== 8 || !/^\d{8}$/.test(backupCode)) {
+                alert('备用码必须是 8 位数字');
+                return;
+            }
+
+            verifyWith2FA(backupCode);
+        }
+
+        // 验证 2FA (验证码或备用码)
+        async function verifyWith2FA(code) {
+            try {
+                const response = await fetch('/api/v1/2fa/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${loginData.tempToken}`
+                    },
+                    body: JSON.stringify({ code })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || '验证失败');
+                }
+
+                // 验证成功
+                localStorage.setItem('access_token', loginData.access_token);
+                localStorage.setItem('refresh_token', loginData.refresh_token);
+                localStorage.removeItem('pending_2fa_login');
+
+                window.location.href = '/static/index.html';
+            } catch (error) {
+                alert('验证失败: ' + error.message);
+            }
+        }
+
+        // 取消登录
+        function cancel() {
+            localStorage.removeItem('pending_2fa_login');
+            window.location.href = '/static/admin/login.html';
+        }
+
+        // 显示错误
+        function showAlert(message) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.classList.add('show');
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth账户管理 - 大模型防护系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #0c5460;
+        }
+
+        .provider-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .provider-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .provider-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .provider-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .provider-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .provider-details {
+            flex: 1;
+        }
+
+        .provider-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .provider-status {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .provider-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .connected-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 OAuth账户管理</h1>
+            <a href="/static/admin/users.html" class="btn btn-secondary">返回</a>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="card">
+            <h2>关联社交账户</h2>
+
+            <div class="info-box">
+                💡 关联社交账户后，您可以使用这些账户快速登录，无需输入密码。
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px; color: #666;">加载中...</p>
+            </div>
+
+            <div id="provider-list" class="provider-list" style="display: none;">
+                <!-- Google -->
+                <div class="provider-card" id="google-card">
+                    <div class="provider-info">
+                        <div class="provider-icon" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);">
+                            G
+                        </div>
+                        <div class="provider-details">
+                            <div class="provider-name">Google</div>
+                            <div class="provider-status">
+                                <span id="google-status">未连接</span>
+                                <div class="connected-info" id="google-info" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="provider-actions">
+                        <button class="btn btn-primary" id="google-connect" onclick="connectProvider('google')" style="display: none;">
+                            连接
+                        </button>
+                        <button class="btn btn-danger" id="google-disconnect" onclick="disconnectProvider('google')" style="display: none;">
+                            断开连接
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GitHub -->
+                <div class="provider-card" id="github-card">
+                    <div class="provider-info">
+                        <div class="provider-icon" style="background: #24292e; color: white;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                            </svg>
+                        </div>
+                        <div class="provider-details">
+                            <div class="provider-name">GitHub</div>
+                            <div class="provider-status">
+                                <span id="github-status">未连接</span>
+                                <div class="connected-info" id="github-info" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="provider-actions">
+                        <button class="btn btn-primary" id="github-connect" onclick="connectProvider('github')" style="display: none;">
+                            连接
+                        </button>
+                        <button class="btn btn-danger" id="github-disconnect" onclick="disconnectProvider('github')" style="display: none;">
+                            断开连接
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>关于 OAuth 认证</h2>
+            <div style="font-size: 14px; color: #666; line-height: 1.8;">
+                <p><strong>什么是 OAuth？</strong></p>
+                <p style="margin: 10px 0;">OAuth 是一种开放标准，允许您使用第三方账户(如 Google、GitHub)登录，而无需创建新密码。</p>
+
+                <p style="margin-top: 20px;"><strong>安全提示：</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>关联账户不会泄露您的密码</li>
+                    <li>您可以随时断开连接</li>
+                    <li>建议启用双因素认证以增强安全性</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/static/admin/login.html';
+        }
+
+        let connectedAccounts = {};
+
+        // 加载已连接的账户
+        async function loadAccounts() {
+            try {
+                const response = await fetch('/api/v1/oauth/accounts', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/static/admin/login.html';
+                    return;
+                }
+
+                if (!response.ok) throw new Error('加载账户失败');
+
+                const accounts = await response.json();
+
+                // 更新状态
+                accounts.forEach(account => {
+                    connectedAccounts[account.provider] = account;
+                    updateProviderStatus(account.provider, account);
+                });
+
+                // 显示未连接的提供商
+                ['google', 'github'].forEach(provider => {
+                    if (!connectedAccounts[provider]) {
+                        updateProviderStatus(provider, null);
+                    }
+                });
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('provider-list').style.display = 'grid';
+            } catch (error) {
+                showAlert('加载失败: ' + error.message, 'error');
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // 更新提供商状态
+        function updateProviderStatus(provider, account) {
+            const statusEl = document.getElementById(`${provider}-status`);
+            const infoEl = document.getElementById(`${provider}-info`);
+            const connectBtn = document.getElementById(`${provider}-connect`);
+            const disconnectBtn = document.getElementById(`${provider}-disconnect`);
+
+            if (account) {
+                // 已连接
+                statusEl.innerHTML = '<span class="status-badge status-connected">✓ 已连接</span>';
+                infoEl.style.display = 'block';
+                infoEl.innerHTML = `
+                    <div>用户名: <strong>${account.provider_username || 'N/A'}</strong></div>
+                    <div>邮箱: <strong>${account.provider_email || 'N/A'}</strong></div>
+                    <div>连接时间: ${new Date(account.created_at).toLocaleDateString()}</div>
+                `;
+                connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'inline-block';
+            } else {
+                // 未连接
+                statusEl.innerHTML = '<span class="status-badge status-disconnected">未连接</span>';
+                infoEl.style.display = 'none';
+                connectBtn.style.display = 'inline-block';
+                disconnectBtn.style.display = 'none';
+            }
+        }
+
+        // 连接提供商
+        async function connectProvider(provider) {
+            try {
+                // 获取授权 URL
+                const response = await fetch(`/api/v1/oauth/authorize/${provider}`);
+
+                if (!response.ok) throw new Error('获取授权链接失败');
+
+                const data = await response.json();
+
+                // 存储当前令牌,以便回调后恢复
+                sessionStorage.setItem('oauth_link_token', token);
+
+                // 重定向到 OAuth 提供商
+                window.location.href = data.authorization_url;
+            } catch (error) {
+                showAlert('连接失败: ' + error.message, 'error');
+            }
+        }
+
+        // 断开连接
+        async function disconnectProvider(provider) {
+            if (!confirm(`确定要断开与 ${provider.toUpperCase()} 的连接吗？`)) return;
+
+            try {
+                const response = await fetch(`/api/v1/oauth/unlink/${provider}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || '断开连接失败');
+                }
+
+                showAlert(`已断开与 ${provider.toUpperCase()} 的连接`, 'success');
+                delete connectedAccounts[provider];
+                updateProviderStatus(provider, null);
+            } catch (error) {
+                showAlert('断开连接失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示提示
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        // 检查 URL 参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const success = urlParams.get('success');
+
+        if (error) {
+            showAlert('连接失败: ' + error, 'error');
+            // 清除 URL 参数
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+
+        if (success) {
+            showAlert('账户连接成功!', 'success');
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+
+        // 页面加载
+        loadAccounts();
+    </script>
+</body>
+</html>

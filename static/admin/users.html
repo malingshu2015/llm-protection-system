@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - 本地大模型防护系统</title>
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/users.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="40" height="40" viewBox="0 0 60 60" fill="none">
+                        <rect width="60" height="60" rx="12" fill="url(#gradient)"/>
+                        <path d="M30 15L45 25V40L30 50L15 40V25L30 15Z" stroke="white" stroke-width="2.5" fill="none"/>
+                        <circle cx="30" cy="30" r="8" fill="white"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0" y1="0" x2="60" y2="60">
+                                <stop offset="0%" stop-color="#007AFF"/>
+                                <stop offset="100%" stop-color="#5856D6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <h2>LLM 防护系统</h2>
+                </div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="index.html" class="sidebar-menu-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>系统概览</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="monitor.html" class="sidebar-menu-link">
+                        <i class="fas fa-desktop"></i>
+                        <span>监控中心</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="security_dashboard.html" class="sidebar-menu-link">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>安全仪表板</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="events.html" class="sidebar-menu-link">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>安全事件</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item active">
+                    <a href="users.html" class="sidebar-menu-link">
+                        <i class="fas fa-users"></i>
+                        <span>用户管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="api-keys.html" class="sidebar-menu-link">
+                        <i class="fas fa-key"></i>
+                        <span>API密钥</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-info" id="currentUser">
+                    <i class="fas fa-user-circle"></i>
+                    <span>加载中...</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    退出登录
+                </button>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面标题 -->
+            <header class="page-header">
+                <h1 class="page-title">用户管理</h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" onclick="showCreateUserModal()">
+                        <i class="fas fa-plus"></i>
+                        创建用户
+                    </button>
+                </div>
+            </header>
+
+            <!-- 搜索和筛选 -->
+            <div class="filters-section">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="搜索用户名或邮箱..." onkeyup="filterUsers()">
+                </div>
+                <div class="filter-group">
+                    <select id="roleFilter" onchange="filterUsers()">
+                        <option value="">所有角色</option>
+                        <option value="super_admin">超级管理员</option>
+                        <option value="admin">管理员</option>
+                        <option value="security_analyst">安全分析师</option>
+                        <option value="developer">开发者</option>
+                        <option value="viewer">查看者</option>
+                    </select>
+                    <select id="statusFilter" onchange="filterUsers()">
+                        <option value="">所有状态</option>
+                        <option value="active">激活</option>
+                        <option value="inactive">未激活</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 用户列表 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>用户列表</h2>
+                    <span id="userCount" class="badge">0 个用户</span>
+                </div>
+                <div class="table-container">
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>角色</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>最后登录</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr class="loading-row">
+                                <td colspan="7">
+                                    <div class="loading">
+                                        <div class="spinner"></div>
+                                        <span>加载中...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 创建/编辑用户模态框 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">创建用户</h2>
+                <button class="modal-close" onclick="closeUserModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm" onsubmit="handleUserSubmit(event)">
+                    <input type="hidden" id="userId">
+
+                    <div class="form-group">
+                        <label for="username">用户名 *</label>
+                        <input type="text" id="username" name="username" required
+                               minlength="3" maxlength="50"
+                               pattern="[a-zA-Z0-9_-]+"
+                               placeholder="3-50个字符,字母数字下划线">
+                        <small class="form-hint">只能包含字母、数字、下划线和连字符</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">邮箱 *</label>
+                        <input type="email" id="email" name="email" required
+                               placeholder="user@example.com">
+                    </div>
+
+                    <div class="form-group" id="passwordGroup">
+                        <label for="password">密码 *</label>
+                        <div class="password-input">
+                            <input type="password" id="password" name="password"
+                                   minlength="8"
+                                   placeholder="至少8位,包含大小写字母和数字">
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="form-hint">密码必须包含大写字母、小写字母和数字</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role">角色 *</label>
+                        <select id="role" name="role" required>
+                            <option value="viewer">查看者</option>
+                            <option value="developer">开发者</option>
+                            <option value="security_analyst">安全分析师</option>
+                            <option value="admin">管理员</option>
+                            <option value="super_admin">超级管理员</option>
+                        </select>
+                        <small class="form-hint">不同角色拥有不同的系统权限</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="isActive" name="is_active" checked>
+                            <span>激活用户</span>
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeUserModal()">取消</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-text">保存</span>
+                            <span class="btn-loader" style="display: none;">
+                                <span class="spinner"></span>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户详情模态框 -->
+    <div id="userDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>用户详情</h2>
+                <button class="modal-close" onclick="closeUserDetailModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="userDetailContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2>确认删除</h2>
+                <button class="modal-close" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除用户 <strong id="deleteUsername"></strong> 吗?</p>
+                <p class="text-danger">此操作不可撤销!</p>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="closeDeleteModal()">取消</button>
+                    <button class="btn btn-danger" onclick="confirmDelete()">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/admin/js/users.js"></script>
+</body>
+</html>

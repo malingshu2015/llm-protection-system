@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API密钥管理 - 本地大模型防护系统</title>
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/api-keys.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="40" height="40" viewBox="0 0 60 60" fill="none">
+                        <rect width="60" height="60" rx="12" fill="url(#gradient)"/>
+                        <path d="M30 15L45 25V40L30 50L15 40V25L30 15Z" stroke="white" stroke-width="2.5" fill="none"/>
+                        <circle cx="30" cy="30" r="8" fill="white"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0" y1="0" x2="60" y2="60">
+                                <stop offset="0%" stop-color="#007AFF"/>
+                                <stop offset="100%" stop-color="#5856D6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <h2>LLM 防护系统</h2>
+                </div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="index.html" class="sidebar-menu-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>系统概览</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="monitor.html" class="sidebar-menu-link">
+                        <i class="fas fa-desktop"></i>
+                        <span>监控中心</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="security_dashboard.html" class="sidebar-menu-link">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>安全仪表板</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="events.html" class="sidebar-menu-link">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>安全事件</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="users.html" class="sidebar-menu-link">
+                        <i class="fas fa-users"></i>
+                        <span>用户管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item active">
+                    <a href="api-keys.html" class="sidebar-menu-link">
+                        <i class="fas fa-key"></i>
+                        <span>API密钥</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-info" id="currentUser">
+                    <i class="fas fa-user-circle"></i>
+                    <span>加载中...</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    退出登录
+                </button>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面标题 -->
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">API密钥管理</h1>
+                    <p class="page-subtitle">管理您的API访问密钥,用于第三方应用集成</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-primary" onclick="showCreateKeyModal()">
+                        <i class="fas fa-plus"></i>
+                        创建密钥
+                    </button>
+                </div>
+            </header>
+
+            <!-- 安全提示 -->
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>安全提示:</strong>
+                    <p>密钥仅在创建时完整显示一次,请妥善保存。如果遗失,请重新生成密钥。</p>
+                </div>
+            </div>
+
+            <!-- API密钥列表 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>我的API密钥</h2>
+                    <span id="keyCount" class="badge">0 个密钥</span>
+                </div>
+                <div class="keys-grid" id="keysGrid">
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                        <span>加载中...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 使用指南 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>使用指南</h2>
+                </div>
+                <div class="guide-content">
+                    <h3>如何使用API密钥</h3>
+                    <p>将API密钥添加到HTTP请求头中:</p>
+                    <div class="code-block">
+                        <code>X-API-Key: sk-your-api-key-here</code>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+
+                    <h3>示例代码</h3>
+                    <div class="code-block">
+                        <pre><code>curl -X GET http://your-domain/api/v1/endpoint \
+  -H "X-API-Key: sk-your-api-key-here"</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+
+                    <h3>安全最佳实践</h3>
+                    <ul>
+                        <li>不要在代码中硬编码API密钥</li>
+                        <li>使用环境变量存储密钥</li>
+                        <li>定期轮换密钥</li>
+                        <li>为不同环境使用不同密钥</li>
+                        <li>设置IP白名单限制访问</li>
+                        <li>监控密钥使用情况</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 创建密钥模态框 -->
+    <div id="createKeyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>创建API密钥</h2>
+                <button class="modal-close" onclick="closeCreateKeyModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="createKeyForm" onsubmit="handleCreateKey(event)">
+                    <div class="form-group">
+                        <label for="keyName">密钥名称 *</label>
+                        <input type="text" id="keyName" name="name" required
+                               maxlength="100"
+                               placeholder="例如: 生产环境密钥">
+                        <small class="form-hint">便于识别密钥用途</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="keyDescription">描述</label>
+                        <textarea id="keyDescription" name="description"
+                                  rows="3"
+                                  placeholder="描述此密钥的用途和使用场景"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="keyScopes">权限范围</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="scope" value="chat" checked>
+                                <span>聊天接口</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="scope" value="models">
+                                <span>模型管理</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="scope" value="rules">
+                                <span>规则配置</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="scope" value="events">
+                                <span>事件查询</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rateLimit">速率限制(请求/小时)</label>
+                        <input type="number" id="rateLimit" name="rate_limit"
+                               min="1" max="10000" value="1000"
+                               placeholder="1000">
+                        <small class="form-hint">每小时最多请求次数</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ipWhitelist">IP白名单(可选)</label>
+                        <input type="text" id="ipWhitelist" name="ip_whitelist"
+                               placeholder="192.168.1.100, 10.0.0.0/24">
+                        <small class="form-hint">多个IP用逗号分隔,支持CIDR格式</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expiresDays">有效期(天)</label>
+                        <select id="expiresDays" name="expires_days">
+                            <option value="30">30天</option>
+                            <option value="90" selected>90天</option>
+                            <option value="180">180天</option>
+                            <option value="365">365天</option>
+                            <option value="">永不过期</option>
+                        </select>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeCreateKeyModal()">取消</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-text">创建密钥</span>
+                            <span class="btn-loader" style="display: none;">
+                                <span class="spinner"></span>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 显示新密钥模态框 -->
+    <div id="showKeyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-check-circle" style="color: #34C759;"></i>
+                    密钥创建成功
+                </h2>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div>
+                        <strong>重要:</strong>
+                        <p>密钥仅显示一次,请立即复制并妥善保存!</p>
+                    </div>
+                </div>
+
+                <div class="key-display">
+                    <label>API密钥</label>
+                    <div class="key-value">
+                        <code id="newApiKey"></code>
+                        <button class="copy-btn" onclick="copyApiKey()">
+                            <i class="fas fa-copy"></i>
+                            复制
+                        </button>
+                    </div>
+                </div>
+
+                <div class="key-info" id="newKeyInfo"></div>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="closeShowKeyModal()">我已保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div id="deleteKeyModal" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2>确认删除</h2>
+                <button class="modal-close" onclick="closeDeleteKeyModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除密钥 <strong id="deleteKeyName"></strong> 吗?</p>
+                <p class="text-danger">使用此密钥的应用将无法继续访问!</p>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="closeDeleteKeyModal()">取消</button>
+                    <button class="btn btn-danger" onclick="confirmDeleteKey()">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/admin/js/api-keys.js"></script>
+</body>
+</html>
