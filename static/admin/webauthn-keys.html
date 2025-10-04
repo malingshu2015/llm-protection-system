@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全密钥管理 - 大模型防护系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #0c5460;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #856404;
+        }
+
+        .credentials-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .credential-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .credential-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .credential-info {
+            flex: 1;
+        }
+
+        .credential-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .credential-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .credential-details {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .credential-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-edit {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #138496;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔑 安全密钥管理</h1>
+            <a href="/static/admin/users.html" class="btn btn-secondary">返回</a>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="card">
+            <h2>WebAuthn / FIDO2 无密码登录</h2>
+
+            <div class="info-box">
+                💡 使用安全密钥（如 YubiKey）、指纹识别或面部识别进行无密码登录，更安全、更便捷。
+            </div>
+
+            <button class="btn btn-primary" onclick="registerNewKey()">
+                ➕ 注册新密钥
+            </button>
+        </div>
+
+        <div class="card">
+            <h2>我的安全密钥</h2>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px; color: #666;">加载中...</p>
+            </div>
+
+            <div id="credentials-list" class="credentials-list" style="display: none;">
+                <!-- 密钥列表将在这里显示 -->
+            </div>
+
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">🔐</div>
+                <p>您还没有注册任何安全密钥</p>
+                <p style="font-size: 13px; color: #999; margin-top: 5px;">点击上方"注册新密钥"开始</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>关于 WebAuthn</h2>
+            <div style="font-size: 14px; color: #666; line-height: 1.8;">
+                <p><strong>什么是 WebAuthn？</strong></p>
+                <p style="margin: 10px 0;">WebAuthn 是一种无密码的网络身份验证标准，使用公钥加密技术，比传统密码更安全。</p>
+
+                <p style="margin-top: 20px;"><strong>支持的设备：</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>硬件安全密钥 (YubiKey, Titan Security Key 等)</li>
+                    <li>生物识别 (指纹、面部识别)</li>
+                    <li>平台认证器 (Windows Hello, Touch ID, Face ID)</li>
+                </ul>
+
+                <p style="margin-top: 20px;"><strong>安全提示：</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>建议注册至少 2 个密钥作为备份</li>
+                    <li>妥善保管您的安全密钥</li>
+                    <li>如果丢失密钥，请及时删除并注册新密钥</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/static/admin/login.html';
+        }
+
+        let credentials = [];
+
+        // 加载凭证列表
+        async function loadCredentials() {
+            try {
+                const response = await fetch('/api/v1/webauthn/credentials', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/static/admin/login.html';
+                    return;
+                }
+
+                if (!response.ok) throw new Error('加载凭证失败');
+
+                credentials = await response.json();
+                displayCredentials();
+
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                showAlert('加载失败: ' + error.message, 'error');
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // 显示凭证列表
+        function displayCredentials() {
+            const listEl = document.getElementById('credentials-list');
+            const emptyStateEl = document.getElementById('empty-state');
+
+            if (credentials.length === 0) {
+                listEl.style.display = 'none';
+                emptyStateEl.style.display = 'block';
+                return;
+            }
+
+            listEl.style.display = 'grid';
+            emptyStateEl.style.display = 'none';
+
+            listEl.innerHTML = credentials.map(cred => `
+                <div class="credential-card">
+                    <div style="display: flex; align-items: center; flex: 1;">
+                        <div class="credential-icon">🔑</div>
+                        <div class="credential-info">
+                            <div class="credential-name">${cred.device_name || '未命名设备'}</div>
+                            <div class="credential-details">
+                                创建时间: ${new Date(cred.created_at).toLocaleString()}<br>
+                                最后使用: ${cred.last_used ? new Date(cred.last_used).toLocaleString() : '从未使用'}<br>
+                                传输方式: ${cred.transports.join(', ') || '未知'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="credential-actions">
+                        <button class="btn btn-edit" onclick="editCredentialName('${cred.credential_id}', '${cred.device_name || ''}')">
+                            重命名
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteCredential('${cred.credential_id}')">
+                            删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 注册新密钥 (使用专业库)
+        async function registerNewKey() {
+            try {
+                // 1. 请求注册挑战 (专业库返回标准 JSON)
+                const challengeResponse = await fetch('/api/v1/webauthn/register/challenge', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!challengeResponse.ok) throw new Error('获取注册挑战失败');
+
+                const options = await challengeResponse.json();
+
+                // 2. 转换 Base64URL 字段为 ArrayBuffer
+                const publicKeyCredentialCreationOptions = {
+                    ...options,
+                    challenge: base64urlToArrayBuffer(options.challenge),
+                    user: {
+                        ...options.user,
+                        id: base64urlToArrayBuffer(options.user.id)
+                    },
+                    excludeCredentials: options.excludeCredentials ? options.excludeCredentials.map(cred => ({
+                        ...cred,
+                        id: base64urlToArrayBuffer(cred.id)
+                    })) : []
+                };
+
+                // 3. 调用 WebAuthn API
+                const credential = await navigator.credentials.create({
+                    publicKey: publicKeyCredentialCreationOptions
+                });
+
+                if (!credential) throw new Error('密钥注册被取消');
+
+                // 4. 提取凭证数据
+                const credentialId = arrayBufferToBase64(credential.rawId);
+                const attestationObject = arrayBufferToBase64(credential.response.attestationObject);
+                const clientDataJSON = arrayBufferToBase64(credential.response.clientDataJSON);
+
+                // 获取设备名称
+                const deviceName = prompt('请为这个密钥命名（例如：我的 YubiKey）：', '安全密钥');
+                if (!deviceName) return;
+
+                // 5. 发送到服务器验证并保存 (专业库验证)
+                const registerResponse = await fetch('/api/v1/webauthn/register/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        credential_id: credentialId,
+                        public_key: '',  // 专业库会从 attestationObject 提取
+                        attestation_object: attestationObject,
+                        client_data_json: clientDataJSON,
+                        transports: credential.response.getTransports ? credential.response.getTransports() : [],
+                        device_name: deviceName,
+                        challenge: options.challenge  // 传递原始 challenge
+                    })
+                });
+
+                if (!registerResponse.ok) {
+                    const error = await registerResponse.json();
+                    throw new Error(error.detail || '注册失败');
+                }
+
+                showAlert('安全密钥注册成功!', 'success');
+                loadCredentials();
+
+            } catch (error) {
+                if (error.name === 'NotAllowedError') {
+                    showAlert('密钥注册被取消', 'error');
+                } else if (error.name === 'NotSupportedError') {
+                    showAlert('您的浏览器不支持 WebAuthn', 'error');
+                } else {
+                    showAlert('注册失败: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // 编辑凭证名称
+        async function editCredentialName(credentialId, currentName) {
+            const newName = prompt('请输入新的设备名称：', currentName);
+            if (!newName) return;
+
+            try {
+                const response = await fetch(`/api/v1/webauthn/credentials/${encodeURIComponent(credentialId)}/name?device_name=${encodeURIComponent(newName)}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('更新失败');
+
+                showAlert('设备名称已更新', 'success');
+                loadCredentials();
+            } catch (error) {
+                showAlert('更新失败: ' + error.message, 'error');
+            }
+        }
+
+        // 删除凭证
+        async function deleteCredential(credentialId) {
+            if (!confirm('确定要删除这个安全密钥吗？删除后将无法使用该密钥登录。')) return;
+
+            try {
+                const response = await fetch(`/api/v1/webauthn/credentials/${encodeURIComponent(credentialId)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('删除失败');
+
+                showAlert('安全密钥已删除', 'success');
+                loadCredentials();
+            } catch (error) {
+                showAlert('删除失败: ' + error.message, 'error');
+            }
+        }
+
+        // 工具函数: ArrayBuffer 转 Base64URL
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        }
+
+        // 工具函数: Base64URL 转 ArrayBuffer
+        function base64urlToArrayBuffer(base64url) {
+            // 补充 padding
+            const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+            const padLength = (4 - (base64.length % 4)) % 4;
+            const padded = base64 + '='.repeat(padLength);
+
+            const binary = atob(padded);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        // 显示提示
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        // 页面加载
+        loadCredentials();
+    </script>
+</body>
+</html>

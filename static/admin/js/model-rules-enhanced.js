@@ -66,7 +66,7 @@ class ModelRulesManager {
     async loadModelsData() {
         try {
             // 先获取已安装的模型列表
-            const modelsResponse = await fetch('/api/v1/ollama/models', {
+            const modelsResponse = await authManager.authenticatedFetch('/api/v1/ollama/models', {
                 headers: {
                     'Authorization': 'Bearer cherry-studio-key'
                 }
@@ -81,7 +81,7 @@ class ModelRulesManager {
             console.log('处理模型数量:', models.length);
             this.modelsData = await Promise.all(models.map(async (model) => {
                 try {
-                    const configResponse = await fetch(`/api/v1/model-rules/${model.model || model.id}`);
+                    const configResponse = await authManager.authenticatedFetch(`/api/v1/model-rules/${model.model || model.id}`);
                     const configData = configResponse.ok ? await configResponse.json() : null;
                     
                     const enabledRulesCount = configData?.rules ? 
@@ -127,7 +127,7 @@ class ModelRulesManager {
 
     async loadTemplatesData() {
         try {
-            const response = await fetch('/api/v1/rule-templates');
+            const response = await authManager.authenticatedFetch('/api/v1/rule-templates');
             if (!response.ok) throw new Error('获取模板列表失败');
             
             const data = await response.json();
@@ -590,7 +590,7 @@ class ModelRulesManager {
             // 获取模型当前配置
             let currentConfig = null;
             try {
-                const configResponse = await fetch(`/api/v1/model-rules/${modelId}`, {
+                const configResponse = await authManager.authenticatedFetch(`/api/v1/model-rules/${modelId}`, {
                     headers: {
                         'Authorization': 'Bearer cherry-studio-key'
                     }
@@ -605,7 +605,7 @@ class ModelRulesManager {
             // 获取可用规则列表
             let availableRules = [];
             try {
-                const rulesResponse = await fetch('/api/v1/rules', {
+                const rulesResponse = await authManager.authenticatedFetch('/api/v1/rules', {
                     headers: {
                         'Authorization': 'Bearer cherry-studio-key'
                     }
@@ -884,7 +884,7 @@ class ModelRulesManager {
             };
 
             // 保存配置
-            const response = await fetch(`/api/v1/model-rules/${modelId}`, {
+            const response = await authManager.authenticatedFetch(`/api/v1/model-rules/${modelId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1003,7 +1003,7 @@ class ModelRulesManager {
             this.showLoading(true);
 
             // 获取规则详情
-            const response = await fetch(`/api/v1/rules/${encodeURIComponent(ruleId)}`);
+            const response = await authManager.authenticatedFetch(`/api/v1/rules/${encodeURIComponent(ruleId)}`);
             if (!response.ok) {
                 throw new Error('获取规则详情失败');
             }
@@ -1100,7 +1100,7 @@ class ModelRulesManager {
             }
 
             // 发送更新请求
-            const response = await fetch(`/api/v1/rules/${encodeURIComponent(this.currentEditingRuleId)}`, {
+            const response = await authManager.authenticatedFetch(`/api/v1/rules/${encodeURIComponent(this.currentEditingRuleId)}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1224,7 +1224,7 @@ class ModelRulesManager {
                 button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 推荐中...';
             }
             
-            const recResp = await fetch('/api/v1/model-rules-recommend', {
+            const recResp = await authManager.authenticatedFetch('/api/v1/model-rules-recommend', {
                 headers: {
                     'Authorization': 'Bearer cherry-studio-key'
                 }
@@ -1332,7 +1332,7 @@ class ModelRulesManager {
             }
             try {
                 this.showLoading(true);
-                const applyResp = await fetch('/api/v1/model-rules-recommend/apply', {
+                const applyResp = await authManager.authenticatedFetch('/api/v1/model-rules-recommend/apply', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -1372,7 +1372,7 @@ class ModelRulesManager {
             
             // 1. 获取所有模型配置
             console.log('📡 开始获取模型配置数据...');
-            const modelsResponse = await fetch('/api/v1/model-rules', {
+            const modelsResponse = await authManager.authenticatedFetch('/api/v1/model-rules', {
                 headers: {
                     'Authorization': 'Bearer cherry-studio-key'
                 }
@@ -1637,7 +1637,7 @@ class ModelRulesManager {
             this.showLoading(true);
             
             // 获取推荐配置
-            const recResponse = await fetch('/api/v1/model-rules-recommend', {
+            const recResponse = await authManager.authenticatedFetch('/api/v1/model-rules-recommend', {
                 headers: {
                     'Authorization': 'Bearer cherry-studio-key'
                 }
@@ -1647,7 +1647,7 @@ class ModelRulesManager {
                 const recData = await recResponse.json();
                 if (recData.recommendations && recData.recommendations.length > 0) {
                     // 应用推荐配置
-                    const applyResponse = await fetch('/api/v1/model-rules-recommend/apply', {
+                    const applyResponse = await authManager.authenticatedFetch('/api/v1/model-rules-recommend/apply', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1678,12 +1678,45 @@ class ModelRulesManager {
 // 初始化管理器
 let modelRulesManager;
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 初始化ModelRulesManager...');
-    modelRulesManager = new ModelRulesManager();
-    // 将管理器设置为全局变量，以便HTML中的onclick可以访问
-    window.modelRulesManager = modelRulesManager;
-    console.log('✅ ModelRulesManager初始化完成，已设置为全局变量');
+// 初始化认证和页面
+document.addEventListener('DOMContentLoaded', async function() {
+    // 等待authManager可用(由auth-check.js提供)
+    const checkAuthManager = () => {
+        return new Promise((resolve) => {
+            if (window.authManager) {
+                resolve();
+            } else {
+                const interval = setInterval(() => {
+                    if (window.authManager) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 100);
+            }
+        });
+    };
+
+    await checkAuthManager();
+
+    // 先进行认证和权限检查
+    const authenticated = await authManager.init({
+        userElementId: 'currentUser',
+        autoRefresh: true,
+        requiredRole: 'security_analyst',
+        onAuthSuccess: (user) => {
+            console.log('用户认证成功:', user.username);
+            // 认证成功后初始化页面管理器
+            console.log('🚀 初始化ModelRulesManager...');
+            modelRulesManager = new ModelRulesManager();
+            // 将管理器设置为全局变量,以便HTML中的onclick可以访问
+            window.modelRulesManager = modelRulesManager;
+            console.log('✅ ModelRulesManager初始化完成,已设置为全局变量');
+        }
+    });
+
+    if (!authenticated) {
+        return; // 认证失败会自动跳转到登录页
+    }
 
     // 添加测试函数到全局作用域
     window.testConfigureModel = function(modelId) {
@@ -1721,7 +1754,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 添加模板保存功能到类
     ModelRulesManager.prototype.saveTemplateToServer = async function(template) {
         try {
-            const response = await fetch(`/api/v1/rule-templates/${template.id}`, {
+            const response = await authManager.authenticatedFetch(`/api/v1/rule-templates/${template.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,0 +1,384 @@
+/* API密钥管理页面样式 - 继承users.css的基础样式 */
+
+/* 页面副标题 */
+.page-subtitle {
+    font-size: 14px;
+    color: #6e6e73;
+    margin-top: 8px;
+    font-weight: 400;
+}
+
+/* 警告提示 */
+.alert {
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.alert i {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.alert-warning {
+    background: #FFF8E1;
+    color: #FF9500;
+    border: 1px solid #FFE082;
+}
+
+.alert-danger {
+    background: #FFEBEE;
+    color: #FF3B30;
+    border: 1px solid #FFCDD2;
+}
+
+.alert strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.alert p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* 密钥网格布局 */
+.keys-grid {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
+}
+
+.loading-container {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 40px;
+    color: #8e8e93;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: #8e8e93;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    margin: 0 0 8px 0;
+    color: #6e6e73;
+    font-size: 18px;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* 密钥卡片 */
+.key-card {
+    background: white;
+    border: 1.5px solid #e5e5ea;
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.key-card:hover {
+    border-color: #007AFF;
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.key-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.key-card-title {
+    flex: 1;
+}
+
+.key-card-title h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.key-card-title p {
+    margin: 0;
+    font-size: 13px;
+    color: #6e6e73;
+}
+
+.key-card-status {
+    flex-shrink: 0;
+}
+
+.key-prefix {
+    display: block;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    color: #007AFF;
+    background: #F5F5F7;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    word-break: break-all;
+}
+
+.key-meta {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #FAFAFA;
+    border-radius: 8px;
+}
+
+.key-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.key-meta-label {
+    font-size: 12px;
+    color: #6e6e73;
+    font-weight: 600;
+}
+
+.key-meta-value {
+    font-size: 14px;
+    color: #1d1d1f;
+    font-weight: 500;
+}
+
+.key-scopes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.scope-tag {
+    padding: 4px 10px;
+    background: #E5F1FF;
+    color: #007AFF;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.key-card-footer {
+    display: flex;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid #F5F5F7;
+}
+
+.key-card-footer .btn {
+    flex: 1;
+    justify-content: center;
+}
+
+/* 使用指南 */
+.guide-content {
+    padding: 24px;
+}
+
+.guide-content h3 {
+    margin: 24px 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.guide-content h3:first-child {
+    margin-top: 0;
+}
+
+.guide-content p {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #6e6e73;
+    line-height: 1.6;
+}
+
+.guide-content ul {
+    margin: 0;
+    padding-left: 24px;
+}
+
+.guide-content li {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #6e6e73;
+    line-height: 1.6;
+}
+
+/* 代码块 */
+.code-block {
+    position: relative;
+    margin: 12px 0;
+    background: #1d1d1f;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.code-block code,
+.code-block pre {
+    display: block;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    color: #00D66B;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.copy-btn.copied {
+    background: #34C759;
+    border-color: #34C759;
+}
+
+/* 密钥显示 */
+.key-display {
+    margin: 20px 0;
+}
+
+.key-display label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.key-value {
+    display: flex;
+    gap: 12px;
+    background: #1d1d1f;
+    padding: 16px;
+    border-radius: 10px;
+    align-items: center;
+}
+
+.key-value code {
+    flex: 1;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    color: #00D66B;
+    word-break: break-all;
+}
+
+.key-value .copy-btn {
+    position: static;
+    flex-shrink: 0;
+}
+
+.key-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+    padding: 16px;
+    background: #F5F5F7;
+    border-radius: 10px;
+}
+
+.key-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.key-info-label {
+    font-size: 12px;
+    color: #6e6e73;
+    font-weight: 600;
+}
+
+.key-info-value {
+    font-size: 14px;
+    color: #1d1d1f;
+}
+
+/* 表单扩展 */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid #d2d2d7;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: white;
+    transition: all 0.2s;
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #007AFF;
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .keys-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .key-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .key-info {
+        grid-template-columns: 1fr;
+    }
+}

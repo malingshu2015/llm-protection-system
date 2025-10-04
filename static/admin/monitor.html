@@ -8,7 +8,12 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>监控中心 - 本地大模型防护系统</title>
+
+    <!-- 认证模块 (必须最先加载) -->
+    <script src="/static/admin/js/auth-check.js"></script>
+
     <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/auth-header.css">
     <script src="/static/admin/js/apple-ui.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -498,6 +503,15 @@
 </head>
 
 <body>
+    <!-- 认证头部 -->
+    <div class="auth-header">
+        <div class="auth-header-logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>LLM 防护系统 - 监控中心</span>
+        </div>
+        <div id="currentUser"></div>
+    </div>
+
     <div class="container">
         <!-- 侧边栏 -->
         <aside class="sidebar">
@@ -879,11 +893,24 @@
         let systemStartTime = Date.now(); // 模拟系统启动时间
         let topologyData = null;
 
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeMonitoringCenter();
-            setupEventListeners();
-            startAutoRefresh();
+        // 初始化认证和页面
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 先进行认证检查
+            const authenticated = await authManager.init({
+                userElementId: 'currentUser',
+                autoRefresh: true,
+                onAuthSuccess: (user) => {
+                    console.log('用户认证成功:', user.username);
+                    // 认证成功后初始化监控中心
+                    initializeMonitoringCenter();
+                    setupEventListeners();
+                    startAutoRefresh();
+                }
+            });
+
+            if (!authenticated) {
+                return; // 认证失败会自动跳转到登录页
+            }
         });
 
         function initializeMonitoringCenter() {
@@ -953,8 +980,8 @@
 
         async function loadMonitoringData() {
             try {
-                // 加载系统指标
-                const metricsResponse = await fetch('/api/v1/metrics');
+                // 加载系统指标 (使用认证的fetch)
+                const metricsResponse = await authManager.authenticatedFetch('/api/v1/metrics');
                 if (metricsResponse.ok) {
                     const data = await metricsResponse.json();
                     updateSystemMetrics(data);
@@ -1185,9 +1212,9 @@
 
         async function updateRealtimeChart() {
             const timeRange = parseInt(document.getElementById('metrics-time-range').value);
-            
+
             try {
-                const response = await fetch(`/api/v1/metrics/resource?minutes=${timeRange}`);
+                const response = await authManager.authenticatedFetch(`/api/v1/metrics/resource?minutes=${timeRange}`);
                 if (response.ok) {
                     const data = await response.json();
                     
@@ -1222,9 +1249,9 @@
 
         async function updateSecurityEventsChart() {
             const timeRange = parseInt(document.getElementById('events-time-range').value);
-            
+
             try {
-                const response = await fetch(`/api/v1/metrics/events?days=${timeRange}`);
+                const response = await authManager.authenticatedFetch(`/api/v1/metrics/events?days=${timeRange}`);
                 if (response.ok) {
                     const data = await response.json();
                     
@@ -1250,7 +1277,7 @@
 
         async function updateModelUsageChart() {
             try {
-                const response = await fetch('/api/v1/metrics/models');
+                const response = await authManager.authenticatedFetch('/api/v1/metrics/models');
                 if (response.ok) {
                     const data = await response.json();
                     
@@ -1326,7 +1353,7 @@
         
         async function updateTopology() {
             try {
-                const response = await fetch('/api/v1/topology');
+                const response = await authManager.authenticatedFetch('/api/v1/topology');
                 if (response.ok) {
                     topologyData = await response.json();
                     renderTopology(topologyData);

@@ -120,7 +120,7 @@ class ConversationTracker:
     
     def reset_conversation(self, conversation_id: str) -> None:
         """重置对话，清理存在安全威胁的对话历史。
-        
+
         Args:
             conversation_id: 要重置的对话ID
         """
@@ -128,8 +128,10 @@ class ConversationTracker:
             conversation = self.conversations[conversation_id]
             # 清理所有消息历史
             conversation.messages.clear()
+            # 重置攻陷标记
+            conversation.is_compromised = False
             conversation.updated_at = time.time()
-            logger.info(f"重置对话: {conversation_id}，清理所有消息历史")
+            logger.info(f"重置对话: {conversation_id}，清理所有消息历史并重置攻陷标记")
         else:
             logger.warning(f"尝试重置不存在的对话: {conversation_id}")
     
@@ -186,23 +188,20 @@ class ConversationTracker:
     
     def _extract_conversation_id(self, request: InterceptedRequest) -> Optional[str]:
         """从请求中提取对话ID。"""
-        # 可以从请求头或查询参数中提取
+        # 优先从请求头中提取明确指定的对话ID
         if request.headers:
             conversation_id = request.headers.get("X-Conversation-ID")
             if conversation_id:
                 return conversation_id
-        
+
         # 尝试从查询参数中提取
         if request.query_params:
             conversation_id = request.query_params.get("conversation_id")
             if conversation_id:
                 return conversation_id
-        
-        # 基于客户端IP生成稳定的对话ID（但需要考虑安全拦截后的清理）
-        # 使用客户端IP作为基础，但当检测到安全威胁时需要重置
-        if hasattr(request, 'client_ip') and request.client_ip:
-            return f"client_{request.client_ip}"
-        
+
+        # 如果客户端没有提供对话ID，返回None让系统为每个请求创建新的对话ID
+        # 这样可以避免基于IP的对话共享导致的上下文污染问题
         return None
     
     def _extract_model_from_request(self, request: InterceptedRequest) -> Optional[str]:

@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双因素认证设置 - 大模型防护系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .status-enabled {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disabled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .step-item {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .step-item.active .step-circle {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .step-item.completed .step-circle {
+            background: #28a745;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .qr-container {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .qr-code {
+            max-width: 250px;
+            margin: 0 auto;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+        }
+
+        .secret-key {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px dashed #667eea;
+        }
+
+        .secret-key-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .secret-key-value {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            color: #333;
+            font-weight: bold;
+            word-break: break-all;
+            user-select: all;
+        }
+
+        .backup-codes {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .backup-codes-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .backup-codes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .backup-code {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.3em;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #0c5460;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>🔐 双因素认证</h1>
+                <p>保护您的账户安全</p>
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px; color: #666;">加载中...</p>
+            </div>
+
+            <div id="alert" class="alert"></div>
+
+            <!-- 2FA 已启用界面 -->
+            <div id="enabled-view" style="display: none;">
+                <div style="text-align: center;">
+                    <div class="status-badge status-enabled">✓ 双因素认证已启用</div>
+                </div>
+
+                <div class="info-box">
+                    <strong>✅ 您的账户已受到双因素认证保护</strong><br>
+                    每次登录时需要提供验证码
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                        剩余备用码: <strong id="backup-codes-count">0</strong> 个
+                    </p>
+                </div>
+
+                <button class="btn btn-secondary" onclick="regenerateBackupCodes()">
+                    🔄 重新生成备用码
+                </button>
+                <button class="btn btn-danger" onclick="disable2FA()">
+                    关闭双因素认证
+                </button>
+                <button class="btn btn-secondary" onclick="goBack()">
+                    返回
+                </button>
+            </div>
+
+            <!-- 2FA 设置流程 -->
+            <div id="setup-view" style="display: none;">
+                <!-- 步骤指示器 -->
+                <div class="step-indicator">
+                    <div class="step-item" id="indicator-1">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">扫描二维码</div>
+                    </div>
+                    <div class="step-item" id="indicator-2">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">验证码确认</div>
+                    </div>
+                    <div class="step-item" id="indicator-3">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">保存备用码</div>
+                    </div>
+                </div>
+
+                <!-- 步骤 1: 扫描二维码 -->
+                <div class="step active" id="step-1">
+                    <h3 style="margin-bottom: 20px;">步骤 1: 扫描二维码</h3>
+
+                    <div class="info-box">
+                        使用 Google Authenticator、Microsoft Authenticator 或其他 TOTP 应用扫描下方二维码
+                    </div>
+
+                    <div class="qr-container">
+                        <img id="qr-code" class="qr-code" src="" alt="QR Code">
+                    </div>
+
+                    <div class="secret-key">
+                        <div class="secret-key-label">无法扫描? 手动输入密钥:</div>
+                        <div class="secret-key-value" id="secret-key"></div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="nextStep(2)">
+                        下一步 →
+                    </button>
+                    <button class="btn btn-secondary" onclick="goBack()">
+                        取消
+                    </button>
+                </div>
+
+                <!-- 步骤 2: 验证码确认 -->
+                <div class="step" id="step-2">
+                    <h3 style="margin-bottom: 20px;">步骤 2: 输入验证码</h3>
+
+                    <div class="info-box">
+                        请输入您的身份验证应用显示的 6 位数验证码
+                    </div>
+
+                    <div class="form-group">
+                        <label for="verify-code">验证码</label>
+                        <input
+                            type="text"
+                            id="verify-code"
+                            maxlength="6"
+                            placeholder="000000"
+                            pattern="[0-9]{6}"
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <button class="btn btn-primary" onclick="enableTwoFactor()">
+                        验证并启用
+                    </button>
+                    <button class="btn btn-secondary" onclick="prevStep(1)">
+                        ← 上一步
+                    </button>
+                </div>
+
+                <!-- 步骤 3: 保存备用码 -->
+                <div class="step" id="step-3">
+                    <h3 style="margin-bottom: 20px;">步骤 3: 保存备用码</h3>
+
+                    <div class="backup-codes">
+                        <div class="backup-codes-title">
+                            ⚠️ 请妥善保存这些备用码
+                        </div>
+                        <p style="font-size: 13px; color: #856404; margin-top: 5px;">
+                            当您无法访问身份验证应用时，可以使用备用码登录。每个备用码只能使用一次。
+                        </p>
+                        <div class="backup-codes-grid" id="backup-codes-grid"></div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button class="btn btn-secondary" onclick="downloadBackupCodes()" style="flex: 1;">
+                            📥 下载备用码
+                        </button>
+                        <button class="btn btn-secondary" onclick="copyBackupCodes()" style="flex: 1;">
+                            📋 复制备用码
+                        </button>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="finish()">
+                        完成设置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/static/admin/login.html';
+        }
+
+        let setupData = null;
+        let backupCodes = [];
+
+        // 检查 2FA 状态
+        async function check2FAStatus() {
+            try {
+                const response = await fetch('/api/v1/2fa/status', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/static/admin/login.html';
+                    return;
+                }
+
+                if (!response.ok) throw new Error('获取状态失败');
+
+                const data = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (data.is_enabled) {
+                    // 已启用
+                    document.getElementById('enabled-view').style.display = 'block';
+                    document.getElementById('backup-codes-count').textContent = data.backup_codes_remaining;
+                } else {
+                    // 未启用，开始设置流程
+                    await setup2FA();
+                }
+            } catch (error) {
+                showAlert('加载失败: ' + error.message, 'error');
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // 设置 2FA
+        async function setup2FA() {
+            try {
+                const response = await fetch('/api/v1/2fa/setup', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || '设置失败');
+                }
+
+                setupData = await response.json();
+                backupCodes = setupData.backup_codes;
+
+                // 显示 QR 码和密钥
+                document.getElementById('qr-code').src = setupData.qr_code_url;
+                document.getElementById('secret-key').textContent = setupData.secret;
+
+                document.getElementById('setup-view').style.display = 'block';
+                updateStepIndicator(1);
+            } catch (error) {
+                showAlert('设置失败: ' + error.message, 'error');
+            }
+        }
+
+        // 启用 2FA
+        async function enableTwoFactor() {
+            const code = document.getElementById('verify-code').value.trim();
+
+            if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+                showAlert('请输入 6 位数字验证码', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/v1/2fa/enable', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || '验证失败');
+                }
+
+                showAlert('验证成功! 双因素认证已启用', 'success');
+
+                // 显示备用码
+                displayBackupCodes();
+                nextStep(3);
+            } catch (error) {
+                showAlert('验证失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示备用码
+        function displayBackupCodes() {
+            const grid = document.getElementById('backup-codes-grid');
+            grid.innerHTML = backupCodes.map(code =>
+                `<div class="backup-code">${code}</div>`
+            ).join('');
+        }
+
+        // 下载备用码
+        function downloadBackupCodes() {
+            const text = '双因素认证备用码\n\n' + backupCodes.join('\n') +
+                         '\n\n⚠️ 每个备用码只能使用一次\n请妥善保存这些备用码';
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '2FA-backup-codes.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 复制备用码
+        function copyBackupCodes() {
+            const text = backupCodes.join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert('备用码已复制到剪贴板', 'success');
+            });
+        }
+
+        // 重新生成备用码
+        async function regenerateBackupCodes() {
+            if (!confirm('确定要重新生成备用码吗？旧的备用码将失效。')) return;
+
+            try {
+                const response = await fetch('/api/v1/2fa/regenerate-backup-codes', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('重新生成失败');
+
+                const data = await response.json();
+                backupCodes = data.backup_codes;
+
+                // 显示新备用码
+                alert('新备用码:\n\n' + backupCodes.join('\n') + '\n\n请妥善保存!');
+                downloadBackupCodes();
+            } catch (error) {
+                showAlert('重新生成失败: ' + error.message, 'error');
+            }
+        }
+
+        // 禁用 2FA
+        async function disable2FA() {
+            const password = prompt('请输入您的密码以禁用双因素认证:');
+            if (!password) return;
+
+            try {
+                const response = await fetch('/api/v1/2fa/disable', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || '禁用失败');
+                }
+
+                showAlert('双因素认证已禁用', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                showAlert('禁用失败: ' + error.message, 'error');
+            }
+        }
+
+        // 步骤导航
+        function nextStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+            updateStepIndicator(step);
+        }
+
+        function prevStep(step) {
+            nextStep(step);
+        }
+
+        function updateStepIndicator(step) {
+            for (let i = 1; i <= 3; i++) {
+                const indicator = document.getElementById(`indicator-${i}`);
+                if (i < step) {
+                    indicator.classList.add('completed');
+                    indicator.classList.remove('active');
+                } else if (i === step) {
+                    indicator.classList.add('active');
+                    indicator.classList.remove('completed');
+                } else {
+                    indicator.classList.remove('active', 'completed');
+                }
+            }
+        }
+
+        // 完成设置
+        function finish() {
+            showAlert('双因素认证设置完成!', 'success');
+            setTimeout(() => goBack(), 1500);
+        }
+
+        // 返回
+        function goBack() {
+            window.location.href = '/static/admin/users.html';
+        }
+
+        // 显示提示
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        // 页面加载
+        check2FAStatus();
+    </script>
+</body>
+</html>

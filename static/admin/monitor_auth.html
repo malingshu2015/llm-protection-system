@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>监控中心 - 本地大模型防护系统</title>
+
+    <!-- 认证头部样式 -->
+    <link rel="stylesheet" href="/static/admin/css/auth-header.css">
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+
+    <!-- 认证检查脚本 (必须最先加载) -->
+    <script src="/static/admin/js/auth-check.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/admin/js/apple-ui.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* 监控中心专用样式保持不变 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --danger-color: #FF3B30;
+            --info-color: #5AC8FA;
+            --surface-color: #FFFFFF;
+            --surface-secondary: #F2F2F7;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f5f7;
+        }
+
+        .page-container {
+            padding-top: 60px; /* 为固定头部留空间 */
+        }
+
+        /* 添加内容包装器 */
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 认证头部 -->
+    <div class="auth-header">
+        <div class="auth-header-logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>LLM 防护系统 - 监控中心</span>
+        </div>
+        <div id="currentUser"></div>
+    </div>
+
+    <!-- 页面内容 -->
+    <div class="page-container">
+        <div class="content-wrapper">
+            <!-- 原有的监控页面内容 -->
+            <div class="monitor-status">
+                <span class="status-indicator online"></span>
+                <span>系统运行中</span>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- 原有的监控卡片内容... -->
+                <div class="card">
+                    <h3>系统概览</h3>
+                    <p>监控内容加载中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化认证
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 初始化认证管理器
+            const authenticated = await authManager.init({
+                userElementId: 'currentUser',
+                autoRefresh: true,
+                onAuthSuccess: (user) => {
+                    console.log('用户认证成功:', user);
+                    // 可以根据用户角色加载不同内容
+                    loadMonitorData();
+                },
+                onAuthFailure: () => {
+                    console.log('认证失败,跳转登录页');
+                }
+            });
+
+            if (!authenticated) {
+                return; // 认证失败会自动跳转
+            }
+
+            // 权限控制示例 - 只有管理员和安全分析师可以看到某些功能
+            authManager.showForRole('.admin-only', ['admin', 'super_admin']);
+            authManager.showForRole('.analyst-feature', ['security_analyst', 'admin', 'super_admin']);
+        });
+
+        // 加载监控数据
+        async function loadMonitorData() {
+            try {
+                // 使用认证的fetch
+                const response = await authManager.authenticatedFetch('/api/v1/metrics');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('监控数据:', data);
+                    // 更新UI...
+                }
+            } catch (error) {
+                console.error('加载监控数据失败:', error);
+            }
+        }
+    </script>
+</body>
+</html>

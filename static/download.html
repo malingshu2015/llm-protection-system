@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下载 LLM 防护客户端</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .version {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .platforms {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .platform-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .platform-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .platform-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .platform-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .platform-desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .download-btn.secondary {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 25px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .features {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .features h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            color: #555;
+            font-size: 1rem;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .system-requirements {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 5px;
+        }
+
+        .system-requirements h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .system-requirements p {
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .platforms {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ LLM 防护客户端</h1>
+            <p>安全、快速、跨平台的大模型访问客户端</p>
+            <span class="version">v1.0.0</span>
+        </div>
+
+        <div class="content">
+            <div class="platforms">
+                <!-- Windows -->
+                <div class="platform-card">
+                    <div class="platform-icon">🪟</div>
+                    <div class="platform-name">Windows</div>
+                    <div class="platform-desc">Windows 10/11 (64-bit)</div>
+                    <a href="/downloads/llm-protection-client-setup.exe" class="download-btn">
+                        下载 .exe 安装包
+                    </a>
+                    <br>
+                    <a href="/downloads/llm-protection-client-portable.exe" class="download-btn secondary">
+                        便携版
+                    </a>
+                </div>
+
+                <!-- macOS -->
+                <div class="platform-card">
+                    <div class="platform-icon">🍎</div>
+                    <div class="platform-name">macOS</div>
+                    <div class="platform-desc">macOS 10.15+ (Intel/Apple Silicon)</div>
+                    <a href="/downloads/llm-protection-client.dmg" class="download-btn">
+                        下载 .dmg 镜像
+                    </a>
+                    <br>
+                    <a href="/downloads/llm-protection-client.zip" class="download-btn secondary">
+                        .zip 压缩包
+                    </a>
+                </div>
+
+                <!-- Linux -->
+                <div class="platform-card">
+                    <div class="platform-icon">🐧</div>
+                    <div class="platform-name">Linux</div>
+                    <div class="platform-desc">Ubuntu/Debian/Fedora</div>
+                    <a href="/downloads/llm-protection-client.AppImage" class="download-btn">
+                        下载 AppImage
+                    </a>
+                    <br>
+                    <a href="/downloads/llm-protection-client.deb" class="download-btn secondary">
+                        .deb 包
+                    </a>
+                </div>
+            </div>
+
+            <div class="features">
+                <h2>✨ 核心特性</h2>
+                <ul class="feature-list">
+                    <li><strong>双层安全过滤</strong> - 本地 + 服务器端双重保护</li>
+                    <li><strong>实时策略同步</strong> - 自动更新最新安全规则</li>
+                    <li><strong>流式响应支持</strong> - 流畅的对话体验</li>
+                    <li><strong>离线过滤能力</strong> - 即使断网也能进行基本安全检测</li>
+                    <li><strong>多账户支持</strong> - 支持多个 LLM 服务账户切换</li>
+                    <li><strong>会话管理</strong> - 完整的对话历史记录</li>
+                    <li><strong>隐私保护</strong> - 所有敏感数据本地加密存储</li>
+                    <li><strong>跨平台一致体验</strong> - Windows、macOS、Linux 统一界面</li>
+                </ul>
+            </div>
+
+            <div class="system-requirements">
+                <h3>📋 系统要求</h3>
+                <p>
+                    <strong>最低配置:</strong><br>
+                    • 操作系统: Windows 10/macOS 10.15/Ubuntu 18.04 或更高版本<br>
+                    • 内存: 4GB RAM<br>
+                    • 存储: 500MB 可用空间<br>
+                    • 网络: 稳定的互联网连接<br>
+                    <br>
+                    <strong>推荐配置:</strong><br>
+                    • 内存: 8GB RAM 或更高<br>
+                    • 处理器: 双核 2.0GHz 或更高<br>
+                </p>
+            </div>
+
+            <div style="margin-top: 30px; text-align: center; color: #666;">
+                <p>需要帮助? <a href="/docs" style="color: #667eea;">查看文档</a> | <a href="https://github.com/llm-protection/client/issues" style="color: #667eea;">反馈问题</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 自动检测用户操作系统并高亮对应平台
+        window.addEventListener('DOMContentLoaded', () => {
+            const platform = navigator.platform.toLowerCase();
+            const cards = document.querySelectorAll('.platform-card');
+
+            cards.forEach(card => {
+                const name = card.querySelector('.platform-name').textContent.toLowerCase();
+
+                if ((platform.includes('win') && name.includes('windows')) ||
+                    (platform.includes('mac') && name.includes('macos')) ||
+                    (platform.includes('linux') && name.includes('linux'))) {
+                    card.style.borderColor = '#667eea';
+                    card.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.2)';
+                }
+            });
+        });
+
+        // 统计下载次数
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const platform = this.closest('.platform-card')?.querySelector('.platform-name')?.textContent || 'unknown';
+                const fileType = this.textContent.trim();
+
+                // 发送统计信息到服务器
+                fetch('/api/v1/client/download-stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ platform, fileType, timestamp: new Date().toISOString() })
+                }).catch(() => {}); // 静默失败
+            });
+        });
+    </script>
+</body>
+</html>

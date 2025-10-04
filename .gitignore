@@ -126,3 +126,20 @@ docker-compose.override.yml
 .env.development
 .env.test
 .env.production
+
+# Playwright MCP
+.playwright-mcp/
+
+# Test files (temporary)
+*_test.py
+test_*.py
+validation_*.py
+verify_*.py
+simple_*.py
+chatwise_*.py
+
+# Validation files
+enhanced_detection_validation.json
+
+# Articles and drafts
+wechat_article.md

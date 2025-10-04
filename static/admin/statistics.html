@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户统计面板 - 大模型防护系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .header .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            color: #333;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .change {
+            font-size: 13px;
+            color: #28a745;
+        }
+
+        .stat-card.warning .value {
+            color: #ff6b6b;
+        }
+
+        .chart-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .table-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .table-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table thead {
+            background: #f8f9fa;
+        }
+
+        table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+            color: #555;
+        }
+
+        table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-admin {
+            background: #ffc107;
+            color: #fff;
+        }
+
+        .badge-user {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .badge-super-admin {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .badge-security-analyst {
+            background: #17a2b8;
+            color: #fff;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* 简单的图表样式 */
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 200px;
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .bar:hover {
+            opacity: 0.8;
+        }
+
+        .bar-label {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #333;
+        }
+
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 用户统计面板</h1>
+            <div class="actions">
+                <a href="/static/admin/users.html" class="btn btn-secondary">用户管理</a>
+                <a href="/static/index.html" class="btn btn-primary">返回首页</a>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">正在加载统计数据...</div>
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="content" style="display: none;">
+            <!-- 核心统计指标 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">总用户数</div>
+                    <div class="value" id="totalUsers">0</div>
+                    <div class="change" id="newUsersToday">今日新增: 0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">活跃用户</div>
+                    <div class="value" id="activeUsers">0</div>
+                    <div class="change" id="activePercent">占比: 0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">已验证用户</div>
+                    <div class="value" id="verifiedUsers">0</div>
+                    <div class="change" id="verifiedPercent">占比: 0%</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="label">锁定用户</div>
+                    <div class="value" id="lockedUsers">0</div>
+                    <div class="change" style="color: #ff6b6b;" id="lockedPercent">占比: 0%</div>
+                </div>
+            </div>
+
+            <!-- 活动统计 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">总操作数</div>
+                    <div class="value" id="totalActions">0</div>
+                    <div class="change" id="successRate">成功率: 0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">今日登录</div>
+                    <div class="value" id="loginsToday">0</div>
+                    <div class="change" id="loginsWeek">本周: 0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">成功操作</div>
+                    <div class="value" id="successfulActions">0</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="label">失败操作</div>
+                    <div class="value" id="failedActions">0</div>
+                </div>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="chart-section">
+                <div class="chart-card">
+                    <h3>用户增长趋势</h3>
+                    <div class="bar-chart">
+                        <div style="flex: 1;">
+                            <div class="bar" id="barToday" style="height: 0%">
+                                <span class="bar-value" id="barTodayValue">0</span>
+                            </div>
+                            <div class="bar-label">今日</div>
+                        </div>
+                        <div style="flex: 1;">
+                            <div class="bar" id="barWeek" style="height: 0%">
+                                <span class="bar-value" id="barWeekValue">0</span>
+                            </div>
+                            <div class="bar-label">本周</div>
+                        </div>
+                        <div style="flex: 1;">
+                            <div class="bar" id="barMonth" style="height: 0%">
+                                <span class="bar-value" id="barMonthValue">0</span>
+                            </div>
+                            <div class="bar-label">本月</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>角色分布</h3>
+                    <div id="roleDistribution" style="padding: 20px;">
+                        <!-- 角色分布将在这里显示 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最活跃用户表格 -->
+            <div class="table-section">
+                <h3>🏆 最活跃用户 (Top 10)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>角色</th>
+                            <th>操作次数</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topUsersTable">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #999;">暂无数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取JWT令牌
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/static/admin/login.html';
+        }
+
+        // 角色徽章映射
+        const roleBadgeMap = {
+            'user': 'badge-user',
+            'admin': 'badge-admin',
+            'super_admin': 'badge-super-admin',
+            'security_analyst': 'badge-security-analyst'
+        };
+
+        const roleNameMap = {
+            'user': '普通用户',
+            'admin': '管理员',
+            'super_admin': '超级管理员',
+            'security_analyst': '安全分析师',
+            'developer': '开发者',
+            'auditor': '审计员'
+        };
+
+        // 加载统计数据
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/v1/statistics/dashboard?days=30', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/static/admin/login.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('加载统计数据失败');
+                }
+
+                const data = await response.json();
+                displayStatistics(data);
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').textContent = error.message;
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        // 显示统计数据
+        function displayStatistics(data) {
+            const { user_stats, activity_stats, role_distribution, top_active_users } = data;
+
+            // 用户统计
+            document.getElementById('totalUsers').textContent = user_stats.total_users;
+            document.getElementById('activeUsers').textContent = user_stats.active_users;
+            document.getElementById('verifiedUsers').textContent = user_stats.verified_users;
+            document.getElementById('lockedUsers').textContent = user_stats.locked_users;
+            document.getElementById('newUsersToday').textContent = `今日新增: ${user_stats.new_users_today}`;
+
+            const activePercent = ((user_stats.active_users / user_stats.total_users) * 100).toFixed(1);
+            const verifiedPercent = ((user_stats.verified_users / user_stats.total_users) * 100).toFixed(1);
+            const lockedPercent = ((user_stats.locked_users / user_stats.total_users) * 100).toFixed(1);
+
+            document.getElementById('activePercent').textContent = `占比: ${activePercent}%`;
+            document.getElementById('verifiedPercent').textContent = `占比: ${verifiedPercent}%`;
+            document.getElementById('lockedPercent').textContent = `占比: ${lockedPercent}%`;
+
+            // 活动统计
+            document.getElementById('totalActions').textContent = activity_stats.total_actions;
+            document.getElementById('successfulActions').textContent = activity_stats.successful_actions;
+            document.getElementById('failedActions').textContent = activity_stats.failed_actions;
+            document.getElementById('loginsToday').textContent = activity_stats.logins_today;
+            document.getElementById('loginsWeek').textContent = `本周: ${activity_stats.logins_this_week}`;
+
+            const successRate = ((activity_stats.successful_actions / activity_stats.total_actions) * 100).toFixed(1);
+            document.getElementById('successRate').textContent = `成功率: ${successRate}%`;
+
+            // 用户增长趋势图
+            const maxUsers = Math.max(user_stats.new_users_today, user_stats.new_users_this_week, user_stats.new_users_this_month);
+
+            if (maxUsers > 0) {
+                const todayHeight = (user_stats.new_users_today / maxUsers) * 100;
+                const weekHeight = (user_stats.new_users_this_week / maxUsers) * 100;
+                const monthHeight = (user_stats.new_users_this_month / maxUsers) * 100;
+
+                document.getElementById('barToday').style.height = `${todayHeight}%`;
+                document.getElementById('barWeek').style.height = `${weekHeight}%`;
+                document.getElementById('barMonth').style.height = `${monthHeight}%`;
+
+                document.getElementById('barTodayValue').textContent = user_stats.new_users_today;
+                document.getElementById('barWeekValue').textContent = user_stats.new_users_this_week;
+                document.getElementById('barMonthValue').textContent = user_stats.new_users_this_month;
+            }
+
+            // 角色分布
+            const roleContainer = document.getElementById('roleDistribution');
+            let roleHTML = '<div style="display: grid; gap: 10px;">';
+            for (const [role, count] of Object.entries(role_distribution)) {
+                if (count > 0) {
+                    const percent = ((count / user_stats.total_users) * 100).toFixed(1);
+                    roleHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                            <span style="font-weight: 500;">${roleNameMap[role]}</span>
+                            <span style="color: #667eea; font-weight: bold;">${count} (${percent}%)</span>
+                        </div>
+                    `;
+                }
+            }
+            roleHTML += '</div>';
+            roleContainer.innerHTML = roleHTML;
+
+            // 最活跃用户表格
+            const tableBody = document.getElementById('topUsersTable');
+            if (top_active_users.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">暂无数据</td></tr>';
+            } else {
+                tableBody.innerHTML = top_active_users.map((user, index) => `
+                    <tr>
+                        <td><strong>${index + 1}</strong></td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td><span class="badge ${roleBadgeMap[user.role] || 'badge-user'}">${roleNameMap[user.role] || user.role}</span></td>
+                        <td><strong>${user.action_count}</strong></td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // 页面加载时执行
+        loadStatistics();
+
+        // 每30秒自动刷新
+        setInterval(loadStatistics, 30000);
+    </script>
+</body>
+</html>

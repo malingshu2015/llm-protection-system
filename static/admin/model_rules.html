@@ -5,15 +5,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>模型安全规则配置 - 本地大模型防护系统</title>
+
+    <!-- 认证模块 (必须最先加载) -->
+    <script src="/static/admin/js/auth-check.js"></script>
+
     <link rel="stylesheet" href="/static/admin/css/apple-main.css">
+    <link rel="stylesheet" href="/static/admin/css/auth-header.css">
     <link rel="stylesheet" href="/static/admin/css/model-rules-enhanced.css">
     <script src="/static/admin/js/apple-ui.js" defer></script>
-    <!-- 保留旧样式以防万一，但不使用 -->
+    <!-- 保留旧样式以防万一,但不使用 -->
     <link rel="stylesheet" href="css/admin.css" media="none">
     <link rel="stylesheet" href="css/model_rules.css" media="none">
 </head>
 
 <body>
+    <!-- 认证头部 -->
+    <div class="auth-header">
+        <div class="auth-header-logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>LLM 防护系统 - 模型规则配置</span>
+        </div>
+        <div id="currentUser"></div>
+    </div>
+
     <div class="container">
         <!-- 侧边栏 -->
         <aside class="sidebar">

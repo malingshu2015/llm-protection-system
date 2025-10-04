@@ -1,0 +1,150 @@
+name: Build and Release Client
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 1.0.0)'
+        required: true
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: llm-client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: llm-client
+        run: npm ci
+
+      - name: Type check
+        working-directory: llm-client
+        run: npm run type-check
+
+      - name: Build Electron app
+        working-directory: llm-client
+        run: npm run build:${{ matrix.platform }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List build artifacts
+        working-directory: llm-client
+        shell: bash
+        run: |
+          echo "Build output:"
+          ls -lh release/*/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-build
+          path: |
+            llm-client/release/**/*.exe
+            llm-client/release/**/*.dmg
+            llm-client/release/**/*.zip
+            llm-client/release/**/*.AppImage
+            llm-client/release/**/*.deb
+          retention-days: 30
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## 🎉 LLM 防护客户端 v${{ steps.get_version.outputs.VERSION }}
+
+            ### 下载链接
+
+            #### Windows
+            - [Windows 安装包 (.exe)](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/llm-protection-client-setup.exe)
+            - [Windows 便携版 (.exe)](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/llm-protection-client-portable.exe)
+
+            #### macOS
+            - [macOS 镜像 (.dmg)](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/llm-protection-client.dmg)
+            - [macOS 压缩包 (.zip)](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/llm-protection-client.zip)
+
+            #### Linux
+            - [Linux AppImage](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/llm-protection-client.AppImage)
+            - [Debian 包 (.deb)](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/llm-protection-client.deb)
+
+            ### 📝 更新日志
+
+            详见 [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+
+            ### 📋 系统要求
+
+            - **Windows**: Windows 10/11 (64-bit)
+            - **macOS**: macOS 10.15+ (Intel/Apple Silicon)
+            - **Linux**: Ubuntu 18.04+ / Debian 10+ / Fedora 33+
+
+            ---
+
+            🤖 Built with GitHub Actions
+          files: |
+            artifacts/**/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    name: Notify Build Status
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Build Status
+        run: |
+          if [ "${{ needs.build.result }}" == "success" ]; then
+            echo "✅ Build succeeded"
+          else
+            echo "❌ Build failed"
+            exit 1
+          fi
