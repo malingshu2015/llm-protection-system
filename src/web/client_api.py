@@ -146,3 +146,30 @@ async def report_issue(
         "issue_id": f"issue_{datetime.utcnow().timestamp()}",
         "message": "问题已记录，感谢您的反馈"
     }
+
+
+class DownloadStats(BaseModel):
+    """下载统计"""
+    platform: str
+    fileType: str
+    timestamp: str
+
+
+@router.post("/download-stats")
+async def record_download_stats(stats: DownloadStats):
+    """记录客户端下载统计
+
+    Args:
+        stats: 下载统计信息
+
+    Returns:
+        记录结果
+    """
+
+    # TODO: 将下载统计保存到数据库或日志文件
+    # 这里可以用于分析哪个平台的客户端更受欢迎
+
+    return {
+        "success": True,
+        "message": "统计已记录"
+    }
