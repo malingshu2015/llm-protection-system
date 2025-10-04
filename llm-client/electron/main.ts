@@ -25,7 +25,8 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     // 生产环境加载构建后的文件
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    const indexPath = path.join(app.getAppPath(), 'dist', 'index.html');
+    mainWindow.loadFile(indexPath);
   }
 
   // 窗口准备好后显示
