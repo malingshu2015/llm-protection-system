@@ -9,6 +9,9 @@ on:
       version:
         description: 'Version to build (e.g., 1.0.0)'
         required: true
+permissions:
+  contents: write
+
 
 jobs:
   build:
