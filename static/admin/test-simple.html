@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>简单测试</title>
+</head>
+<body>
+    <h1>简单连接测试</h1>
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+
+        function log(msg) {
+            const p = document.createElement('p');
+            p.textContent = msg;
+            output.appendChild(p);
+            console.log(msg);
+        }
+
+        log('1. 页面开始加载');
+
+        // 立即检查authManager
+        setTimeout(() => {
+            log('2. 检查authManager: ' + (typeof authManager !== 'undefined' ? '存在' : '不存在'));
+            if (typeof authManager !== 'undefined') {
+                log('3. 尝试调用authManager.init()');
+                authManager.init({
+                    onAuthSuccess: (user) => {
+                        log('4. 认证成功: ' + user.username);
+
+                        // 测试API
+                        fetch('/api/v1/metrics')
+                            .then(r => r.json())
+                            .then(data => {
+                                log('5. API测试成功: CPU=' + data.cpu_usage + '%');
+                            })
+                            .catch(err => {
+                                log('5. API测试失败: ' + err.message);
+                            });
+                    },
+                    onAuthFailure: () => {
+                        log('4. 认证失败');
+                    }
+                }).then(result => {
+                    log('3. init()返回: ' + result);
+                }).catch(err => {
+                    log('3. init()错误: ' + err.message);
+                });
+            }
+        }, 100);
+    </script>
+
+    <!-- 按顺序加载脚本 -->
+    <script src="/static/admin/js/auth-check.js"></script>
+</body>
+</html>

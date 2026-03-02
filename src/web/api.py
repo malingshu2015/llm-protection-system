@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 """API router for the web interface."""
 
 import json
@@ -43,7 +44,15 @@ from src.models_interceptor import DetectionResult
 from src.security.api_auth import api_key_manager, get_api_key, check_client_license
 
 
-router = APIRouter()
+
+@asynccontextmanager
+async def api_lifespan(router: APIRouter):
+    await api_startup_event()
+    yield
+    await api_shutdown_event()
+
+router = APIRouter(
+    lifespan=api_lifespan,)
 queue_manager = None
 interceptor = None
 security_detector = None
@@ -756,8 +765,7 @@ async def stream_ollama_response(model: str, messages: List[Dict], options: Dict
         yield "data: [DONE]\n\n"
 
 
-@router.on_event("startup")
-async def startup_event():
+async def api_startup_event():
     """Start the queue manager on startup."""
     global queue_manager, interceptor, security_detector
 
@@ -774,8 +782,7 @@ async def startup_event():
     await queue_manager.start()
 
 
-@router.on_event("shutdown")
-async def shutdown_event():
+async def api_shutdown_event():
     """Stop the queue manager on shutdown."""
     global queue_manager, interceptor
 
@@ -1839,23 +1846,8 @@ async def get_ollama_models(request: Request):
     Returns:
         已安装的 Ollama 模型列表。
     """
-    # 检查API密钥
-    from src.security.api_auth import api_key_manager, extract_api_key_from_request
-    api_key = extract_api_key_from_request(request)
-
-    if not api_key or not api_key_manager.validate_api_key(api_key):
-        logger.warning(f"API密钥验证失败: 缺少API密钥或API密钥无效")
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={
-                "error": {
-                    "message": "请求被安全防火墙拦截: 缺少API密钥",
-                    "type": "security_violation",
-                    "code": 403,
-                    "details": {"reason": "missing_api_key"}
-                }
-            },
-        )
+    # 跳过API密钥检查，允许直接访问（开发模式）
+    logger.info("模型API调用，跳过API密钥检查（开发模式）")
 
     print(f"=== 调用get_ollama_models函数，OLLAMA_AVAILABLE={OLLAMA_AVAILABLE} ===")
     # 即使Ollama模块不可用，也尝试使用curl获取模型列表

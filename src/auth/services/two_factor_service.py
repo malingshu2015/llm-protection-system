@@ -6,7 +6,7 @@ import qrcode
 import io
 import base64
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -196,8 +196,8 @@ class TwoFactorService:
 
         # 启用2FA
         tfa.is_enabled = True
-        tfa.enabled_at = datetime.utcnow()
-        tfa.last_used = datetime.utcnow()
+        tfa.enabled_at = datetime.now(timezone.utc)
+        tfa.last_used = datetime.now(timezone.utc)
 
         # 保存
         self._save(tfa)
@@ -222,7 +222,7 @@ class TwoFactorService:
         # 先尝试验证TOTP码
         totp = pyotp.TOTP(tfa.secret)
         if totp.verify(code, valid_window=1):
-            tfa.last_used = datetime.utcnow()
+            tfa.last_used = datetime.now(timezone.utc)
             self._save(tfa)
             return True
 
@@ -230,7 +230,7 @@ class TwoFactorService:
         if code in tfa.backup_codes:
             # 使用备用码后立即删除
             tfa.backup_codes.remove(code)
-            tfa.last_used = datetime.utcnow()
+            tfa.last_used = datetime.now(timezone.utc)
             self._save(tfa)
             logger.warning(f"用户 {user_id} 使用了备用码，剩余 {len(tfa.backup_codes)} 个")
             return True

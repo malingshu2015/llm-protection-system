@@ -8,14 +8,14 @@ from typing import Dict, Set, Optional
 import json
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.auth.services.auth_service import auth_service
 from src.auth.models.user import User
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/client", tags=["客户端网关"])
+router = APIRouter(tags=["客户端网关"])
 
 
 class ConnectionManager:
@@ -70,24 +70,30 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-@router.websocket("/ws")
+@router.websocket("/api/v1/client/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
     token: str = Query(..., description="认证令牌"),
     client_id: str = Query(..., description="客户端ID")
 ):
     """WebSocket 端点"""
+    logger.info(f"[WebSocket] 新连接请求: client_id={client_id}, token前10位={token[:10] if token else 'None'}")
     user: Optional[User] = None
 
     try:
         # 1. 验证 token
+        logger.info(f"[WebSocket] 开始验证token: client_id={client_id}")
         user = await auth_service.verify_token(token)
         if not user:
+            logger.warning(f"[WebSocket] Token验证失败: client_id={client_id}, token={token[:20]}...")
             await websocket.close(code=4001, reason="未授权")
             return
 
+        logger.info(f"[WebSocket] Token验证成功: user_id={user.id}, username={user.username}, client_id={client_id}")
+
         # 2. 建立连接
         await manager.connect(websocket, user.id, client_id)
+        logger.info(f"[WebSocket] 连接已建立: user_id={user.id}, client_id={client_id}")
 
         # 3. 发送欢迎消息
         await websocket.send_json({
@@ -97,12 +103,13 @@ async def websocket_endpoint(
                 "username": user.username,
                 "email": user.email,
             },
-            "server_time": datetime.utcnow().isoformat()
+            "server_time": datetime.now(timezone.utc).isoformat()
         })
 
         # 4. 消息循环
         while True:
             data = await websocket.receive_json()
+            logger.info(f"[WebSocket] 收到消息: client_id={client_id}, type={data.get('type')}, data={data}")
             await handle_message(websocket, user, data, client_id)
 
     except WebSocketDisconnect:
@@ -118,22 +125,26 @@ async def websocket_endpoint(
 async def handle_message(websocket: WebSocket, user: User, data: dict, client_id: str):
     """处理客户端消息"""
     msg_type = data.get("type")
+    msg_data = data.get("data", {})  # 获取嵌套的 data 对象
+    logger.info(f"[WebSocket] 处理消息: msg_type={msg_type}, client_id={client_id}, user={user.username}")
+    logger.info(f"[WebSocket] 消息数据: data={msg_data}")
 
     try:
         if msg_type == "chat:message":
-            await handle_chat_message(websocket, user, data)
+            logger.info(f"[WebSocket] 处理聊天消息: {msg_data}")
+            await handle_chat_message(websocket, user, msg_data)
 
         elif msg_type == "chat:stream":
-            await handle_stream_message(websocket, user, data)
+            await handle_stream_message(websocket, user, msg_data)
 
         elif msg_type == "policy:sync":
-            await handle_policy_sync(websocket, user, data)
+            await handle_policy_sync(websocket, user, msg_data)
 
         elif msg_type == "ping":
             await websocket.send_json({
                 "type": "pong",
                 "timestamp": data.get("timestamp"),
-                "server_time": datetime.utcnow().isoformat()
+                "server_time": datetime.now(timezone.utc).isoformat()
             })
 
         else:
@@ -143,7 +154,7 @@ async def handle_message(websocket: WebSocket, user: User, data: dict, client_id
             })
 
     except Exception as e:
-        logger.error(f"处理消息失败: {str(e)}")
+        logger.error(f"处理消息失败: {str(e)}", exc_info=True)
         await websocket.send_json({
             "type": "error",
             "error": {"message": str(e)}
@@ -154,19 +165,79 @@ async def handle_chat_message(websocket: WebSocket, user: User, data: dict):
     """处理聊天消息"""
     session_id = data.get("sessionId")
     message = data.get("message")
+    model = data.get("model", "llama3.2:latest")  # 默认使用 llama3.2
 
-    # TODO: 实现实际的 LLM 调用和安全过滤
-    # 这里先返回模拟响应
+    try:
+        # 尝试导入 ollama
+        try:
+            import ollama
+            OLLAMA_AVAILABLE = True
+        except ImportError:
+            OLLAMA_AVAILABLE = False
+            logger.warning("Ollama 模块不可用,返回错误响应")
+            await websocket.send_json({
+                "type": "error",
+                "error": {"message": "LLM 服务暂时不可用"}
+            })
+            return
 
-    await asyncio.sleep(0.5)  # 模拟处理延迟
+        logger.info(f"[WebSocket] 调用 Ollama 模型: {model}, 消息: {message[:50]}...")
 
-    await websocket.send_json({
-        "type": "chat:response",
-        "sessionId": session_id,
-        "reply": f"这是对消息的回复: {message}",
-        "messageId": f"msg_{datetime.utcnow().timestamp()}",
-        "timestamp": datetime.utcnow().isoformat()
-    })
+        # 调用 Ollama API (非流式)
+        try:
+            import asyncio
+
+            def call_ollama():
+                client = ollama.Client(host='http://localhost:11434', timeout=60)
+                response = client.chat(
+                    model=model,
+                    messages=[
+                        {"role": "user", "content": message}
+                    ],
+                    stream=False
+                )
+                return response
+
+            # 在单独线程中运行同步调用
+            response = await asyncio.wait_for(
+                asyncio.to_thread(call_ollama),
+                timeout=60
+            )
+
+            # 提取回复内容
+            reply = response.get("message", {}).get("content", "")
+
+            logger.info(f"[WebSocket] Ollama 响应成功, 回复长度: {len(reply)}")
+
+            # 发送响应
+            await websocket.send_json({
+                "type": "chat:response",
+                "sessionId": session_id,
+                "reply": reply,
+                "model": model,
+                "messageId": f"msg_{datetime.now(timezone.utc).timestamp()}",
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            })
+
+        except asyncio.TimeoutError:
+            logger.error("[WebSocket] Ollama 调用超时")
+            await websocket.send_json({
+                "type": "error",
+                "error": {"message": "请求超时,请稍后重试"}
+            })
+        except Exception as e:
+            logger.error(f"[WebSocket] Ollama 调用失败: {str(e)}")
+            await websocket.send_json({
+                "type": "error",
+                "error": {"message": f"LLM 调用失败: {str(e)}"}
+            })
+
+    except Exception as e:
+        logger.error(f"[WebSocket] 处理聊天消息失败: {str(e)}")
+        await websocket.send_json({
+            "type": "error",
+            "error": {"message": "处理消息失败"}
+        })
 
 
 async def handle_stream_message(websocket: WebSocket, user: User, data: dict):
@@ -221,13 +292,13 @@ async def handle_policy_sync(websocket: WebSocket, user: User, data: dict):
             "phone": r"\d{3}-\d{3,4}-\d{4}",
         },
         "keywords": ["敏感词1", "敏感词2"],
-        "updatedAt": datetime.utcnow().isoformat()
+        "updatedAt": datetime.now(timezone.utc).isoformat()
     }
 
     await websocket.send_json({
         "type": "policy:update",
         "policy": policy,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     })
 
 
@@ -236,7 +307,7 @@ async def push_policy_update(user_id: str, policy: dict):
     await manager.broadcast_to_user(user_id, {
         "type": "policy_update",
         "policy": policy,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     })
 
 
@@ -245,7 +316,7 @@ async def force_logout(user_id: str, reason: str):
     await manager.broadcast_to_user(user_id, {
         "type": "force_logout",
         "reason": reason,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     })
 
     # 断开所有连接

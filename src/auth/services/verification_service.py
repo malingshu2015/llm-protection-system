@@ -1,7 +1,7 @@
 """验证码管理服务。"""
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -264,7 +264,7 @@ class VerificationService:
         """
         count = 0
         try:
-            current_time = datetime.utcnow()
+            current_time = datetime.now(timezone.utc)
 
             # 找出过期的验证码
             expired_codes = [

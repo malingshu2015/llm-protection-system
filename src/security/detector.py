@@ -13,7 +13,7 @@ from src.logger import logger
 from src.models_interceptor import DetectionResult, DetectionType, InterceptedRequest, InterceptedResponse, SecurityRule, Severity
 from src.security.detection_cache import CacheableDetectorMixin
 from src.security.smart_cache import cache_manager
-
+from src.security.hybrid_detector import hybrid_detector
 
 class PromptInjectionDetector(CacheableDetectorMixin):
     """Detector for prompt injection attacks."""
@@ -1644,6 +1644,10 @@ class SecurityDetector:
     def _process_detection_result(self, result: DetectionResult, conversation_id: str = None) -> DetectionResult:
         """处理检测结果，根据建议动作调整响应。
 
+        支持两级 Dry-Run:
+        1. 全局 Dry-Run (settings.security.dry_run_mode) — 所有规则一律只记录不拦截
+        2. 规则级 Dry-Run (rule.mode == "dry_run") — 单条规则只记录不拦截
+
         Args:
             result: 原始检测结果
             conversation_id: 对话ID
@@ -1654,6 +1658,35 @@ class SecurityDetector:
         if result.is_allowed:
             return result
 
+        # --- 1. 全局 Dry-Run 模式 ---
+        if settings.security.dry_run_mode:
+            logger.warning(f"SecurityDetector [Global Dry-Run] 捕捉到威胁但选择放行: {result.reason}")
+            from src.audit.event_logger import event_logger
+            event_logger.log_event(result, f"[DRY-RUN] {result.reason}")
+            result.is_allowed = True
+            result.status_code = 200
+            result.reason = f"[DRY-RUN LOGGED] {result.reason}"
+            return result
+
+        # --- 2. 规则级 Dry-Run 模式 (M2.2) ---
+        rule_id = result.details.get("rule_id") if result.details else None
+        if rule_id:
+            from src.security.rule_mode_manager import rule_mode_manager
+            if rule_mode_manager.is_dry_run(rule_id):
+                logger.warning(
+                    f"SecurityDetector [Rule Dry-Run] 规则 {rule_id} "
+                    f"处于观察模式，记录但放行: {result.reason}"
+                )
+                # 累加 dry-run 命中计数
+                rule_mode_manager.record_hit(rule_id)
+                from src.audit.event_logger import event_logger
+                event_logger.log_event(result, f"[RULE-DRY-RUN:{rule_id}] {result.reason}")
+                result.is_allowed = True
+                result.status_code = 200
+                result.reason = f"[DRY-RUN:{rule_id}] {result.reason}"
+                return result
+
+        # --- 3. 正常处理流程 ---
         # 根据建议动作调整响应
         if result.suggested_action == "allow":
             logger.info(f"SecurityDetector: 建议允许，虽然检测到威胁: {result.reason}")
@@ -1673,6 +1706,11 @@ class SecurityDetector:
             # 标记对话为已被攻陷（如果适用）
             if conversation_id and result.risk_level in ["high", "critical"]:
                 self.conversation_tracker.mark_conversation_as_compromised(conversation_id)
+                # M2.3 状态总线：将该恶意见话同步给所有其他集群节点
+                import asyncio
+                from src.security.state_bus import state_bus
+                asyncio.create_task(state_bus.broadcast("compromised", {"conversation_id": conversation_id}))
+                
             # 记录安全事件
             from src.audit.event_logger import event_logger
             event_logger.log_event(result, result.reason)
@@ -1680,6 +1718,29 @@ class SecurityDetector:
             result.status_code = 403
 
         return result
+
+    def _find_rule_by_id(self, rule_id: str):
+        """在所有检测器的规则集中查找指定 rule_id 的规则。
+
+        Args:
+            rule_id: 规则ID
+
+        Returns:
+            匹配的 SecurityRule，未找到返回 None
+        """
+        # 遍历所有持有规则列表的检测器
+        detectors_with_rules = [
+            self.prompt_injection_detector,
+            self.jailbreak_detector,
+            self.harmful_content_detector,
+            self.compliance_detector,
+        ]
+        for detector in detectors_with_rules:
+            if hasattr(detector, 'rules'):
+                for rule in detector.rules:
+                    if rule.id == rule_id:
+                        return rule
+        return None
 
     async def check_request(self, request: InterceptedRequest) -> DetectionResult:
         """Check a request for security threats.
@@ -1744,36 +1805,35 @@ class SecurityDetector:
         # else:
         #     logger.info("SecurityDetector: 模型特定检测已禁用")
 
-        # Check for prompt injection
-        logger.info("SecurityDetector: 检查提示注入")
-        result = await self.prompt_injection_detector.detect(text)
-        if not result.is_allowed:
-            return self._process_detection_result(result, conversation_id)
+        logger.info("SecurityDetector: 混合并行执行所有安全检查 (M1.1/M1.2 架构)")
+        
+        # 将所有的检测器收集为异步任务 (包括正则检测与 AI 模型检测)
+        tasks = [
+            self.prompt_injection_detector.detect(text),
+            self.jailbreak_detector.detect(text),
+            self.harmful_content_detector.detect(text),
+            self.compliance_detector.detect(text),
+            self.sensitive_info_detector.detect(text),
+            hybrid_detector.detect_async(text)  # 本地轻量级模型并行推理
+        ]
 
-        # Check for jailbreak attempts
-        logger.info("SecurityDetector: 检查越狱尝试")
-        result = await self.jailbreak_detector.detect(text)
-        if not result.is_allowed:
-            return self._process_detection_result(result, conversation_id)
-
-        # Check for harmful content
-        logger.info("SecurityDetector: 检查有害内容")
-        result = await self.harmful_content_detector.detect(text)
-        if not result.is_allowed:
-            return self._process_detection_result(result, conversation_id)
-
-        # Check for compliance violations
-        logger.info("SecurityDetector: 检查合规违规")
-        result = await self.compliance_detector.detect(text)
-        if not result.is_allowed:
-            return self._process_detection_result(result, conversation_id)
-
-        # Check for sensitive information in request
-        logger.info("SecurityDetector: 检查敏感信息")
-        sensitive_results = await self.sensitive_info_detector.detect(text)
-        if sensitive_results:
-            result = sensitive_results[0]
-            return self._process_detection_result(result, conversation_id)
+        # 并发执行以降低整体延迟
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        for idx, res in enumerate(results):
+            if isinstance(res, Exception):
+                logger.error(f"SecurityDetector 某检测器子任务发生异常: {res}")
+                continue
+            
+            # 敏感信息检测的返回值是一个列表
+            if idx == 4:
+                if res and len(res) > 0:
+                    return self._process_detection_result(res[0], conversation_id)
+                continue
+                
+            # 其他检测器返回值是单一对象
+            if isinstance(res, DetectionResult) and not res.is_allowed:
+                return self._process_detection_result(res, conversation_id)
 
         # All checks passed
         logger.info("SecurityDetector: 所有检查通过，允许请求")
@@ -1828,56 +1888,37 @@ class SecurityDetector:
         # else:
         #     logger.info("SecurityDetector: 模型特定检测已禁用")
 
-        # Check for prompt injection
-        result = await self.prompt_injection_detector.detect(text)
-        if not result.is_allowed:
-            logger.warning(
-                f"Blocked response due to {result.detection_type}: {result.reason}"
-            )
-            # 记录安全事件
-            event_logger.log_event(result, text)
-            return result
+        # 并行执行响应内容审查
+        tasks = [
+            self.prompt_injection_detector.detect(text),
+            self.jailbreak_detector.detect(text),
+            self.sensitive_info_detector.detect(text),
+            self.harmful_content_detector.detect(text),
+            self.compliance_detector.detect(text),
+            hybrid_detector.detect_async(text)  # 本地轻量级模型并行推理
+        ]
 
-        # Check for jailbreak attempts
-        result = await self.jailbreak_detector.detect(text)
-        if not result.is_allowed:
-            logger.warning(
-                f"Blocked response due to {result.detection_type}: {result.reason}"
-            )
-            # 记录安全事件
-            event_logger.log_event(result, text)
-            return result
-
-        # Check for sensitive information in response
-        sensitive_results = await self.sensitive_info_detector.detect(text)
-        if sensitive_results:
-            result = sensitive_results[0]
-            logger.warning(
-                f"Blocked response due to {result.detection_type}: {result.reason}"
-            )
-            # 记录安全事件
-            event_logger.log_event(result, text)
-            return result
-
-        # Check for harmful content
-        result = await self.harmful_content_detector.detect(text)
-        if not result.is_allowed:
-            logger.warning(
-                f"Blocked response due to {result.detection_type}: {result.reason}"
-            )
-            # 记录安全事件
-            event_logger.log_event(result, text)
-            return result
-
-        # Check for compliance violations
-        result = await self.compliance_detector.detect(text)
-        if not result.is_allowed:
-            logger.warning(
-                f"Blocked response due to {result.detection_type}: {result.reason}"
-            )
-            # 记录安全事件
-            event_logger.log_event(result, text)
-            return result
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        for idx, res in enumerate(results):
+            if isinstance(res, Exception):
+                logger.error(f"SecurityDetector 响应审查发生异常: {res}")
+                continue
+                
+            # 敏感信息检测返回 List
+            if idx == 2:
+                if res and len(res) > 0:
+                    result = res[0]
+                    logger.warning(f"Blocked response due to {result.detection_type}: {result.reason}")
+                    event_logger.log_event(result, text)
+                    return result
+                continue
+                
+            # 其他返回单一对象
+            if isinstance(res, DetectionResult) and not res.is_allowed:
+                logger.warning(f"Blocked response due to {res.detection_type}: {res.reason}")
+                event_logger.log_event(res, text)
+                return res
 
         # All checks passed
         logger.info("SecurityDetector: 响应检查通过")
@@ -1990,6 +2031,65 @@ class SecurityDetector:
             temp_conversation.add_message("user", current_content)
             
         return temp_conversation
+
+    async def scan_text(self, text: str, conversation_id: str = None, skip_ai: bool = False) -> DetectionResult:
+        """高性能全量文本扫描 (用于流式拦截器 M2.1)。
+        
+        集成了:
+        1. 向量引擎 (M1.3)
+        2. 正则引擎 (M1.1)
+        3. 轻量级语义模型 (可选, M1.2)
+        4. 全局/规则级 Dry-Run (M2.2)
+        """
+        if not text:
+            return DetectionResult(is_allowed=True)
+
+        tasks = [
+            self.prompt_injection_detector.detect(text),
+            self.jailbreak_detector.detect(text),
+            self.harmful_content_detector.detect(text),
+            self.compliance_detector.detect(text),
+            self.sensitive_info_detector.detect(text)
+        ]
+        
+        if not skip_ai:
+            tasks.append(hybrid_detector.detect_async(text))
+
+        # 并行执行
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # 结果索引映射 (正则探测器)
+        detector_indices = [0, 1, 2, 3] # pi, jb, harmful, compliance
+        for idx in detector_indices:
+            res = results[idx]
+            if isinstance(res, DetectionResult) and not res.is_allowed:
+                processed = self._process_detection_result(res, conversation_id)
+                if not processed.is_allowed:
+                    return processed
+            elif isinstance(res, Exception):
+                logger.error(f"SecurityDetector.scan_text 规则子任务 {idx} 发生异常: {res}")
+        
+        # 敏感信息检测 (索引 4)
+        sens_res = results[4]
+        if isinstance(sens_res, list):
+            for r in sens_res:
+                processed = self._process_detection_result(r, conversation_id)
+                if not processed.is_allowed:
+                    return processed
+        elif isinstance(sens_res, Exception):
+            logger.error(f"SecurityDetector.scan_text 敏感信息检测发生异常: {sens_res}")
+
+        # AI 检测 (索引 5, 如果开启)
+        if not skip_ai and len(results) > 5:
+            ai_res = results[5]
+            if isinstance(ai_res, DetectionResult) and not ai_res.is_allowed:
+                processed = self._process_detection_result(ai_res, conversation_id)
+                if not processed.is_allowed:
+                    return processed
+            elif isinstance(ai_res, Exception):
+                logger.error(f"SecurityDetector.scan_text AI模型检测发生异常: {ai_res}")
+
+        return DetectionResult(is_allowed=True)
 
     def _is_simple_greeting(self, text: str) -> bool:
         """检查是否为简单的问候语。

@@ -183,7 +183,7 @@ async def get_request_stats(minutes: int = Query(15, ge=1, le=60)):
     start_timestamp = start_time.timestamp()
 
     # 获取安全事件总数（被拦截的请求）
-    blocked_count = event_logger.get_events_count(start_time=start_timestamp)
+    blocked_count = await event_logger.get_events_count_async(start_time=start_timestamp)
 
     # 在真实环境中，应该从请求日志中获取总请求数
     # 这里我们使用被拦截的请求数的五倍作为估计，但至少为blocked_count
@@ -251,7 +251,7 @@ async def get_event_stats(days: int = Query(7, ge=1, le=30)):
         day_end = (date + timedelta(days=1)).timestamp() - 1
 
         # 获取当天的事件统计
-        stats = event_logger.get_events_stats(start_time=day_start, end_time=day_end)
+        stats = await event_logger.get_events_stats_async(start_time=day_start, end_time=day_end)
 
         # 创建事件统计对象
         result.append(EventStats(

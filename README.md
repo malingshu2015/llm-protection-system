@@ -213,6 +213,25 @@ python setup.py sdist
 python setup.py bdist_wheel
 ```
 
+## 项目结构 (Project Structure)
+
+为了保持代码库整洁，我们对目录进行了归档和整理：
+
+- **`src/`**: 系统核心源代码
+- **`tests/`**: 测试套件
+  - `integration/`: 综合集成测试和旧版测试脚本
+- **`scripts/`**: 各种管理和工具脚本
+  - `build/`: 构建和打包脚本 (PyInstaller, Docker, DMG)
+  - `test_runners/`: 用于运行复杂测试套件的执行器
+  - `utils/`: 通用工具脚本 (更新、检查等)
+  - `verification/`: 验证修复效果的专用脚本
+  - `debug/`: 调试相关的临时脚本
+- **`logs/`**: 系统运行和测试产生的日志
+- **`reports/`**: 测试报告、设计文档和安全分析报告
+  - `json/`: 自动生成的机器可读测试结果
+  - `markdown/`: 人类可读的详细安全报告
+- **`requirements/`**: 各种环境的依赖定义文件
+
 ## 架构
 
 本地大模型防护系统采用模块化设计，主要组件包括：

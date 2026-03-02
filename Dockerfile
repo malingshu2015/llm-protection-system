@@ -9,7 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on
 
 # 安装依赖
-COPY requirements.txt .
+COPY requirements/production.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制应用代码

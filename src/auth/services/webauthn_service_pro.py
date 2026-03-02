@@ -3,7 +3,7 @@
 import json
 import base64
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
@@ -105,7 +105,7 @@ class WebAuthnService:
 
     def _cleanup_expired_challenges(self) -> None:
         """清理过期的挑战。"""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         expired_challenges = [
             challenge for challenge, data in self._challenges.items()
             if now - data['created_at'] > timedelta(minutes=5)
@@ -167,7 +167,7 @@ class WebAuthnService:
             'user_id': user_id,
             'username': username,
             'type': 'registration',
-            'created_at': datetime.utcnow(),
+            'created_at': datetime.now(timezone.utc),
             'options': options_json
         }
 
@@ -302,7 +302,7 @@ class WebAuthnService:
         self._challenges[challenge_b64] = {
             'user_id': user_id,
             'type': 'authentication',
-            'created_at': datetime.utcnow(),
+            'created_at': datetime.now(timezone.utc),
             'options': options_json
         }
 
@@ -370,7 +370,7 @@ class WebAuthnService:
 
             # 更新签名计数器
             stored_credential.sign_count = verification.new_sign_count
-            stored_credential.last_used = datetime.utcnow()
+            stored_credential.last_used = datetime.now(timezone.utc)
             self._save_credentials(user_id)
 
             # 删除已使用的挑战

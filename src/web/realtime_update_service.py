@@ -8,7 +8,6 @@ from typing import Dict, List, Set, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 import websockets
-from websockets.server import WebSocketServerProtocol
 from fastapi import WebSocket, WebSocketDisconnect
 
 from src.logger import logger

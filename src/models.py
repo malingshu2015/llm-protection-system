@@ -27,6 +27,7 @@ class InterceptedResponse(BaseModel):
     body: Optional[Dict[str, Any]] = None
     timestamp: float = 0.0
     latency: float = 0.0
+    is_streaming: bool = False
 
 
 class DetectionType(str, Enum):

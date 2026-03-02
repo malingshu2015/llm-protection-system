@@ -5,7 +5,8 @@ import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 from fastapi.testclient import TestClient
 
-from src.web.api import app, stream_ollama_response
+from src.main import app
+from src.web.api import stream_ollama_response
 
 
 @pytest.fixture

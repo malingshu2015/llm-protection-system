@@ -127,6 +127,13 @@ class DetectionResult(BaseModel):
     context_analysis: Dict[str, Any] = Field(default_factory=dict, description="上下文分析结果")
 
 
+class RuleMode(str, Enum):
+    """规则执行模式。"""
+
+    BLOCKING = "blocking"    # 正常拦截模式
+    DRY_RUN = "dry_run"      # 静默观察模式：只记录不拦截
+
+
 class SecurityRule(BaseModel):
     """安全规则。"""
 
@@ -142,7 +149,11 @@ class SecurityRule(BaseModel):
     priority: int = 100  # 优先级，数字越小优先级越高
     categories: List[str] = []  # 规则分类
     custom_code: Optional[str] = None
+    # M2.2: 规则级别的 Dry-Run 模式
+    mode: RuleMode = RuleMode.BLOCKING
+    dry_run_hits: int = 0  # Dry-Run 模式下的命中计数器
 
     # 这些字段不会被序列化/反序列化
     compiled_patterns: List[Any] = Field(default_factory=list, exclude=True)
     keyword_patterns: List[Any] = Field(default_factory=list, exclude=True)
+

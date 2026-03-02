@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 """Ollama API代理路由，用于拦截和处理发送到Ollama原生API的请求。"""
 
 import json
@@ -13,7 +14,15 @@ from src.logger import logger
 from src.models_interceptor import InterceptedRequest, InterceptedResponse
 
 
-router = APIRouter()
+
+@asynccontextmanager
+async def api_lifespan(router: APIRouter):
+    await api_startup_event()
+    yield
+    await api_shutdown_event()
+
+router = APIRouter(
+    lifespan=api_lifespan,)
 interceptor = None
 security_detector = None
 
@@ -40,13 +49,11 @@ async def shutdown():
 
 
 # 在路由器启动时初始化组件
-@router.on_event("startup")
-async def startup_event():
+async def api_startup_event():
     await startup()
 
 # 在路由器关闭时清理组件
-@router.on_event("shutdown")
-async def shutdown_event():
+async def api_shutdown_event():
     await shutdown()
 
 
@@ -308,14 +315,17 @@ async def ollama_proxy(request: Request, path: str):
                                     yield f"data: {json.dumps(error_chunk)}\n\n"
                                     yield "data: [DONE]\n\n"
 
-                            # 返回流式响应
+                            # 返回流式响应，使用滑动窗口安检器拦截非法内容
+                            from src.security.stream_interceptor import StreamSlidingWindowInterceptor
+                            window_interceptor = StreamSlidingWindowInterceptor(security_detector_instance)
+
                             return StreamingResponse(
-                                stream_openai_format(),
-                                media_type="text/plain",
+                                window_interceptor.process_openai_stream(stream_openai_format(), conversation_id),
+                                media_type="text/event-stream",
                                 headers={
                                     "Cache-Control": "no-cache",
                                     "Connection": "keep-alive",
-                                    "Content-Type": "text/plain; charset=utf-8"
+                                    "Content-Type": "text/event-stream; charset=utf-8"
                                 }
                             )
                         else:

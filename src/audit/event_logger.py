@@ -186,6 +186,8 @@ class SecurityEventLogger:
         self.events_dir = os.path.join(settings.data_dir, "security_events")
         self.events_file = os.path.join(self.events_dir, "events.json")
         self.events: List[SecurityEvent] = []
+        self.use_optimized_db = DATABASE_AVAILABLE
+        self.db = optimized_event_db if DATABASE_AVAILABLE else None
         self._load_events()
 
     def _load_events(self) -> None:
@@ -241,9 +243,16 @@ class SecurityEventLogger:
                 # 使用异步数据库（在后台任务中处理）
                 import asyncio
                 loop = asyncio.get_event_loop()
+                
+                # M3.1: Elasticsearch Dual-write
+                from src.audit.elasticsearch_adapter import es_adapter
+                event_id = f"event-{int(time.time() * 1000000)}-{id(result)}"
+                
                 if loop.is_running():
-                    # 如果事件循环正在运行，创建任务
+                    # 如果事件循环正在运行，创建任务双写 (SQLite Optimization DB + ES)
                     loop.create_task(optimized_event_db.log_event(result, sanitized_content))
+                    if getattr(es_adapter, "is_connected", False):
+                        loop.create_task(es_adapter.log_event(result, sanitized_content, event_id))
                 else:
                     # 如果没有事件循环，使用文件存储作为备份
                     self._log_event_to_file(result, sanitized_content)
@@ -296,6 +305,98 @@ class SecurityEventLogger:
         self._save_events()
 
         logger.info(f"已记录安全事件: {event_id}, 类型: {result.detection_type}, 原因: {result.reason}")
+
+
+    async def get_events_async(
+        self,
+        start_time: Optional[float] = None,
+        end_time: Optional[float] = None,
+        detection_type: Optional[DetectionType] = None,
+        severity: Optional[Severity] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> List[SecurityEvent]:
+        # 如果使用优化数据库，从数据库获取
+        if self.use_optimized_db and self.db:
+            try:
+                db_events = await self.db.get_events_by_time_range(
+                    start_time=start_time,
+                    end_time=end_time,
+                    detection_type=detection_type.value if detection_type else None,
+                    severity=severity.value if severity else None,
+                    limit=limit,
+                    offset=offset
+                )
+                
+                # Convert list of dict back to SecurityEvent
+                # FIXME: from_dict 是 SecurityEvent 的 classmethod，不能通过 self 调用
+                return [SecurityEvent.from_dict(d) for d in db_events]
+            except Exception as e:
+                logger.error(f"Failed to query optimized DB: {e}", exc_info=True)
+                
+        # Fallback to sync memory
+        return self.get_events(start_time, end_time, detection_type, severity, limit, offset)
+
+    async def get_events_count_async(
+        self,
+        start_time: Optional[float] = None,
+        end_time: Optional[float] = None,
+        detection_type: Optional[DetectionType] = None,
+        severity: Optional[Severity] = None,
+    ) -> int:
+        if self.use_optimized_db and self.db:
+            try:
+                return await self.db.get_events_count_by_time_range(
+                    start_time=start_time,
+                    end_time=end_time,
+                    detection_type=detection_type.value if detection_type else None,
+                    severity=severity.value if severity else None
+                )
+            except Exception as e:
+                logger.error(f"Failed to query count from optimized DB: {e}")
+                
+        return self.get_events_count(start_time, end_time, detection_type, severity)
+
+    async def get_events_stats_async(
+        self,
+        start_time: Optional[float] = None,
+        end_time: Optional[float] = None,
+    ) -> Dict[str, int]:
+        if self.use_optimized_db and self.db:
+            try:
+                return await self.db.get_events_stats_by_time_range(
+                    start_time=start_time,
+                    end_time=end_time
+                )
+            except Exception as e:
+                logger.error(f"Failed to query stats from optimized DB: {e}")
+                
+        return self.get_events_stats(start_time, end_time)
+
+    async def get_event_async(self, event_id: str) -> Optional[SecurityEvent]:
+        # For singular event from DB
+        if self.use_optimized_db and self.db:
+            try:
+                query = "SELECT * FROM security_events WHERE event_id = ?"
+                rows = await self.db.pool.execute_query(query, (event_id,), QueryType.SELECT)
+                if rows:
+                    columns = [
+                        'id', 'event_id', 'timestamp', 'detection_type', 'severity', 
+                        'reason', 'details', 'content', 'rule_id', 'rule_name',
+                        'matched_pattern', 'matched_text', 'matched_keyword', 
+                        'created_at', 'indexed_at'
+                    ]
+                    event_dict = dict(zip(columns, rows[0]))
+                    import json
+                    if event_dict['details']:
+                        try:
+                            event_dict['details'] = json.loads(event_dict['details'])
+                        except:
+                            pass
+                    return self.from_dict(event_dict)
+            except Exception as e:
+                logger.error(f"Failed to get event from optimized DB: {e}")
+        return self.get_event(event_id)
 
     def get_events(
         self,
@@ -431,6 +532,28 @@ class SecurityEventLogger:
                 stats[event.detection_type.value] += 1
 
         return stats
+
+    async def get_rule_hit_ranking(self, limit: int = 10) -> List[Dict]:
+        """获取命中次数最多的安全规则排名 (M3.2)。"""
+        if self.use_optimized_db and self.db:
+            try:
+                return await self.db.get_rule_ranking(limit)
+            except Exception as e:
+                logger.error(f"获取规则排名失败: {e}")
+        
+        # 回退到内存统计
+        from collections import Counter
+        counter = Counter()
+        rule_map = {}
+        for event in self.events:
+            if event.rule_id:
+                counter[event.rule_id] += 1
+                rule_map[event.rule_id] = event.rule_name or "Unknown"
+        
+        return [
+            {"rule_id": rid, "rule_name": rule_map.get(rid, "Unknown"), "hit_count": count}
+            for rid, count in counter.most_common(limit)
+        ]
 
 
 # 创建全局事件记录器实例

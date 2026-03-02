@@ -1,3 +1,4 @@
+from pydantic import ConfigDict
 """用户数据模型。"""
 
 import uuid
@@ -57,10 +58,7 @@ class User(BaseModel):
                 raise ValueError("无效的手机号码")
         return v
 
-    class Config:
-        """Pydantic配置。"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "username": "john_doe",
                 "email": "john@example.com",
@@ -68,7 +66,7 @@ class User(BaseModel):
                 "role": "viewer",
                 "department": "开发部"
             }
-        }
+        })
 
 
 class UserCreate(BaseModel):
@@ -126,10 +124,7 @@ class UserResponse(BaseModel):
     last_login: Optional[datetime]
     avatar_url: Optional[str]
 
-    class Config:
-        """Pydantic配置。"""
-
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ChangePasswordRequest(BaseModel):

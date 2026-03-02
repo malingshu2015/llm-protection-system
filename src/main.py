@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 """Main entry point for the Local LLM Protection System."""
 
 import asyncio
@@ -61,7 +62,25 @@ from src.web.client_gateway import router as client_gateway_router
 from src.web.client_api import router as client_api_router
 
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Old app.on_event("startup") content
+    await _old_startup_event()
+    
+    # Bottom startup_event content
+    await startup_event()
+    
+    yield
+    
+    # Bottom shutdown_event content
+    await shutdown_event()
+    
+    # Old app.on_event("shutdown") content
+    await _old_shutdown_event()
+
 app = FastAPI(
+    lifespan=lifespan,
     title=settings.app_name,
     description="A protection system for local large language models",
     version=VERSION,
@@ -122,10 +141,37 @@ else:
     logger.warning(f"Static directory not found: {static_dir}")
 
 
-@app.on_event("startup")
-async def startup_event():
+async def _old_startup_event():
     """应用启动事件处理"""
     logger.info("应用正在启动...")
+
+    # 初始化 Redis 客户端
+    try:
+        from src.utils.redis_client import redis_client
+        await redis_client.connect()
+        logger.info("Redis 客户端初始化成功")
+        
+        # 启动状态总线集群监听
+        try:
+            from src.security.state_bus import state_bus
+            from src.security.conversation_tracker import conversation_tracker
+            
+            # 注册本地回调：接收到全局封号消息，立刻更新本地内存
+            def on_compromised(event_type, payload):
+                if event_type == "compromised":
+                    cid = payload.get("conversation_id")
+                    if cid and not conversation_tracker.is_conversation_compromised(cid):
+                        conversation_tracker.mark_conversation_as_compromised(cid)
+                        logger.warning(f"🚨 集群防线联动: 接到其他节点广播，本地同步封杀恶意见话 {cid}")
+                        
+            state_bus.register_callback(on_compromised)
+            await state_bus.start_listening()
+            logger.info("状态总线集群网络接入成功")
+        except Exception as e:
+            logger.error(f"状态总线初始化失败: {e}")
+            
+    except Exception as e:
+        logger.error(f"Redis 客户端初始化发生错误: {e}")
 
     # 初始化数据库
     if DATABASE_AVAILABLE:
@@ -160,10 +206,17 @@ async def startup_event():
         logger.error(f"实时更新服务启动失败: {e}")
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
+async def _old_shutdown_event():
     """应用关闭事件处理"""
     logger.info("应用正在关闭...")
+    
+    # 关闭 Redis 客户端
+    try:
+        from src.utils.redis_client import redis_client
+        await redis_client.disconnect()
+        logger.info("Redis 客户端已断开连接")
+    except Exception as e:
+        logger.error(f"Redis 客户端断开发生错误: {e}")
     
     # 关闭数据库
     if DATABASE_AVAILABLE:
@@ -279,8 +332,8 @@ async def background_tasks() -> None:
 
 
 # Register startup and shutdown events
-app.add_event_handler("startup", startup_event)
-app.add_event_handler("shutdown", shutdown_event)
+
+
 
 
 def handle_signals() -> None:

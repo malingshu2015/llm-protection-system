@@ -12,6 +12,8 @@ from src.config import settings
 from src.logger import logger
 from src.security.api_auth import extract_api_key_from_request, api_key_manager
 
+from src.utils.redis_client import redis_client
+
 
 class RateLimiter:
     """请求速率限制器。"""
@@ -25,7 +27,7 @@ class RateLimiter:
         self._load_request_counts()
 
     def _load_request_counts(self) -> None:
-        """从文件加载请求计数。"""
+        """从文件加载请求计数。仅在没有Redis或初始化作为回退时使用。"""
         if not os.path.exists(self.rate_limit_file):
             os.makedirs(os.path.dirname(self.rate_limit_file), exist_ok=True)
             self.request_counts = {}
@@ -41,15 +43,14 @@ class RateLimiter:
                     for client_id, counts in data.items()
                     if current_time - counts["window_start"] < self.window_size
                 }
-            logger.info(f"成功加载请求计数，客户端数量: {len(self.request_counts)}")
+            logger.info(f"成功加载本地请求计数作为后备，客户端数量: {len(self.request_counts)}")
         except Exception as e:
             logger.error(f"加载请求计数失败: {e}")
             self.request_counts = {}
 
     def _save_request_counts(self) -> None:
-        """保存请求计数到文件。"""
+        """保存请求计数到文件。作为回退手段。"""
         try:
-            # 过滤掉过期的计数
             current_time = time.time()
             filtered_counts = {
                 client_id: counts
@@ -104,7 +105,7 @@ class RateLimiter:
         return self.default_rate_limit
 
     async def check_rate_limit(self, request: Request) -> Tuple[bool, Dict]:
-        """检查请求是否超过速率限制。
+        """检查请求是否超过速率限制（优先使用Redis）。
 
         Args:
             request: 请求对象。
@@ -118,41 +119,56 @@ class RateLimiter:
         client_id = self._get_client_id(request)
         rate_limit = self._get_rate_limit(client_id)
         current_time = time.time()
+        
+        # Redis Key format: rate_limit:client_id:window_start_epoch
+        window_start = int(current_time // self.window_size * self.window_size)
+        redis_key = f"rate_limit:{client_id}:{window_start}"
 
-        # 获取当前计数
-        if client_id not in self.request_counts:
-            self.request_counts[client_id] = {
-                "window_start": current_time,
-                "count": 0
-            }
+        current_count = None
 
-        client_counts = self.request_counts[client_id]
+        if getattr(redis_client, "_is_connected", False):
+            try:
+                # 1. 尝试使用 Redis 
+                async with redis_client.client.pipeline(transaction=True) as pipe:
+                    pipe.incr(redis_key)
+                    pipe.expire(redis_key, self.window_size * 2) # Buffer expiry
+                    result = await pipe.execute()
+                    
+                current_count = result[0]
+            except Exception as e:
+                logger.error(f"Redis 限流器出错 (将回退执行本地内存): {e}")
+                # Redis 异常时不直接崩溃，允许向下走到内存逻辑
+                
+        if current_count is None:
+            # 2. Redis 不可用：回退到本地内存
+            if client_id not in self.request_counts:
+                self.request_counts[client_id] = {
+                    "window_start": current_time,
+                    "count": 0
+                }
 
-        # 如果时间窗口已过期，重置计数
-        if current_time - client_counts["window_start"] >= self.window_size:
-            client_counts["window_start"] = current_time
-            client_counts["count"] = 0
+            client_counts = self.request_counts[client_id]
 
-        # 增加请求计数
-        client_counts["count"] += 1
+            if current_time - client_counts["window_start"] >= self.window_size:
+                client_counts["window_start"] = current_time
+                client_counts["count"] = 0
 
-        # 检查是否超过限制
-        is_allowed = client_counts["count"] <= rate_limit
+            client_counts["count"] += 1
+            current_count = client_counts["count"]
+            
+            # 定期保存本地计数
+            if current_count % 10 == 0:
+                self._save_request_counts()
 
-        # 计算剩余请求数和重置时间
-        remaining = max(0, rate_limit - client_counts["count"])
-        reset_time = client_counts["window_start"] + self.window_size
+        is_allowed = current_count <= rate_limit
+        remaining = max(0, rate_limit - current_count)
+        reset_time = window_start + self.window_size
 
-        # 定期保存请求计数
-        if client_counts["count"] % 10 == 0:
-            self._save_request_counts()
-
-        # 返回速率限制信息
         rate_limit_info = {
             "limit": rate_limit,
             "remaining": remaining,
             "reset": int(reset_time),
-            "used": client_counts["count"]
+            "used": current_count
         }
 
         return is_allowed, rate_limit_info

@@ -208,6 +208,11 @@ async def get_realtime_events(
     
     return events
 
+@router.get("/rule-stats", response_model=List[Dict])
+async def get_rule_hit_stats(limit: int = Query(default=10, ge=1, le=50)):
+    """获取规则命中数统计排名 (M3.2)。"""
+    return await event_logger.get_rule_hit_ranking(limit)
+
 @router.get("/stats", response_model=RealtimeStats)
 async def get_realtime_stats():
     """获取实时统计信息。"""

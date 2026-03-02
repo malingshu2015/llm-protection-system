@@ -65,62 +65,41 @@ class ModelRulesManager {
 
     async loadModelsData() {
         try {
-            // 先获取已安装的模型列表
-            const modelsResponse = await authManager.authenticatedFetch('/api/v1/ollama/models', {
-                headers: {
-                    'Authorization': 'Bearer cherry-studio-key'
-                }
+            // NOTE: 使用 /api/v1/model-rules 聚合摘要接口，一次获取所有模型规则配置摘要
+            // 避免使用 /api/v1/ollama/models + 逐模型配置查询（会触发大量请求和速率限制）
+            const summariesResponse = await authManager.authenticatedFetch('/api/v1/model-rules', {
+                headers: { 'Authorization': 'Bearer cherry-studio-key' }
             });
-            if (!modelsResponse.ok) throw new Error('获取模型列表失败');
-            
-            const modelsData = await modelsResponse.json();
-            console.log('获取到模型数据:', modelsData);
-            
-            // 然后获取每个模型的规则配置
-            const models = modelsData.models || modelsData.data || [];
-            console.log('处理模型数量:', models.length);
-            this.modelsData = await Promise.all(models.map(async (model) => {
-                try {
-                    const configResponse = await authManager.authenticatedFetch(`/api/v1/model-rules/${model.model || model.id}`);
-                    const configData = configResponse.ok ? await configResponse.json() : null;
-                    
-                    const enabledRulesCount = configData?.rules ? 
-                        configData.rules.filter(rule => rule.enabled).length : 0;
-                    const totalRulesCount = configData?.rules ? configData.rules.length : 0;
-                    
-                    return {
-                        id: model.model || model.id,
-                        name: model.model || model.id,
-                        size: model.size || 0,
-                        modified_at: model.modified_at || model.created,
-                        template: configData?.template_id || null,
-                        rulesCount: totalRulesCount,
-                        enabledRulesCount: enabledRulesCount,
-                        securityScore: this.calculateSecurityScore(enabledRulesCount),
-                        lastUpdated: configData?.updated_at || model.modified_at || new Date().toISOString(),
-                        isConfigured: !!(totalRulesCount > 0),
-                        riskLevel: this.calculateRiskLevel(this.calculateSecurityScore(enabledRulesCount))
-                    };
-                } catch (error) {
-                    console.warn(`获取模型 ${model.model || model.id} 配置失败:`, error);
-                    return {
-                        id: model.model || model.id,
-                        name: model.model || model.id,
-                        size: model.size || 0,
-                        modified_at: model.modified_at || model.created,
-                        template: null,
-                        rulesCount: 0,
-                        enabledRulesCount: 0,
-                        securityScore: 0,
-                        lastUpdated: model.modified_at || new Date().toISOString(),
-                        isConfigured: false,
-                        riskLevel: 'high'
-                    };
-                }
-            }));
+
+            if (!summariesResponse.ok) {
+                const errText = await summariesResponse.text().catch(() => '');
+                throw new Error(`获取模型摘要列表失败 (${summariesResponse.status}): ${errText.slice(0, 100)}`);
+            }
+
+            const summaries = await summariesResponse.json();
+            console.log('获取到模型摘要数据:', summaries);
+
+            // 将 ModelRuleSummary 格式转换为前端展示格式
+            this.modelsData = (summaries || []).map(summary => {
+                const securityScore = summary.security_score || this.calculateSecurityScore(summary.enabled_rules_count || 0);
+                return {
+                    id: summary.model_id,
+                    name: summary.model_name || summary.model_id,
+                    size: 0,
+                    modified_at: summary.last_updated,
+                    template: summary.template_id || null,
+                    rulesCount: summary.rules_count || 0,
+                    enabledRulesCount: summary.enabled_rules_count || 0,
+                    securityScore: securityScore,
+                    lastUpdated: summary.last_updated || new Date().toISOString(),
+                    isConfigured: (summary.rules_count || 0) > 0,
+                    riskLevel: this.calculateRiskLevel(securityScore)
+                };
+            });
             console.log('处理后的模型数据:', this.modelsData);
         } catch (error) {
             console.error('加载模型数据失败:', error);
+            this.showError('加载模型数据失败: ' + error.message);
             this.modelsData = [];
         }
     }
@@ -129,10 +108,10 @@ class ModelRulesManager {
         try {
             const response = await authManager.authenticatedFetch('/api/v1/rule-templates');
             if (!response.ok) throw new Error('获取模板列表失败');
-            
+
             const data = await response.json();
             console.log('获取到模板数据:', data);
-            
+
             // 直接使用返回的数组数据
             this.templatesData = data.map(template => ({
                 id: template.id,
@@ -185,7 +164,7 @@ class ModelRulesManager {
 
     updateStatistics() {
         const configuredCount = this.modelsData.filter(m => m.isConfigured).length;
-        const avgSecurityScore = this.modelsData.length > 0 
+        const avgSecurityScore = this.modelsData.length > 0
             ? Math.round(this.modelsData.reduce((sum, m) => sum + m.securityScore, 0) / this.modelsData.length)
             : 0;
 
@@ -198,11 +177,11 @@ class ModelRulesManager {
     renderModels() {
         const container = document.getElementById('models-grid');
         const emptyState = document.getElementById('empty-state');
-        
+
         if (!container) return;
 
         const filteredModels = this.filterModels();
-        
+
         if (filteredModels.length === 0) {
             container.style.display = 'none';
             emptyState.style.display = 'block';
@@ -213,7 +192,7 @@ class ModelRulesManager {
         emptyState.style.display = 'none';
 
         container.innerHTML = filteredModels.map(model => this.createModelCard(model)).join('');
-        
+
         // 绑定事件
         this.bindModelCardEvents();
     }
@@ -256,11 +235,11 @@ class ModelRulesManager {
                         </div>
                     </div>
                     <div class="model-config-actions">
-                        ${this.batchMode ? 
-                            `<button class="btn btn-secondary btn-sm" onclick="modelRulesManager.toggleModelSelection('${model.id}')">
+                        ${this.batchMode ?
+                `<button class="btn btn-secondary btn-sm" onclick="modelRulesManager.toggleModelSelection('${model.id}')">
                                 <i class="fas fa-${isSelected ? 'check-square' : 'square'}"></i> ${isSelected ? '已选择' : '选择'}
                             </button>` : ''
-                        }
+            }
                         <button class="btn btn-primary btn-sm" onclick="modelRulesManager.configureModel('${model.id}')">
                             <i class="fas fa-cog"></i> 配置
                         </button>
@@ -278,7 +257,7 @@ class ModelRulesManager {
         if (!container) return;
 
         container.innerHTML = this.templatesData.map(template => this.createTemplateCard(template)).join('');
-        
+
         // 绑定模板卡片事件
         this.bindTemplateCardEvents();
     }
@@ -324,11 +303,11 @@ class ModelRulesManager {
 
     bindModelCardEvents() {
         if (!this.batchMode) return;
-        
+
         document.querySelectorAll('.model-config-card.batch-mode').forEach(card => {
             card.addEventListener('click', (event) => {
                 if (event.target.closest('button')) return;
-                
+
                 const modelId = card.dataset.modelId;
                 this.toggleModelSelection(modelId);
             });
@@ -358,7 +337,7 @@ class ModelRulesManager {
         // 搜索过滤
         const searchTerm = document.getElementById('model-search')?.value.toLowerCase() || '';
         if (searchTerm) {
-            filtered = filtered.filter(m => 
+            filtered = filtered.filter(m =>
                 m.name.toLowerCase().includes(searchTerm) ||
                 (m.template && m.template.toLowerCase().includes(searchTerm))
             );
@@ -369,12 +348,12 @@ class ModelRulesManager {
 
     switchFilter(filter) {
         this.currentFilter = filter;
-        
+
         // 更新UI状态
         document.querySelectorAll('.filter-tab').forEach(tab => {
             tab.classList.toggle('active', tab.dataset.filter === filter);
         });
-        
+
         this.renderModels();
     }
 
@@ -384,11 +363,11 @@ class ModelRulesManager {
 
     toggleView() {
         this.viewMode = this.viewMode === 'grid' ? 'table' : 'grid';
-        
+
         const gridView = document.getElementById('models-grid');
         const tableView = document.getElementById('models-table');
         const toggleBtn = document.getElementById('view-toggle');
-        
+
         if (this.viewMode === 'grid') {
             gridView.style.display = 'grid';
             tableView.style.display = 'none';
@@ -404,14 +383,14 @@ class ModelRulesManager {
     enableBatchMode() {
         this.batchMode = !this.batchMode;
         this.selectedModels.clear();
-        
+
         const batchToolbar = document.getElementById('batch-toolbar');
         if (this.batchMode) {
             batchToolbar.style.display = 'flex';
         } else {
             batchToolbar.style.display = 'none';
         }
-        
+
         this.renderModels();
         this.updateBatchCount();
     }
@@ -422,19 +401,19 @@ class ModelRulesManager {
         } else {
             this.selectedModels.add(modelId);
         }
-        
+
         // 更新UI
         const card = document.querySelector(`[data-model-id="${modelId}"]`);
         if (card) {
             card.classList.toggle('selected', this.selectedModels.has(modelId));
-            
+
             const button = card.querySelector('.btn-secondary');
             if (button) {
                 const isSelected = this.selectedModels.has(modelId);
                 button.innerHTML = `<i class="fas fa-${isSelected ? 'check-square' : 'square'}"></i> ${isSelected ? '已选择' : '选择'}`;
             }
         }
-        
+
         this.updateBatchCount();
     }
 
@@ -444,7 +423,7 @@ class ModelRulesManager {
         } else {
             this.selectedModels.clear();
         }
-        
+
         this.renderModels();
         this.updateBatchCount();
     }
@@ -493,7 +472,7 @@ class ModelRulesManager {
     showLoading(show) {
         this.isLoading = show;
         let overlay = document.getElementById('loading-overlay');
-        
+
         if (show) {
             if (!overlay) {
                 overlay = document.createElement('div');
@@ -510,7 +489,7 @@ class ModelRulesManager {
 
     showError(message) {
         console.error(message);
-        
+
         // 创建错误提示
         const alert = document.createElement('div');
         alert.className = 'alert alert-error';
@@ -534,7 +513,7 @@ class ModelRulesManager {
             gap: 8px;
             max-width: 400px;
         `;
-        
+
         const closeBtn = alert.querySelector('.alert-close');
         closeBtn.style.cssText = `
             background: none;
@@ -544,9 +523,9 @@ class ModelRulesManager {
             cursor: pointer;
             margin-left: auto;
         `;
-        
+
         document.body.appendChild(alert);
-        
+
         // 自动隐藏
         setTimeout(() => {
             if (alert.parentElement) {
@@ -578,7 +557,7 @@ class ModelRulesManager {
     async configureModel(modelId) {
         console.log('🔧 配置模型被调用:', modelId);
         console.log('🔧 当前modelRulesManager实例:', this);
-        
+
         try {
             // 获取模型详细信息
             const model = this.modelsData.find(m => m.id === modelId);
@@ -619,7 +598,7 @@ class ModelRulesManager {
 
             // 打开配置模态框
             this.openModelConfigModal(model, currentConfig, availableRules);
-            
+
         } catch (error) {
             console.error('打开模型配置失败:', error);
             this.showError('打开模型配置失败: ' + error.message);
@@ -664,7 +643,7 @@ class ModelRulesManager {
         const rulesData = Array.from(allRuleIds).map(ruleId => {
             const configuredRule = configuredRules.find(r => r.id === ruleId);
             const availableRule = availableRules.find(r => r.id === ruleId);
-            
+
             return {
                 id: ruleId,
                 name: configuredRule?.name || availableRule?.name || ruleId,
@@ -680,7 +659,7 @@ class ModelRulesManager {
         tableBody.innerHTML = rulesData.map(rule => {
             const severityClass = this.getSeverityClass(rule.severity);
             const statusClass = rule.enabled ? 'enabled' : 'disabled';
-            
+
             return `
                 <tr data-rule-id="${rule.id}" class="rule-row">
                     <td>
@@ -843,7 +822,7 @@ class ModelRulesManager {
 
         // 切换状态
         checkbox.checked = !checkbox.checked;
-        
+
         if (checkbox.checked) {
             statusBadge.textContent = '已启用';
             statusBadge.className = 'status-badge enabled';
@@ -899,7 +878,7 @@ class ModelRulesManager {
             }
 
             this.showSuccess('模型配置保存成功');
-            
+
             // 关闭模态框并刷新数据
             this.hideModal('model-rules-config-modal');
             await this.refreshData();
@@ -914,7 +893,7 @@ class ModelRulesManager {
     getSeverityClass(severity) {
         const severityMap = {
             high: 'high-severity',
-            medium: 'medium-severity', 
+            medium: 'medium-severity',
             low: 'low-severity'
         };
         return severityMap[severity] || 'medium-severity';
@@ -945,10 +924,16 @@ class ModelRulesManager {
         const modal = document.getElementById(modalId);
         console.log('🔍 找到的模态框元素:', modal);
         if (modal) {
-            // 使用CSS类控制显示，而不是直接设置style
-            modal.classList.add('show');
+            // 使用CSS类控制显示，同时强制覆盖内联样式（包括 !important）
+            modal.style.setProperty('display', 'flex', 'important');
+
+            // 稍后添加show类以触发任何过渡动画
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+
             document.body.classList.add('modal-open');
-            console.log('✅ 模态框显示成功，已添加show类');
+            console.log('✅ 模态框显示成功，已添加show类并设置display: flex !important');
 
             // 确保模态框在最顶层
             modal.style.zIndex = '9999';
@@ -963,6 +948,11 @@ class ModelRulesManager {
         if (modal) {
             modal.classList.remove('show');
             document.body.classList.remove('modal-open');
+
+            // 等待动画结束后隐藏
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
             console.log('✅ 模态框已隐藏，移除show类');
         }
     }
@@ -989,9 +979,9 @@ class ModelRulesManager {
             align-items: center;
             gap: 8px;
         `;
-        
+
         document.body.appendChild(alert);
-        
+
         setTimeout(() => {
             alert.remove();
         }, 3000);
@@ -1138,7 +1128,7 @@ class ModelRulesManager {
 
     editTemplate(templateId) {
         console.log('编辑模板:', templateId);
-        
+
         // 查找模板数据
         const template = this.templates.find(t => t.id === templateId);
         if (!template) {
@@ -1156,7 +1146,7 @@ class ModelRulesManager {
         document.getElementById('edit-template-name').value = template.name;
         document.getElementById('edit-template-description').value = template.description || '';
         document.getElementById('edit-template-rules').value = JSON.stringify(template.rules, null, 2);
-        
+
         // 显示模态框
         $('#editTemplateModal').modal('show');
     }
@@ -1170,23 +1160,23 @@ class ModelRulesManager {
         try {
             // 验证JSON格式
             const rules = JSON.parse(rulesJson);
-            
+
             // 更新模板
             const template = this.templates.find(t => t.id === templateId);
             if (template) {
                 template.name = name;
                 template.description = description;
                 template.rules = rules;
-                
+
                 // 保存到服务器
                 await this.saveTemplateToServer(template);
-                
+
                 // 刷新界面
                 this.renderTemplates();
-                
+
                 // 关闭模态框
                 $('#editTemplateModal').modal('hide');
-                
+
                 // 显示成功消息
                 this.showToast('模板更新成功', 'success');
             }
@@ -1216,27 +1206,27 @@ class ModelRulesManager {
         try {
             console.log('🚀 开始智能推荐配置...');
             this.showLoading(true);
-            
+
             // 检查按钮点击是否被触发
             const button = document.getElementById('auto-recommend-btn');
             if (button) {
                 button.disabled = true;
                 button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 推荐中...';
             }
-            
+
             const recResp = await authManager.authenticatedFetch('/api/v1/model-rules-recommend', {
                 headers: {
                     'Authorization': 'Bearer cherry-studio-key'
                 }
             });
             console.log('📡 推荐API响应状态:', recResp.status);
-            
+
             if (!recResp.ok) {
                 const errorText = await recResp.text();
                 console.error('❌ 推荐API响应错误:', errorText);
                 throw new Error(`获取推荐配置失败 (${recResp.status}): ${errorText}`);
             }
-            
+
             const recData = await recResp.json();
             console.log('✅ 推荐API响应数据:', recData);
             const recs = recData.recommendations || [];
@@ -1254,7 +1244,7 @@ class ModelRulesManager {
             console.error('❌ 自动推荐失败:', e);
             // 提供更详细的错误信息
             let errorMessage = `自动推荐失败: ${e.message}`;
-            
+
             if (e.message.includes('Failed to fetch')) {
                 errorMessage = '无法连接到服务器，请确保服务正在运行';
             } else if (e.message.includes('500')) {
@@ -1262,11 +1252,11 @@ class ModelRulesManager {
             } else if (e.message.includes('11434')) {
                 errorMessage = '无法连接到Ollama服务，请确保Ollama正在运行';
             }
-            
+
             this.showError(errorMessage);
         } finally {
             this.showLoading(false);
-            
+
             // 恢复按钮状态
             const button = document.getElementById('auto-recommend-btn');
             if (button) {
@@ -1288,7 +1278,7 @@ class ModelRulesManager {
             empty.style.display = 'block';
             controls.style.display = 'none';
             confirmBtn.disabled = true;
-            
+
             // 更新空状态的文本内容
             const alertDiv = empty.querySelector('.alert');
             if (alertDiv) {
@@ -1334,7 +1324,7 @@ class ModelRulesManager {
                 this.showLoading(true);
                 const applyResp = await authManager.authenticatedFetch('/api/v1/model-rules-recommend/apply', {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer cherry-studio-key'
                     },
@@ -1359,17 +1349,17 @@ class ModelRulesManager {
 
     async checkAllConfigurations() {
         console.log('🔍 开始全面检查配置...');
-        
+
         try {
             this.showLoading(true);
-            
+
             // 更新按钮状态
             const button = document.getElementById('check-all-btn');
             if (button) {
                 button.disabled = true;
                 button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 检查中...';
             }
-            
+
             // 1. 获取所有模型配置
             console.log('📡 开始获取模型配置数据...');
             const modelsResponse = await authManager.authenticatedFetch('/api/v1/model-rules', {
@@ -1377,15 +1367,15 @@ class ModelRulesManager {
                     'Authorization': 'Bearer cherry-studio-key'
                 }
             });
-            
+
             if (!modelsResponse.ok) {
                 throw new Error(`获取模型配置失败 (${modelsResponse.status})`);
             }
-            
+
             const models = await modelsResponse.json();
             console.log('📊 获取到的模型配置:', models);
             console.log('📊 模型数量:', models.length);
-            
+
             // 2. 检查各种配置问题
             console.log('🔍 开始分析配置问题...');
             const issues = [];
@@ -1398,16 +1388,16 @@ class ModelRulesManager {
                 outdatedConfigs: 0,
                 totalRules: 0
             };
-            
+
             for (const model of models) {
                 try {
                     console.log(`🔍 分析模型: ${model.model_id}`);
-                    
+
                     const rulesCount = model.rules_count || 0;
                     const securityScore = model.security_score || 0;
-                    
+
                     summary.totalRules += rulesCount;
-                    
+
                     if (rulesCount > 0) {
                         summary.configuredModels++;
                     } else {
@@ -1420,7 +1410,7 @@ class ModelRulesManager {
                             suggestion: '建议应用适当的规则模板'
                         });
                     }
-                    
+
                     // 检查安全评分
                     if (securityScore < 40) {
                         summary.lowSecurityModels++;
@@ -1440,7 +1430,7 @@ class ModelRulesManager {
                             suggestion: '考虑添加额外的安全规则'
                         });
                     }
-                    
+
                     // 检查配置时间
                     if (model.last_updated) {
                         try {
@@ -1467,15 +1457,15 @@ class ModelRulesManager {
                     // 继续处理其他模型
                 }
             }
-            
+
             console.log('📈 分析完成，汇总信息:', summary);
             console.log('⚠️ 发现问题数量:', issues.length);
-            
+
             // 3. 显示检查结果
             console.log('🎨 开始显示检查结果...');
             this.showConfigCheckResults(summary, issues);
             console.log('✅ 配置检查完成！');
-            
+
         } catch (error) {
             console.error('❌ 配置检查失败:', error);
             console.error('❌ 错误堆栈:', error.stack);
@@ -1483,7 +1473,7 @@ class ModelRulesManager {
         } finally {
             console.log('🧹 清理加载状态...');
             this.showLoading(false);
-            
+
             // 恢复按钮状态
             const button = document.getElementById('check-all-btn');
             if (button) {
@@ -1499,7 +1489,7 @@ class ModelRulesManager {
             console.log('🎨 开始生成检查结果模态框...');
             console.log('📊 摘要数据:', summary);
             console.log('⚠️ 问题数据:', issues);
-            
+
             // 创建检查结果模态框
             const modalHtml = `
                 <div class="modal-backdrop" id="config-check-modal" style="display: flex;">
@@ -1550,11 +1540,11 @@ class ModelRulesManager {
                                     <h4 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">
                                         ⚠️ 发现的问题 (${(issues || []).length})
                                     </h4>
-                                    ${!issues || issues.length === 0 ? 
-                                        '<div style="text-align: center; padding: 40px; color: #28a745;"><i class="fas fa-check-circle" style="font-size: 48px; margin-bottom: 16px;"></i><br>🎉 恭喜！没有发现任何配置问题</div>' :
-                                        issues.map(issue => {
-                                            try {
-                                                return `
+                                    ${!issues || issues.length === 0 ?
+                    '<div style="text-align: center; padding: 40px; color: #28a745;"><i class="fas fa-check-circle" style="font-size: 48px; margin-bottom: 16px;"></i><br>🎉 恭喜！没有发现任何配置问题</div>' :
+                    issues.map(issue => {
+                        try {
+                            return `
                                                     <div style="border: 1px solid ${issue.type === 'error' ? '#f5c6cb' : issue.type === 'warning' ? '#ffeaa7' : '#bee5eb'}; 
                                                                 background-color: ${issue.type === 'error' ? '#f8d7da' : issue.type === 'warning' ? '#fff3cd' : '#d4edda'}; 
                                                                 border-radius: 8px; padding: 16px; margin-bottom: 12px;">
@@ -1574,12 +1564,12 @@ class ModelRulesManager {
                                                         </div>
                                                     </div>
                                                 `;
-                                            } catch (issueError) {
-                                                console.error('生成问题项时发生错误:', issueError, issue);
-                                                return `<div style="padding: 8px; background: #ffe6e6; border-radius: 4px; color: #cc0000;">显示问题时出错</div>`;
-                                            }
-                                        }).join('')
-                                    }
+                        } catch (issueError) {
+                            console.error('生成问题项时发生错误:', issueError, issue);
+                            return `<div style="padding: 8px; background: #ffe6e6; border-radius: 4px; color: #cc0000;">显示问题时出错</div>`;
+                        }
+                    }).join('')
+                }
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -1596,20 +1586,20 @@ class ModelRulesManager {
                     </div>
                 </div>
             `;
-            
+
             console.log('📝 模态框HTML生成完成，长度:', modalHtml.length);
-            
+
             // 移除现有的模态框
             const existingModal = document.getElementById('config-check-modal');
             if (existingModal) {
                 console.log('🗑️ 移除现有模态框');
                 existingModal.remove();
             }
-            
+
             // 添加新的模态框
             console.log('➕ 添加新模态框到页面');
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
+
             // 验证模态框是否正确添加
             const newModal = document.getElementById('config-check-modal');
             if (newModal) {
@@ -1622,7 +1612,7 @@ class ModelRulesManager {
                 console.error('❌ 模态框添加失败');
                 this.showError('显示检查结果时发生错误');
             }
-            
+
         } catch (error) {
             console.error('❌ 生成检查结果模态框时发生错误:', error);
             console.error('❌ 错误堆栈:', error.stack);
@@ -1632,17 +1622,17 @@ class ModelRulesManager {
 
     async fixConfigIssues() {
         console.log('🔧 开始一键修复配置问题...');
-        
+
         try {
             this.showLoading(true);
-            
+
             // 获取推荐配置
             const recResponse = await authManager.authenticatedFetch('/api/v1/model-rules-recommend', {
                 headers: {
                     'Authorization': 'Bearer cherry-studio-key'
                 }
             });
-            
+
             if (recResponse.ok) {
                 const recData = await recResponse.json();
                 if (recData.recommendations && recData.recommendations.length > 0) {
@@ -1655,7 +1645,7 @@ class ModelRulesManager {
                         },
                         body: JSON.stringify({})
                     });
-                    
+
                     if (applyResponse.ok) {
                         const result = await applyResponse.json();
                         this.showSuccess(`已为 ${result.applied} 个模型应用推荐配置`);
@@ -1665,7 +1655,7 @@ class ModelRulesManager {
                     this.showSuccess('所有模型已是最优配置，无需修复');
                 }
             }
-            
+
         } catch (error) {
             console.error('❌ 修复配置问题失败:', error);
             this.showError(`修复失败: ${error.message}`);
@@ -1679,7 +1669,7 @@ class ModelRulesManager {
 let modelRulesManager;
 
 // 初始化认证和页面
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     // 等待authManager可用(由auth-check.js提供)
     const checkAuthManager = () => {
         return new Promise((resolve) => {
@@ -1719,7 +1709,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // 添加测试函数到全局作用域
-    window.testConfigureModel = function(modelId) {
+    window.testConfigureModel = function (modelId) {
         console.log('🧪 测试配置模型:', modelId);
         if (window.modelRulesManager) {
             console.log('✅ modelRulesManager 可访问');
@@ -1730,16 +1720,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
 
     // 添加全局hideModal函数，供HTML中的onclick使用
-    window.hideModal = function(modalId) {
+    window.hideModal = function (modalId) {
         if (window.modelRulesManager) {
             window.modelRulesManager.hideModal(modalId);
         }
     };
 
     console.log('🧪 测试函数已添加，可在控制台运行: testConfigureModel()');
-    
+
     // 添加推荐功能测试
-    window.testAutoRecommend = function() {
+    window.testAutoRecommend = function () {
         console.log('🧪 测试智能推荐功能...');
         if (window.modelRulesManager) {
             console.log('✅ modelRulesManager 可访问');
@@ -1748,11 +1738,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.error('❌ modelRulesManager 不可访问');
         }
     };
-    
+
     console.log('🧪 推荐测试函数已添加，可在控制台运行: testAutoRecommend()');
-    
+
     // 添加模板保存功能到类
-    ModelRulesManager.prototype.saveTemplateToServer = async function(template) {
+    ModelRulesManager.prototype.saveTemplateToServer = async function (template) {
         try {
             const response = await authManager.authenticatedFetch(`/api/v1/rule-templates/${template.id}`, {
                 method: 'PUT',
@@ -1778,6 +1768,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             throw error;
         }
     };
-    
+
     console.log('💾 模板保存函数已添加到类: saveTemplateToServer()');
 });

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "llm-security-firewall"
-version = "0.1.0"
+version = "2.2.0"
 description = "A security firewall for LLM API requests"
 authors = ["Your Name <your.email@example.com>"]
 readme = "README.md"

@@ -4,7 +4,7 @@ import json
 import secrets
 import hashlib
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional, Dict, Any
 
@@ -93,7 +93,7 @@ class WebAuthnService:
 
     def _cleanup_expired_challenges(self) -> None:
         """清理过期的挑战。"""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         expired_challenges = [
             challenge for challenge, data in self._challenges.items()
             if now - data['created_at'] > timedelta(minutes=5)
@@ -126,7 +126,7 @@ class WebAuthnService:
             'user_id': user_id,
             'username': username,
             'type': 'registration',
-            'created_at': datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         logger.info(f"创建注册挑战: user_id={user_id}, username={username}")
@@ -261,7 +261,7 @@ class WebAuthnService:
         self._challenges[challenge] = {
             'user_id': user_id,
             'type': 'authentication',
-            'created_at': datetime.utcnow()
+            'created_at': datetime.now(timezone.utc)
         }
 
         # 获取允许的凭证列表
@@ -377,7 +377,7 @@ class WebAuthnService:
             logger.warning(f"解析认证器数据失败: {str(e)}")
 
         # 更新最后使用时间
-        credential.last_used = datetime.utcnow()
+        credential.last_used = datetime.now(timezone.utc)
         self._save_credentials(user_id)
 
         # 删除已使用的挑战

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>监控中心 - 极简版</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f7; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #007AFF; padding-bottom: 10px; margin-bottom: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; font-weight: bold; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .debug { background: #fff3cd; color: #856404; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 20px 0; }
+        .metric-card { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007AFF; }
+        .metric-value { font-size: 24px; font-weight: bold; color: #007AFF; }
+        .metric-label { font-size: 12px; color: #666; margin-top: 5px; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 200px; overflow: auto; }
+        button { background: #007AFF; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ 监控中心 - 极简测试版</h1>
+            <p>用于诊断"连接中"问题的简化版本</p>
+        </div>
+
+        <div id="status-area"></div>
+        <div id="metrics-area"></div>
+        <div id="log-area" class="log"></div>
+
+        <div style="margin-top: 20px;">
+            <button onclick="location.reload()">🔄 刷新页面</button>
+            <button onclick="testAPI()">📡 测试API</button>
+            <button onclick="clearLogs()">🧹 清除日志</button>
+        </div>
+    </div>
+
+    <script>
+        const statusArea = document.getElementById('status-area');
+        const metricsArea = document.getElementById('metrics-area');
+        const logArea = document.getElementById('log-area');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const line = `[${timestamp}] ${message}\n`;
+            logArea.textContent += line;
+            console.log(line);
+
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            statusArea.appendChild(statusDiv);
+        }
+
+        function updateMetrics(data) {
+            metricsArea.innerHTML = '';
+            metricsArea.className = 'metrics';
+
+            const metrics = [
+                { label: 'CPU使用率', value: data.cpu_usage + '%' },
+                { label: '内存使用率', value: data.memory_usage + '%' },
+                { label: '活跃请求', value: data.active_requests },
+                { label: '总请求数', value: data.total_requests },
+                { label: '拦截数', value: data.blocked_requests },
+                { label: '平均响应', value: data.avg_response_time + 'ms' }
+            ];
+
+            metrics.forEach(m => {
+                const card = document.createElement('div');
+                card.className = 'metric-card';
+                card.innerHTML = `<div class="metric-value">${m.value}</div><div class="metric-label">${m.label}</div>`;
+                metricsArea.appendChild(card);
+            });
+        }
+
+        function clearLogs() {
+            logArea.textContent = '';
+            statusArea.innerHTML = '';
+            metricsArea.innerHTML = '';
+            log('日志已清除', 'info');
+        }
+
+        async function testAPI() {
+            log('📡 开始测试API...', 'debug');
+            try {
+                const response = await fetch('/api/v1/metrics');
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ API测试成功', 'success');
+                    updateMetrics(data);
+                } else {
+                    log(`❌ API测试失败: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ API测试错误: ${error.message}`, 'error');
+            }
+        }
+
+        // 主初始化流程
+        async function init() {
+            log('🚀 开始初始化...', 'info');
+
+            // 检查authManager
+            if (typeof authManager === 'undefined') {
+                log('❌ authManager未定义', 'error');
+                log('💡 检查脚本加载顺序', 'debug');
+                return;
+            }
+
+            log('✅ authManager已定义', 'success');
+
+            // 尝试认证
+            try {
+                const result = await authManager.init({
+                    onAuthSuccess: (user) => {
+                        log(`✅ 认证成功: ${user.username}`, 'success');
+                        testAPI();
+                    },
+                    onAuthFailure: () => {
+                        log('❌ 认证失败', 'error');
+                    }
+                });
+
+                log(`🔐 认证结果: ${result}`, result ? 'success' : 'error');
+            } catch (error) {
+                log(`💥 初始化错误: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', () => {
+            log('📝 DOM已加载', 'info');
+            setTimeout(init, 100);
+        });
+    </script>
+
+    <!-- 核心脚本 -->
+    <script src="/static/admin/js/auth-check.js"></script>
+</body>
+</html>

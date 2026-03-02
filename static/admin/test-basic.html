@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>基础测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .test-item { margin: 10px 0; padding: 10px; background: white; border-radius: 5px; }
+        .success { border-left: 4px solid green; }
+        .error { border-left: 4px solid red; }
+        .info { border-left: 4px solid blue; }
+        pre { background: #f8f9fa; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 监控中心基础测试</h1>
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function addResult(title, message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-item ${type}`;
+            div.innerHTML = `<strong>${title}</strong><br>${message}`;
+            results.appendChild(div);
+        }
+
+        function addPre(title, data) {
+            const div = document.createElement('div');
+            div.className = 'test-item';
+            div.innerHTML = `<strong>${title}</strong><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            results.appendChild(div);
+        }
+
+        // 测试1: 页面加载
+        addResult('✅ 步骤 1', '页面已加载', 'success');
+
+        // 测试2: 检查authManager
+        setTimeout(() => {
+            if (typeof authManager !== 'undefined') {
+                addResult('✅ 步骤 2', 'authManager 已定义', 'success');
+                addPre('authManager详情', {
+                    type: typeof authManager,
+                    hasInit: typeof authManager.init === 'function',
+                    hasCheckAuth: typeof authManager.checkAuth === 'function',
+                    constructor: authManager.constructor.name
+                });
+
+                // 测试3: 尝试初始化
+                authManager.init({
+                    onAuthSuccess: (user) => {
+                        addResult('✅ 步骤 3', '认证成功: ' + user.username, 'success');
+                        addPre('用户信息', user);
+
+                        // 测试4: API调用
+                        fetch('/api/v1/metrics')
+                            .then(r => {
+                                if (!r.ok) throw new Error('HTTP ' + r.status);
+                                return r.json();
+                            })
+                            .then(data => {
+                                addResult('✅ 步骤 4', 'API调用成功', 'success');
+                                addPre('API数据', data);
+                            })
+                            .catch(err => {
+                                addResult('❌ 步骤 4', 'API调用失败: ' + err.message, 'error');
+                            });
+                    },
+                    onAuthFailure: () => {
+                        addResult('❌ 步骤 3', '认证失败', 'error');
+                    }
+                }).then(result => {
+                    addResult('✅ init()返回', '结果: ' + result, 'success');
+                }).catch(err => {
+                    addResult('❌ init()错误', err.message, 'error');
+                });
+
+            } else {
+                addResult('❌ 步骤 2', 'authManager 未定义', 'error');
+                addResult('💡 提示', '请检查auth-check.js是否正确加载', 'info');
+            }
+        }, 200);
+    </script>
+
+    <!-- 按顺序加载脚本 -->
+    <script src="/static/admin/js/auth-check.js"></script>
+</body>
+</html>

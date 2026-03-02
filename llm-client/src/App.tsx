@@ -1,63 +1,51 @@
 import React, { useEffect } from 'react';
-import { ConfigProvider, theme, Layout } from 'antd';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/Login';
-import ChatPage from './pages/Chat';
-import SettingsPage from './pages/Settings';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Chat from './pages/Chat';
+import AuditLogs from './pages/AuditLogs';
+import Settings from './pages/Settings';
+import MainLayout from './components/Layout/MainLayout';
 import { useAuthStore } from './store/useAuthStore';
 import './App.css';
-
-const { Content } = Layout;
 
 const App: React.FC = () => {
   const { isAuthenticated, initAuth } = useAuthStore();
 
   useEffect(() => {
-    // 初始化认证状态
     initAuth();
-
-    // 获取应用版本
     if (window.electronAPI) {
-      window.electronAPI.getAppVersion().then(version => {
-        console.log('应用版本:', version);
-      });
+      window.electronAPI.getAppVersion().catch(err => console.error(err));
     }
   }, [initAuth]);
 
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.defaultAlgorithm,
-        token: {
-          colorPrimary: '#1890ff',
-          borderRadius: 6,
-        },
-      }}
-    >
-      <BrowserRouter>
-        <Layout style={{ minHeight: '100vh' }}>
-          <Content>
-            <Routes>
-              <Route
-                path="/login"
-                element={isAuthenticated ? <Navigate to="/chat" /> : <LoginPage />}
-              />
-              <Route
-                path="/chat"
-                element={isAuthenticated ? <ChatPage /> : <Navigate to="/login" />}
-              />
-              <Route
-                path="/settings"
-                element={isAuthenticated ? <SettingsPage /> : <Navigate to="/login" />}
-              />
-              <Route
-                path="/"
-                element={<Navigate to={isAuthenticated ? "/chat" : "/login"} />}
-              />
-            </Routes>
-          </Content>
-        </Layout>
-      </BrowserRouter>
+    <ConfigProvider locale={zhCN}>
+      <HashRouter>
+        <Routes>
+          {/* Public Routes */}
+          <Route 
+            path="/login" 
+            element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} 
+          />
+
+          {/* Protected Routes */}
+          <Route element={isAuthenticated ? <MainLayout /> : <Navigate to="/login" />}>
+             <Route path="/dashboard" element={<Dashboard />} />
+             <Route path="/chat" element={<Chat />} />
+             <Route path="/logs" element={<AuditLogs />} />
+             <Route path="/settings" element={<Settings />} />
+          </Route>
+
+          {/* Default Redirect */}
+          <Route 
+            path="*" 
+            element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} 
+          />
+        </Routes>
+      </HashRouter>
     </ConfigProvider>
   );
 };

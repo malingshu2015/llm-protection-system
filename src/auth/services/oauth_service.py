@@ -3,7 +3,7 @@
 import json
 import secrets
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional, Dict, Any, Tuple
 from urllib.parse import urlencode
@@ -139,7 +139,7 @@ class OAuthService:
         state = secrets.token_urlsafe(32)
         self._state_cache[state] = {
             "provider": provider,
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
         }
         return state
 
@@ -158,7 +158,7 @@ class OAuthService:
             return False
 
         # 检查是否过期 (10分钟)
-        if datetime.utcnow() - state_data["created_at"] > timedelta(minutes=10):
+        if datetime.now(timezone.utc) - state_data["created_at"] > timedelta(minutes=10):
             del self._state_cache[state]
             return False
 
@@ -341,7 +341,7 @@ class OAuthService:
 
         token_expires_at = None
         if expires_in:
-            token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+            token_expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
 
         oauth_account = OAuthAccount(
             user_id=user_id,
@@ -352,7 +352,7 @@ class OAuthService:
             access_token=access_token,
             refresh_token=refresh_token,
             token_expires_at=token_expires_at,
-            updated_at=datetime.utcnow(),
+            updated_at=datetime.now(timezone.utc),
         )
 
         accounts[provider.value] = oauth_account

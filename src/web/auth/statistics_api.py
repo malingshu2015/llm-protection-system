@@ -1,6 +1,6 @@
 """用户统计面板 API路由。"""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -106,11 +106,11 @@ async def get_dashboard_statistics(
         verified_users = sum(1 for u in all_users if u.is_verified)
         locked_users = sum(
             1 for u in all_users
-            if u.locked_until and u.locked_until > datetime.utcnow()
+            if u.locked_until and u.locked_until > datetime.now(timezone.utc)
         )
 
         # 计算时间统计
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         week_start = now - timedelta(days=now.weekday())
         week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)

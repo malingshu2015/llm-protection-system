@@ -1,6 +1,6 @@
 """API密钥服务。"""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
 from src.auth.models.api_key import (
@@ -38,7 +38,7 @@ class APIKeyService:
         # 计算过期时间
         expires_at = None
         if key_data.expires_days:
-            expires_at = datetime.utcnow() + timedelta(days=key_data.expires_days)
+            expires_at = datetime.now(timezone.utc) + timedelta(days=key_data.expires_days)
 
         # 创建密钥对象
         api_key = APIKey(
@@ -284,7 +284,7 @@ class APIKeyService:
             return None
 
         # 检查密钥是否过期
-        if api_key.expires_at and api_key.expires_at < datetime.utcnow():
+        if api_key.expires_at and api_key.expires_at < datetime.now(timezone.utc):
             logger.warning(f"使用已过期的API密钥: {api_key.key_prefix}")
             return None
 

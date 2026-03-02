@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from src.logger import logger
+from src.utils.redis_client import redis_client
 
 
 class CacheLevel(Enum):
@@ -318,13 +319,29 @@ class SmartCacheManager:
     
     async def _get_from_l2(self, key: Union[str, Dict, Any]) -> Optional[Any]:
         """从L2缓存获取 (Redis)"""
-        # TODO: 实现Redis缓存逻辑
-        return None
+        if not getattr(redis_client, "_is_connected", False):
+            return None
+            
+        cache_key = self.l1_cache._generate_key(key)
+        redis_key = f"cache:l2:{cache_key}"
+        try:
+            return await redis_client.get_json(redis_key)
+        except Exception as e:
+            logger.error(f"L2缓存获取失败: {e}")
+            return None
     
     async def _set_to_l2(self, key: Union[str, Dict, Any], value: Any, ttl: Optional[float]):
         """存入L2缓存 (Redis)"""
-        # TODO: 实现Redis缓存逻辑
-        pass
+        if not getattr(redis_client, "_is_connected", False):
+            return
+            
+        cache_key = self.l1_cache._generate_key(key)
+        redis_key = f"cache:l2:{cache_key}"
+        try:
+            ex = int(ttl) if ttl else None
+            await redis_client.set_json(redis_key, value, ex=ex)
+        except Exception as e:
+            logger.error(f"L2缓存写入失败: {e}")
     
     async def _get_from_l3(self, key: Union[str, Dict, Any]) -> Optional[Any]:
         """从L3缓存获取 (磁盘)"""
@@ -339,13 +356,28 @@ class SmartCacheManager:
     async def invalidate(self, key: Union[str, Dict, Any]):
         """使缓存失效"""
         await self.l1_cache.delete(key)
-        # TODO: 也从L2、L3缓存中删除
+        if self.l2_enabled and getattr(redis_client, "_is_connected", False):
+            cache_key = self.l1_cache._generate_key(key)
+            redis_key = f"cache:l2:{cache_key}"
+            await redis_client.delete(redis_key)
+        # TODO: 也从L3缓存中删除
         logger.debug(f"SmartCache: 使缓存失效: {key}")
     
     async def clear_all(self):
         """清空所有缓存"""
         await self.l1_cache.clear()
-        # TODO: 也清空L2、L3缓存
+        
+        if self.l2_enabled and getattr(redis_client, "_is_connected", False):
+            try:
+                cursor = "0"
+                while cursor != 0:
+                    cursor, keys = await redis_client.client.scan(cursor=cursor, match="cache:l2:*", count=100)
+                    if keys:
+                        await redis_client.client.delete(*keys)
+            except Exception as e:
+                logger.error(f"L2缓存清空失败: {e}")
+                
+        # TODO: 也清空L3缓存
         logger.info("SmartCache: 已清空所有缓存")
     
     async def preload_cache(self):
@@ -415,6 +447,6 @@ class SmartCacheManager:
 # 全局缓存管理器实例
 cache_manager = SmartCacheManager(
     l1_size=10000,
-    l2_enabled=False,  # 暂时禁用Redis缓存
+    l2_enabled=True,  # 启用Redis缓存 (断开时自动降级)
     l3_enabled=False   # 暂时禁用磁盘缓存
 )

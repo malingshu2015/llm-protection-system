@@ -1,6 +1,6 @@
 """用户认证服务。"""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple
 
 from pydantic import EmailStr
@@ -151,8 +151,8 @@ class AuthService:
             raise ValueError("用户名或密码错误")
 
         # 检查账号是否被锁定
-        if user.locked_until and user.locked_until > datetime.utcnow():
-            remaining_time = (user.locked_until - datetime.utcnow()).total_seconds() / 60
+        if user.locked_until and user.locked_until > datetime.now(timezone.utc):
+            remaining_time = (user.locked_until - datetime.now(timezone.utc)).total_seconds() / 60
             raise ValueError(f"账号已被锁定,请在 {int(remaining_time)} 分钟后重试")
 
         # 检查账号是否激活
@@ -167,7 +167,7 @@ class AuthService:
 
             # 如果失败次数达到上限,锁定账号
             if login_attempts >= self.MAX_LOGIN_ATTEMPTS:
-                locked_until = datetime.utcnow() + timedelta(
+                locked_until = datetime.now(timezone.utc) + timedelta(
                     minutes=self.LOCKOUT_DURATION_MINUTES
                 )
                 updates["locked_until"] = locked_until.isoformat()
@@ -180,7 +180,7 @@ class AuthService:
         await user_db.update_user(user.id, {
             "login_attempts": 0,
             "locked_until": None,
-            "last_login": datetime.utcnow().isoformat()
+            "last_login": datetime.now(timezone.utc).isoformat()
         })
 
         # 生成JWT令牌
@@ -271,7 +271,7 @@ class AuthService:
 
         # 更新最后登录时间
         await user_db.update_user(user.id, {
-            "last_login": datetime.utcnow().isoformat()
+            "last_login": datetime.now(timezone.utc).isoformat()
         })
 
         # 生成JWT令牌

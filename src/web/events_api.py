@@ -103,7 +103,7 @@ async def get_events(
         offset = (page - 1) * page_size
 
         # 获取事件
-        events = event_logger.get_events(
+        events = await event_logger.get_events_async(
             start_time=start_time,
             end_time=end_time,
             detection_type=detection_type_enum,
@@ -113,7 +113,7 @@ async def get_events(
         )
 
         # 获取总数
-        total = event_logger.get_events_count(
+        total = await event_logger.get_events_count_async(
             start_time=start_time,
             end_time=end_time,
             detection_type=detection_type_enum,
@@ -156,6 +156,47 @@ async def get_events(
         )
 
 
+@router.get("/api/v1/events/stats", response_model=EventsStatsResponse)
+async def get_events_stats(
+    start_time: Optional[float] = Query(None, description="开始时间戳"),
+    end_time: Optional[float] = Query(None, description="结束时间戳"),
+):
+    """获取安全事件统计。
+
+    NOTE: 此路由必须在 /api/v1/events/{event_id} 之前注册，
+    否则 'stats' 会被当成 event_id 处理。
+
+    Args:
+        start_time: 开始时间戳
+        end_time: 结束时间戳
+
+    Returns:
+        安全事件统计
+    """
+    try:
+        stats = await event_logger.get_events_stats_async(
+            start_time=start_time,
+            end_time=end_time,
+        )
+
+        return EventsStatsResponse(
+            prompt_injection=stats["prompt_injection"],
+            jailbreak=stats["jailbreak"],
+            role_play=stats["role_play"],
+            sensitive_info=stats["sensitive_info"],
+            harmful_content=stats["harmful_content"],
+            compliance_violation=stats["compliance_violation"],
+            custom=stats["custom"],
+            total=stats["total"],
+        )
+    except Exception as e:
+        logger.error(f"获取安全事件统计失败: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取安全事件统计失败: {str(e)}"
+        )
+
+
 @router.get("/api/v1/events/{event_id}", response_model=EventResponse)
 async def get_event(event_id: str = Path(..., description="事件ID")):
     """获取特定安全事件。
@@ -167,7 +208,7 @@ async def get_event(event_id: str = Path(..., description="事件ID")):
         安全事件
     """
     try:
-        event = event_logger.get_event(event_id)
+        event = await event_logger.get_event_async(event_id)
         if not event:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -195,42 +236,4 @@ async def get_event(event_id: str = Path(..., description="事件ID")):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"获取安全事件失败: {str(e)}"
-        )
-
-
-@router.get("/api/v1/events/stats", response_model=EventsStatsResponse)
-async def get_events_stats(
-    start_time: Optional[float] = Query(None, description="开始时间戳"),
-    end_time: Optional[float] = Query(None, description="结束时间戳"),
-):
-    """获取安全事件统计。
-
-    Args:
-        start_time: 开始时间戳
-        end_time: 结束时间戳
-
-    Returns:
-        安全事件统计
-    """
-    try:
-        stats = event_logger.get_events_stats(
-            start_time=start_time,
-            end_time=end_time,
-        )
-
-        return EventsStatsResponse(
-            prompt_injection=stats["prompt_injection"],
-            jailbreak=stats["jailbreak"],
-            role_play=stats["role_play"],
-            sensitive_info=stats["sensitive_info"],
-            harmful_content=stats["harmful_content"],
-            compliance_violation=stats["compliance_violation"],
-            custom=stats["custom"],
-            total=stats["total"],
-        )
-    except Exception as e:
-        logger.error(f"获取安全事件统计失败: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"获取安全事件统计失败: {str(e)}"
         )

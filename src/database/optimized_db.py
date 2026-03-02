@@ -117,13 +117,15 @@ class AsyncDatabasePool:
     def __init__(self, db_path: str, pool_size: int = 10):
         self.db_path = db_path
         self.pool_size = pool_size
-        self.pool = asyncio.Queue(maxsize=pool_size)
+        self.pool = None
         self.active_connections = 0
-        self.lock = asyncio.Lock()
+        self.lock = None
         self.performance_manager = DatabasePerformanceManager()
     
     async def initialize(self):
         """初始化连接池"""
+        self.pool = asyncio.Queue(maxsize=self.pool_size)
+        self.lock = asyncio.Lock()
         # 预创建连接池
         for _ in range(self.pool_size):
             conn = await aiosqlite.connect(
@@ -177,12 +179,14 @@ class AsyncDatabasePool:
                 if query_type == QueryType.SELECT:
                     cursor = await conn.execute(query, params)
                     result = await cursor.fetchall()
+                    await cursor.close()
                     rows_affected = len(result)
                 else:
                     cursor = await conn.execute(query, params)
                     await conn.commit()
                     rows_affected = cursor.rowcount
                     result = cursor.lastrowid if query_type == QueryType.INSERT else cursor.rowcount
+                    await cursor.close()
                 
                 execution_time = time.time() - start_time
                 self.performance_manager.record_query(query_type, execution_time, rows_affected)
@@ -201,11 +205,13 @@ class AsyncDatabasePool:
             try:
                 cursor = await conn.executemany(query, params_list)
                 await conn.commit()
+                rowcount = cursor.rowcount
+                await cursor.close()
                 
                 execution_time = time.time() - start_time
                 self.performance_manager.record_query(query_type, execution_time, len(params_list))
                 
-                return cursor.rowcount
+                return rowcount
                 
             except Exception as e:
                 logger.error(f"批量数据库操作失败: {query} - {e}")
@@ -486,6 +492,152 @@ class OptimizedSecurityEventDB:
             'total_events': sum(row[1] for row in type_stats)
         }
     
+
+    async def get_events_by_time_range(
+        self,
+        start_time: float = None,
+        end_time: float = None,
+        detection_type: str = None,
+        severity: str = None,
+        limit: int = 100,
+        offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        conditions = []
+        params = []
+        
+        if start_time is not None:
+            conditions.append("timestamp >= ?")
+            params.append(start_time)
+            
+        if end_time is not None:
+            conditions.append("timestamp <= ?")
+            params.append(end_time)
+            
+        if detection_type:
+            conditions.append("detection_type = ?")
+            params.append(detection_type)
+            
+        if severity:
+            conditions.append("severity = ?")
+            params.append(severity)
+            
+        where_clause = " AND ".join(conditions) if conditions else "1=1"
+        query = f"SELECT * FROM security_events WHERE {where_clause} ORDER BY timestamp DESC LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+        
+        rows = await self.pool.execute_query(query, tuple(params), QueryType.SELECT)
+        
+        columns = [
+            'id', 'event_id', 'timestamp', 'detection_type', 'severity', 
+            'reason', 'details', 'content', 'rule_id', 'rule_name',
+            'matched_pattern', 'matched_text', 'matched_keyword', 
+            'created_at', 'indexed_at'
+        ]
+        
+        events = []
+        import json
+        for row in rows:
+            event_dict = dict(zip(columns, row))
+            if event_dict['details']:
+                try:
+                    event_dict['details'] = json.loads(event_dict['details'])
+                except:
+                    pass
+            events.append(event_dict)
+        return events
+
+    async def get_events_count_by_time_range(
+        self,
+        start_time: float = None,
+        end_time: float = None,
+        detection_type: str = None,
+        severity: str = None
+    ) -> int:
+        conditions = []
+        params = []
+        
+        if start_time is not None:
+            conditions.append("timestamp >= ?")
+            params.append(start_time)
+            
+        if end_time is not None:
+            conditions.append("timestamp <= ?")
+            params.append(end_time)
+            
+        if detection_type:
+            conditions.append("detection_type = ?")
+            params.append(detection_type)
+            
+        if severity:
+            conditions.append("severity = ?")
+            params.append(severity)
+            
+        where_clause = " AND ".join(conditions) if conditions else "1=1"
+        query = f"SELECT COUNT(*) FROM security_events WHERE {where_clause}"
+        
+        rows = await self.pool.execute_query(query, tuple(params), QueryType.SELECT)
+        return rows[0][0] if rows else 0
+
+    async def get_events_stats_by_time_range(
+        self,
+        start_time: float = None,
+        end_time: float = None
+    ) -> Dict[str, int]:
+        conditions = []
+        params = []
+        
+        if start_time is not None:
+            conditions.append("timestamp >= ?")
+            params.append(start_time)
+            
+        if end_time is not None:
+            conditions.append("timestamp <= ?")
+            params.append(end_time)
+            
+        where_clause = " AND ".join(conditions) if conditions else "1=1"
+        query = f"SELECT detection_type, COUNT(*) FROM security_events WHERE {where_clause} GROUP BY detection_type"
+        
+        rows = await self.pool.execute_query(query, tuple(params), QueryType.SELECT)
+        
+        stats = {
+            "prompt_injection": 0,
+            "jailbreak": 0,
+            "role_play": 0,
+            "sensitive_info": 0,
+            "harmful_content": 0,
+            "compliance_violation": 0,
+            "custom": 0,
+            "total": 0,
+        }
+        
+        for row in rows:
+            dtype = row[0]
+            count = row[1]
+            if dtype in stats:
+                stats[dtype] += count
+            else:
+                stats["custom"] += count
+            stats["total"] += count
+            
+        return stats
+
+    async def get_rule_ranking(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """获取命中次数最多的规则排名 (M3.2)"""
+        query = """
+        SELECT rule_id, rule_name, COUNT(*) as hit_count 
+        FROM security_events 
+        WHERE rule_id IS NOT NULL AND rule_id != ''
+        GROUP BY rule_id 
+        ORDER BY hit_count DESC 
+        LIMIT ?
+        """
+        rows = await self.pool.execute_query(query, (limit,), QueryType.SELECT)
+        
+        return [
+            {"rule_id": row[0], "rule_name": row[1], "hit_count": row[2]}
+            for row in rows
+        ]
+
     async def cleanup_old_events(self, days: int = 30):
         """清理旧事件数据"""
         cutoff_time = time.time() - (days * 24 * 3600)

@@ -66,9 +66,10 @@ class SecurityConfig(BaseSettings):
     enable_rate_limiting: bool = Field(default=True)
     enable_content_masking: bool = Field(default=True)
     
-    # 开发模式配置
+    # 开发模式与预演配置
     development_mode: bool = Field(default=False, description="开发模式，降低安全检测严格性")
     bypass_detection_for_dev: bool = Field(default=False, description="开发模式下绕过安全检测")
+    dry_run_mode: bool = Field(default=False, description="观察者模式，只记录不拦截（Dry-Run）")
     confidence_threshold: float = Field(default=0.6, description="安全检测置信度阈值（降低以减少误报）")
     enable_detection_cache: bool = Field(default=True, description="启用检测结果缓存")
     log_all_requests: bool = Field(default=False, description="记录所有请求详情")
@@ -117,6 +118,13 @@ class AuditConfig(BaseSettings):
     audit_log_path: str = Field(default="logs/audit.log")
     audit_log_retention: int = Field(default=30)
     audit_log_format: str = Field(default="json")
+    
+    # Elasticsearch 配置
+    enable_elasticsearch: bool = Field(default=False)
+    es_hosts: str = Field(default="http://localhost:9200")
+    es_index_prefix: str = Field(default="llm-shield-audit")
+    es_username: str = Field(default="")
+    es_password: str = Field(default="")
 
     model_config = {
         "env_prefix": "AUDIT_",

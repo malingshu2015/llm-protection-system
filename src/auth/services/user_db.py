@@ -2,7 +2,7 @@
 
 import json
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -206,7 +206,7 @@ class UserDatabase:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
                 f"UPDATE users SET {set_clause}, updated_at = ? WHERE id = ?",
-                values[:-1] + [datetime.utcnow().isoformat(), user_id]
+                values[:-1] + [datetime.now(timezone.utc).isoformat(), user_id]
             )
             await db.commit()
             return db.total_changes > 0
@@ -435,7 +435,7 @@ class UserDatabase:
                 SET usage_count = usage_count + 1,
                     last_used_at = ?
                 WHERE id = ?
-            """, (datetime.utcnow().isoformat(), key_id))
+            """, (datetime.now(timezone.utc).isoformat(), key_id))
             await db.commit()
             return db.total_changes > 0
 

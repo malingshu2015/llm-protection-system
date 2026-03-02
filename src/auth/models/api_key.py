@@ -1,3 +1,4 @@
+from pydantic import ConfigDict
 """API密钥数据模型。"""
 
 import hashlib
@@ -66,10 +67,7 @@ class APIKey(BaseModel):
             return key
         return f"{key[:12]}..."
 
-    class Config:
-        """Pydantic配置。"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "name": "Production API Key",
                 "description": "用于生产环境的API密钥",
@@ -77,7 +75,7 @@ class APIKey(BaseModel):
                 "rate_limit": 1000,
                 "ip_whitelist": ["192.168.1.1"]
             }
-        }
+        })
 
 
 class APIKeyCreate(BaseModel):
@@ -90,10 +88,7 @@ class APIKeyCreate(BaseModel):
     ip_whitelist: List[str] = Field(default_factory=list)
     expires_days: Optional[int] = Field(default=None, ge=1, le=365)
 
-    class Config:
-        """Pydantic配置。"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "name": "Dev API Key",
                 "description": "开发环境测试密钥",
@@ -101,7 +96,7 @@ class APIKeyCreate(BaseModel):
                 "rate_limit": 100,
                 "expires_days": 90
             }
-        }
+        })
 
 
 class APIKeyUpdate(BaseModel):
@@ -132,10 +127,7 @@ class APIKeyResponse(BaseModel):
     last_used_at: Optional[datetime]
     usage_count: int
 
-    class Config:
-        """Pydantic配置。"""
-
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class APIKeyCreateResponse(BaseModel):
@@ -144,10 +136,7 @@ class APIKeyCreateResponse(BaseModel):
     api_key: str  # 完整的API密钥,仅此一次显示
     key_info: APIKeyResponse
 
-    class Config:
-        """Pydantic配置。"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "api_key": "sk-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
                 "key_info": {
@@ -158,4 +147,4 @@ class APIKeyCreateResponse(BaseModel):
                     "is_active": True
                 }
             }
-        }
+        })

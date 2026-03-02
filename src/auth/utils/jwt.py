@@ -1,7 +1,7 @@
 """JWT Token工具类。"""
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
 from jose import JWTError, jwt
@@ -41,9 +41,9 @@ class JWTManager:
             JWT访问令牌
         """
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(
+            expire = datetime.now(timezone.utc) + timedelta(
                 minutes=cls.ACCESS_TOKEN_EXPIRE_MINUTES
             )
 
@@ -53,7 +53,7 @@ class JWTManager:
             "email": email,
             "role": role,
             "exp": expire,
-            "iat": datetime.utcnow(),
+            "iat": datetime.now(timezone.utc),
             "jti": str(uuid.uuid4()),  # JWT ID,用于会话管理
             "type": "access"
         }
@@ -80,7 +80,7 @@ class JWTManager:
         Returns:
             JWT刷新令牌
         """
-        expire = datetime.utcnow() + timedelta(days=cls.REFRESH_TOKEN_EXPIRE_DAYS)
+        expire = datetime.now(timezone.utc) + timedelta(days=cls.REFRESH_TOKEN_EXPIRE_DAYS)
 
         payload = {
             "sub": user_id,
@@ -88,7 +88,7 @@ class JWTManager:
             "email": email,
             "role": role,
             "exp": expire,
-            "iat": datetime.utcnow(),
+            "iat": datetime.now(timezone.utc),
             "jti": str(uuid.uuid4()),
             "type": "refresh"
         }
@@ -122,8 +122,8 @@ class JWTManager:
                 username=payload.get("username"),
                 email=payload.get("email"),
                 role=payload.get("role"),
-                exp=datetime.fromtimestamp(exp_timestamp) if exp_timestamp else datetime.utcnow(),
-                iat=datetime.fromtimestamp(iat_timestamp) if iat_timestamp else datetime.utcnow(),
+                exp=datetime.fromtimestamp(exp_timestamp) if exp_timestamp else datetime.now(timezone.utc),
+                iat=datetime.fromtimestamp(iat_timestamp) if iat_timestamp else datetime.now(timezone.utc),
                 jti=payload.get("jti")
             )
 
@@ -147,7 +147,7 @@ class JWTManager:
             return False
 
         # 检查是否过期
-        if token_data.exp < datetime.utcnow():
+        if token_data.exp < datetime.now(timezone.utc):
             return False
 
         return True

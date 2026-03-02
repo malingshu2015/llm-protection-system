@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from src.config import settings
 from src.logger import logger
-from src.models_interceptor import DetectionType, SecurityRule, Severity
+from src.models_interceptor import DetectionType, RuleMode, SecurityRule, Severity
 
 
 router = APIRouter()
@@ -1447,3 +1447,163 @@ async def test_rule(request: RuleTestRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"规则测试失败: {str(e)}"
         )
+
+
+# ======================== M2.2 Dry-Run 管理 API ========================
+
+class RuleModeUpdateRequest(BaseModel):
+    """规则模式切换请求。"""
+    mode: str  # "blocking" 或 "dry_run"
+
+
+@router.put("/api/v1/rules/{rule_id}/mode")
+async def update_rule_mode(
+    rule_id: str = Path(..., description="规则ID"),
+    request: RuleModeUpdateRequest = Body(...),
+):
+    """切换规则的执行模式（blocking / dry_run）。
+
+    将规则设为 dry_run 后，该规则命中时只记录审计日志，不实际拦截请求，
+    适用于新规则上线前的灰度观察期。
+
+    Args:
+        rule_id: 规则ID
+        request: 包含目标模式的请求体
+
+    Returns:
+        切换结果
+    """
+    if request.mode not in ("blocking", "dry_run"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"无效的模式: {request.mode}，只支持 blocking 或 dry_run"
+        )
+
+    try:
+        from src.security.rule_mode_manager import rule_mode_manager
+
+        old_mode = rule_mode_manager.set_mode(rule_id, request.mode)
+
+        return {
+            "rule_id": rule_id,
+            "old_mode": old_mode,
+            "new_mode": request.mode,
+            "message": f"规则模式已切换为 {request.mode}"
+        }
+
+    except Exception as e:
+        logger.error(f"切换规则模式失败: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"切换规则模式失败: {str(e)}"
+        )
+
+
+@router.get("/api/v1/rules/dry-run/stats")
+async def get_dry_run_stats():
+    """获取所有规则的 Dry-Run 状态和命中统计。
+
+    返回每条规则的当前模式、命中次数等信息。
+    管理员可据此判断新规则的误报率，决定是否转为正式拦截模式。
+
+    Returns:
+        所有规则的 Dry-Run 统计
+    """
+    try:
+        from src.security.rule_mode_manager import rule_mode_manager
+
+        # 从规则模式管理器获取集中状态
+        manager_stats = rule_mode_manager.get_all_stats()
+        modes = manager_stats["modes"]
+        hits = manager_stats["hits"]
+
+        # 从规则文件加载规则列表以补充元数据
+        all_rules = []
+        rule_files = {
+            "prompt_injection": settings.security.prompt_injection_rules_path,
+            "jailbreak": settings.security.jailbreak_rules_path,
+            "harmful_content": settings.security.harmful_content_rules_path,
+            "compliance": settings.security.compliance_rules_path,
+        }
+
+        for detector_name, path in rule_files.items():
+            try:
+                if os.path.exists(path):
+                    with open(path, "r") as f:
+                        rules_data = json.load(f)
+                        if isinstance(rules_data, list):
+                            for rule in rules_data:
+                                rule_id = rule.get("id", "")
+                                all_rules.append({
+                                    "rule_id": rule_id,
+                                    "rule_name": rule.get("name", ""),
+                                    "detection_type": rule.get("detection_type", detector_name),
+                                    "severity": rule.get("severity", "medium"),
+                                    "mode": modes.get(rule_id, "blocking"),
+                                    "enabled": rule.get("enabled", True),
+                                    "dry_run_hits": hits.get(rule_id, 0),
+                                    "detector": detector_name,
+                                })
+            except Exception as e:
+                logger.warning(f"加载 {detector_name} 规则文件失败: {e}")
+
+        # 汇总统计
+        total_rules = len(all_rules)
+        dry_run_rules = sum(1 for s in all_rules if s["mode"] == "dry_run")
+        blocking_rules = sum(1 for s in all_rules if s["mode"] == "blocking")
+        total_dry_run_hits = sum(s["dry_run_hits"] for s in all_rules)
+
+        return {
+            "summary": {
+                "total_rules": total_rules,
+                "dry_run_rules": dry_run_rules,
+                "blocking_rules": blocking_rules,
+                "total_dry_run_hits": total_dry_run_hits,
+                "global_dry_run_enabled": settings.security.dry_run_mode,
+            },
+            "rules": all_rules,
+        }
+
+    except Exception as e:
+        logger.error(f"获取 Dry-Run 统计失败: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取 Dry-Run 统计失败: {str(e)}"
+        )
+
+
+@router.post("/api/v1/rules/dry-run/global")
+async def toggle_global_dry_run(
+    enabled: bool = Body(..., embed=True, description="是否启用全局 Dry-Run 模式"),
+):
+    """切换全局 Dry-Run 模式。
+
+    启用后，所有规则命中都只记录不拦截。
+    适用于系统整体灰度测试或紧急情况下的全局放行。
+
+    Args:
+        enabled: True=启用全局Dry-Run，False=关闭
+
+    Returns:
+        切换结果
+    """
+    try:
+        old_value = settings.security.dry_run_mode
+        settings.security.dry_run_mode = enabled
+
+        logger.info(f"[M2.2 Dry-Run] 全局 Dry-Run 模式: {old_value} → {enabled}")
+
+        return {
+            "global_dry_run_enabled": enabled,
+            "old_value": old_value,
+            "message": f"全局 Dry-Run 模式已{'启用' if enabled else '关闭'}"
+        }
+
+    except Exception as e:
+        logger.error(f"切换全局 Dry-Run 模式失败: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"切换全局 Dry-Run 模式失败: {str(e)}"
+        )
+
+

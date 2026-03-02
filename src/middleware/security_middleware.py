@@ -81,7 +81,8 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                     logger.error(f"检查模型访问权限失败: {e}")
 
         # 速率限制
-        if settings.security.enable_rate_limiting:
+        # NOTE: 管理后台 API 路径和本地访问跳过严格速率限制，避免仪表板刷新被拦截
+        if settings.security.enable_rate_limiting and not self._is_admin_api_path(request):
             is_allowed, rate_limit_info = await rate_limiter.check_rate_limit(request)
             if not is_allowed:
                 return JSONResponse(
@@ -215,6 +216,38 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                 return True
 
         return False
+
+    def _is_admin_api_path(self, request: Request) -> bool:
+        """检查请求是否来自本地管理后台，不受严格速率限制约束。
+
+        NOTE: 管理后台仪表板会高频轮询监控/数据接口，对其放行以避免 429 错误影响运营视图。
+        仅对来自 localhost/127.0.0.1 的管理类接口请求放行。
+
+        Args:
+            request: 请求对象。
+
+        Returns:
+            是否应跳过速率限制。
+        """
+        client_ip = request.client.host if request.client else ""
+        # 只对本地访问的管理接口放行
+        if client_ip not in ("127.0.0.1", "::1", "localhost"):
+            return False
+
+        # 管理后台监控和只读接口白名单
+        admin_api_prefixes = [
+            "/api/v1/metrics",
+            "/api/v1/realtime",
+            "/api/v1/events",
+            "/api/v1/rules",
+            "/api/v1/model-rules",
+            "/api/v1/rule-templates",
+            "/api/v1/ollama/models",
+            "/api/v1/ollama/v1",
+            "/api/v1/metrics/events",
+        ]
+        path = request.url.path
+        return any(path.startswith(prefix) for prefix in admin_api_prefixes)
 
     def _extract_client_info(self, request: Request) -> dict:
         """提取客户端信息用于实时监控。

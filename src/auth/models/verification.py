@@ -1,7 +1,7 @@
 """邮箱验证相关数据模型。"""
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Optional
 
@@ -58,7 +58,7 @@ class VerificationCode(BaseModel):
             email=email,
             code=code,
             verification_type=verification_type,
-            expires_at=datetime.utcnow() + timedelta(minutes=expires_in_minutes),
+            expires_at=datetime.now(timezone.utc) + timedelta(minutes=expires_in_minutes),
             ip_address=ip_address
         )
 
@@ -68,12 +68,12 @@ class VerificationCode(BaseModel):
         Returns:
             是否有效
         """
-        return not self.is_used and datetime.utcnow() < self.expires_at
+        return not self.is_used and datetime.now(timezone.utc) < self.expires_at
 
     def mark_as_used(self) -> None:
         """标记验证码为已使用。"""
         self.is_used = True
-        self.used_at = datetime.utcnow()
+        self.used_at = datetime.now(timezone.utc)
 
 
 class SendVerificationEmailRequest(BaseModel):

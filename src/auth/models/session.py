@@ -1,7 +1,8 @@
+from pydantic import ConfigDict
 """用户会话数据模型。"""
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -31,7 +32,7 @@ class UserSession(BaseModel):
         Returns:
             过期时间
         """
-        return datetime.utcnow() + timedelta(minutes=minutes)
+        return datetime.now(timezone.utc) + timedelta(minutes=minutes)
 
     def is_expired(self) -> bool:
         """检查会话是否过期。
@@ -39,22 +40,19 @@ class UserSession(BaseModel):
         Returns:
             是否过期
         """
-        return datetime.utcnow() > self.expires_at or self.is_revoked
+        return datetime.now(timezone.utc) > self.expires_at or self.is_revoked
 
     def update_activity(self) -> None:
         """更新最后活动时间。"""
-        self.last_activity = datetime.utcnow()
+        self.last_activity = datetime.now(timezone.utc)
 
-    class Config:
-        """Pydantic配置。"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "ip_address": "192.168.1.100",
                 "user_agent": "Mozilla/5.0..."
             }
-        }
+        })
 
 
 class LoginRequest(BaseModel):
@@ -64,16 +62,13 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=8, max_length=100)
     remember_me: bool = False
 
-    class Config:
-        """Pydantic配置。"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "username": "john_doe",
                 "password": "SecurePass123",
                 "remember_me": False
             }
-        }
+        })
 
 
 class LoginResponse(BaseModel):
@@ -85,10 +80,7 @@ class LoginResponse(BaseModel):
     expires_in: int  # 秒数
     user: dict  # UserResponse
 
-    class Config:
-        """Pydantic配置。"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIs...",
                 "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
@@ -101,7 +93,7 @@ class LoginResponse(BaseModel):
                     "role": "viewer"
                 }
             }
-        }
+        })
 
 
 class RefreshTokenRequest(BaseModel):
@@ -109,14 +101,11 @@ class RefreshTokenRequest(BaseModel):
 
     refresh_token: str
 
-    class Config:
-        """Pydantic配置。"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
             }
-        }
+        })
 
 
 class TokenPayload(BaseModel):
@@ -130,10 +119,7 @@ class TokenPayload(BaseModel):
     iat: datetime  # issued at
     jti: Optional[str] = None  # JWT ID (用于会话管理)
 
-    class Config:
-        """Pydantic配置。"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "sub": "123e4567-e89b-12d3-a456-426614174000",
                 "username": "john_doe",
@@ -142,4 +128,4 @@ class TokenPayload(BaseModel):
                 "exp": "2024-12-31T23:59:59",
                 "iat": "2024-12-31T00:00:00"
             }
-        }
+        })

@@ -1,3 +1,4 @@
+from pydantic import ConfigDict
 """用户活动审计日志模型。"""
 
 import uuid
@@ -80,10 +81,7 @@ class AuditLog(BaseModel):
     error_message: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)  # 额外的上下文信息
 
-    class Config:
-        """Pydantic配置。"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "user_id": "user-123",
                 "username": "admin",
@@ -93,7 +91,7 @@ class AuditLog(BaseModel):
                 "level": "info",
                 "success": True
             }
-        }
+        })
 
 
 class AuditLogQuery(BaseModel):

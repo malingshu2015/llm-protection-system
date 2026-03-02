@@ -6,7 +6,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.auth.middleware import get_current_user
 from src.auth.models.user import User
@@ -95,7 +95,7 @@ async def get_latest_policies(
             "temperature": 0.7,
             "allowedModels": ["gpt-4", "gpt-3.5-turbo"],
         },
-        updatedAt=datetime.utcnow()
+        updatedAt=datetime.now(timezone.utc)
     )
 
     return policy
@@ -119,7 +119,7 @@ async def check_client_health(
     return HealthResponse(
         status="online",
         version="1.0.0",
-        last_sync=datetime.utcnow(),
+        last_sync=datetime.now(timezone.utc),
         policy_version=1
     )
 
@@ -143,7 +143,7 @@ async def report_issue(
 
     return {
         "success": True,
-        "issue_id": f"issue_{datetime.utcnow().timestamp()}",
+        "issue_id": f"issue_{datetime.now(timezone.utc).timestamp()}",
         "message": "问题已记录，感谢您的反馈"
     }
 

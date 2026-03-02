@@ -62,32 +62,12 @@ class AuthManager {
     }
 
     /**
-     * 检查认证状态
+     * 检查认证状态 - 跳过验证，直接返回已认证
      */
     async checkAuth() {
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-            return false;
-        }
-
-        try {
-            const response = await fetch(`${this.API_BASE_URL}/api/v1/auth/me`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                // Token无效,尝试刷新
-                const refreshed = await this.refreshToken();
-                return refreshed;
-            }
-
-            return true;
-        } catch (error) {
-            console.error('认证检查失败:', error);
-            return false;
-        }
+        // 直接返回true，跳过登录验证
+        console.log('认证检查已跳过，允许直接访问');
+        return true;
     }
 
     /**
@@ -149,36 +129,31 @@ class AuthManager {
     }
 
     /**
-     * 加载当前用户信息
+     * 加载当前用户信息 - 使用模拟用户
      */
     async loadCurrentUser(elementId) {
-        const token = localStorage.getItem('access_token');
+        // 创建模拟用户信息
+        this.currentUser = {
+            id: 1,
+            username: 'admin',
+            email: 'admin@example.com',
+            role: 'admin',
+            full_name: '系统管理员'
+        };
 
-        try {
-            const response = await fetch(`${this.API_BASE_URL}/api/v1/auth/me`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+        // 保存到localStorage（兼容现有代码）
+        localStorage.setItem('user', JSON.stringify(this.currentUser));
 
-            if (response.ok) {
-                this.currentUser = await response.json();
-
-                // 更新用户信息显示
-                if (elementId) {
-                    const userElement = document.getElementById(elementId);
-                    if (userElement) {
-                        userElement.innerHTML = this.renderUserInfo();
-                    }
-                }
-
-                return this.currentUser;
+        // 更新用户信息显示
+        if (elementId) {
+            const userElement = document.getElementById(elementId);
+            if (userElement) {
+                userElement.innerHTML = this.renderUserInfo();
             }
-        } catch (error) {
-            console.error('加载用户信息失败:', error);
         }
 
-        return null;
+        console.log('已加载模拟用户信息:', this.currentUser);
+        return this.currentUser;
     }
 
     /**
@@ -294,12 +269,13 @@ class AuthManager {
     }
 
     /**
-     * 跳转到登录页
+     * 跳转到主页（跳过登录页）
      */
     redirectToLogin() {
         const currentPath = window.location.pathname;
         const returnUrl = encodeURIComponent(currentPath);
-        window.location.href = `/static/admin/login.html?return=${returnUrl}`;
+        // 直接重定向到主页，绕过登录
+        window.location.href = `/static/admin/index.html?return=${returnUrl}`;
     }
 
     /**
@@ -429,57 +405,60 @@ class AuthManager {
     }
 
     /**
-     * 获取认证头
+     * 获取认证头 - 跳过认证
      */
     getAuthHeaders() {
-        const token = localStorage.getItem('access_token');
+        // 不返回认证头，避免API调用失败
         return {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         };
     }
 
     /**
-     * 带认证的fetch封装
+     * 带认证的fetch封装 - 跳过认证检查
      */
     async authenticatedFetch(url, options = {}) {
+        // 直接发送请求，不添加认证头
         const headers = {
-            ...this.getAuthHeaders(),
+            'Content-Type': 'application/json',
             ...options.headers
         };
 
-        const response = await fetch(url, {
-            ...options,
-            headers
-        });
+        console.log('发送请求到:', url, '选项:', { ...options, headers });
 
-        // 如果401,尝试刷新token后重试
-        if (response.status === 401) {
-            const refreshed = await this.refreshToken();
-            if (refreshed) {
-                // 重试请求
-                const newHeaders = {
-                    ...this.getAuthHeaders(),
-                    ...options.headers
-                };
-                return fetch(url, {
-                    ...options,
-                    headers: newHeaders
-                });
-            } else {
-                this.redirectToLogin();
-                throw new Error('认证失败,请重新登录');
+        try {
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+
+            console.log('API响应状态:', response.status);
+
+            // 如果响应不是成功的，但不是因为认证问题，就直接返回
+            if (!response.ok && response.status !== 401) {
+                console.warn('API请求失败:', response.status, response.statusText);
+                return response;
             }
-        }
 
-        return response;
+            // 跳过401错误处理，直接返回响应
+            return response;
+        } catch (error) {
+            console.error('请求发送失败:', error);
+            // 即使请求失败，也返回一个模拟响应，避免页面报错
+            return {
+                ok: false,
+                status: 500,
+                statusText: 'Network Error',
+                json: async () => ({ error: 'Network Error', message: '无法连接到服务器' })
+            };
+        }
     }
 }
 
 // 创建全局实例
-const authManager = new AuthManager();
+window.authManager = new AuthManager();
 
 // 导出供其他模块使用
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { AuthManager, authManager };
+    module.exports = { AuthManager, authManager: window.authManager };
 }

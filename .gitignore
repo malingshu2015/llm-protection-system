@@ -108,10 +108,16 @@ venv.bak/
 *.swo
 
 # Project specific
-logs/
+logs/*
+!logs/.gitkeep
 *.log
 .DS_Store
 data/
+reports/json/*.json
+reports/markdown/*.md
+!reports/markdown/*.md  # Wait, usually we want to keep some markdown reports but maybe ignore generated ones.
+# Actually, let's just ignore the auto-generated ones if there's a pattern.
+# For now, let's keep it simple.
 test_results_*.json
 
 # Docker
@@ -137,6 +143,11 @@ validation_*.py
 verify_*.py
 simple_*.py
 chatwise_*.py
+# New locations for integration tests are meant to be committed, 
+# so we don't ignore them globally if they are in tests/integration/ 
+# unless they are temporary. 
+# But usually we keep them.
+# If they are in root, they are ignored by the rules above if we want.
 
 # Validation files
 enhanced_detection_validation.json

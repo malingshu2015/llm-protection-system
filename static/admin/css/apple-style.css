@@ -5,9 +5,83 @@
 
 /* ===== 基础样式 ===== */
 :root {
+  /* --- 商业安全 Brand Palette --- */
+  --brand-primary: #0A84FF;
+  --brand-primary-deep: #0040DD;
+  --brand-accent: #5E5CE6;
+  --brand-success: #32D74B;
+  --brand-warning: #FF9F0A;
+  --brand-danger: #FF453A;
+  --brand-info: #64D2FF;
+
+  /* --- 现代中性色 (Neutral Palette) --- */
+  --gray-50: #FBFBFD;
+  --gray-100: #F5F5F7;
+  --gray-200: #E5E5EA;
+  --gray-300: #D1D1D6;
+  --gray-400: #C7C7CC;
+  --gray-500: #8E8E93;
+  --gray-600: #636366;
+  --gray-700: #48484A;
+  --gray-800: #3A3A3C;
+  --gray-900: #1C1C1E;
+
+  /* --- 文本色谱 --- */
+  --text-primary: #1D1D1F;
+  --text-secondary: #6E6E73;
+  --text-tertiary: #86868B;
+  --text-on-brand: #FFFFFF;
+
+  /* --- 背景设计 --- */
+  --bg-app: #F5F5F7;
+  --bg-card: rgba(255, 255, 255, 0.82);
+  --bg-sidebar: rgba(255, 255, 255, 0.75);
+  --glass-blur: blur(18px) saturate(180%);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+
+  /* --- 商业级阴影 (Layered Shadows) --- */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.01);
+
+  /* --- 造型规范 --- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-round: 9999px;
+
+  /* --- 间距架构 (8px Grid) --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+
+  /* --- 动画曲线 --- */
+  --anim-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --anim-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --anim-spring: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* 向后兼容 (Alias) */
+  --apple-primary: var(--brand-primary);
+  --apple-bg-primary: var(--bg-card);
+  --apple-bg-secondary: var(--bg-app);
+  --apple-text-primary: var(--text-primary);
+  --apple-text-secondary: var(--text-secondary);
+  --apple-border-radius: var(--radius-md);
+  --apple-font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+
+  /* 苹果风格的大模型防火墙界面样式
+ * 基于苹果设计语言的UI重构
+ */
+
+  /* ===== 基础样式 ===== */
   /* 主色调 */
-  --apple-primary: #007AFF;
-  /* 苹果蓝 */
   --apple-secondary: #5AC8FA;
   /* 浅蓝色 */
   --apple-success: #34C759;
@@ -38,24 +112,14 @@
   /* 几乎黑色的灰色 */
 
   /* 文本颜色 */
-  --apple-text-primary: #000000;
-  /* 主要文本 */
-  --apple-text-secondary: #8E8E93;
-  /* 次要文本 */
   --apple-text-tertiary: #C7C7CC;
   /* 第三级文本 */
 
   /* 背景颜色 */
-  --apple-bg-primary: #FFFFFF;
-  /* 主背景 */
-  --apple-bg-secondary: #F2F2F7;
-  /* 次要背景 */
   --apple-bg-tertiary: #E5E5EA;
   /* 第三级背景 */
 
   /* 边框和阴影 */
-  --apple-border-radius: 10px;
-  /* 标准圆角 */
   --apple-border-color: #E5E5EA;
   /* 边框颜色 */
   --apple-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -71,7 +135,6 @@
   --apple-spacing-xxl: 48px;
 
   /* 字体 */
-  --apple-font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --apple-font-size-xs: 12px;
   --apple-font-size-sm: 14px;
   --apple-font-size-md: 16px;

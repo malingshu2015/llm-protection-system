@@ -1,204 +1,253 @@
-import React, { useState, useEffect } from 'react';
-import { Layout, Typography, message, Space, Button } from 'antd';
-import { SettingOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { useChatStore } from '@/store/useChatStore';
-import { useAuthStore } from '@/store/useAuthStore';
-import { SessionList } from '@/components/Chat/SessionList';
-import { MessageList } from '@/components/Chat/MessageList';
-import { InputBox } from '@/components/Chat/InputBox';
-import { gatewayClient } from '@/services/api/gateway';
-import { inputFilter } from '@/services/filter/input-filter';
-import { policyManager } from '@/services/policy/policy-manager';
+import React, { useState, useEffect, useRef } from 'react';
+import { Layout, List, Input, Button, Avatar, Typography, Badge, message as antMessage, Empty } from 'antd';
+import { 
+  SendOutlined, 
+  PlusOutlined, 
+  DeleteOutlined, 
+  UserOutlined, 
+  RobotOutlined,
+  LoadingOutlined
+} from '@ant-design/icons';
+import { useAuthStore } from '../store/useAuthStore';
+import { useChatStore } from '../store/useChatStore';
+import { websocketService } from '../services/websocket';
 import { v4 as uuidv4 } from 'uuid';
-import './Chat.css';
 
-const { Header, Content, Sider } = Layout;
-const { Title } = Typography;
+const { Sider, Content } = Layout;
+const { TextArea } = Input;
+const { Text } = Typography;
 
-const ChatPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { token, serverUrl, logout } = useAuthStore();
+const Chat: React.FC = () => {
+  const { user, token, serverUrl } = useAuthStore();
   const {
     sessions,
     currentSessionId,
     createSession,
-    deleteSession,
     setCurrentSession,
     addMessage,
+    deleteSession,
     getAllSessions,
   } = useChatStore();
 
+  const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [streamingText, setStreamingText] = useState('');
-  const [connected, setConnected] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 初始化连接
+  const currentSession = currentSessionId ? sessions.get(currentSessionId) : null;
+  const sessionList = getAllSessions();
+
+  // 自动滚动到底部
   useEffect(() => {
-    const initConnection = async () => {
-      try {
-        if (!serverUrl || !token) {
-          message.error('未配置服务器或令牌');
-          return;
-        }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [currentSession?.messages]);
 
-        // 连接到网关
-        await gatewayClient.connect(serverUrl, token);
-        setConnected(true);
+  // WebSocket 连接
+  useEffect(() => {
+    if (!token || !serverUrl) return;
 
-        // 初始化策略管理器
-        await policyManager.initialize();
+    const clientId = uuidv4();
+    
+    // 简单的去抖动或防止重复连接逻辑可以在这里优化，暂时保持简单
+    if (!websocketService.isConnected()) {
+        websocketService.connect(serverUrl, token, clientId)
+        .then(() => setWsConnected(true))
+        .catch(() => antMessage.error('无法连接到聊天服务器'));
+    } else {
+        setWsConnected(true);
+    }
 
-        // 监听策略更新
-        const unsubscribe = policyManager.onPolicyUpdate((policy) => {
-          inputFilter.loadPolicy(policy);
-          message.info('安全策略已更新');
-        });
-
-        // 监听强制下线
-        window.addEventListener('force_logout', ((event: CustomEvent) => {
-          message.error(`已被强制下线: ${event.detail}`);
-          logout();
-          navigate('/login');
-        }) as EventListener);
-
-        return () => {
-          unsubscribe();
-          gatewayClient.disconnect();
+    const handleChatResponse = (data: any) => {
+      if (data.sessionId && data.reply) {
+        const message = {
+          id: data.messageId || uuidv4(),
+          role: 'assistant' as const,
+          content: data.reply,
+          timestamp: new Date(data.timestamp || new Date()),
         };
-      } catch (error) {
-        message.error('连接服务器失败: ' + (error as Error).message);
+        addMessage(data.sessionId, message);
+        setLoading(false);
       }
     };
 
-    initConnection();
-  }, [serverUrl, token, logout, navigate]);
+    const handleError = (data: any) => {
+      setLoading(false);
+      antMessage.error(data.error?.message || '发送失败');
+    };
+
+    websocketService.on('chat:response', handleChatResponse);
+    websocketService.on('error', handleError);
+
+    return () => {
+      websocketService.off('chat:response', handleChatResponse);
+      websocketService.off('error', handleError);
+      // 注意：这里是否断开取决于是否希望切换页面时保持连接。
+      // 为了体验流畅，通常保持连接，但在组件卸载时断开是安全的做法。
+    };
+  }, [token, serverUrl, addMessage]);
 
   const handleCreateSession = () => {
-    createSession('default', `对话 ${getAllSessions().length + 1}`);
+    const newSession = createSession('default', `新对话 ${sessionList.length + 1}`);
+    setCurrentSession(newSession.id);
   };
 
-  const handleDeleteSession = (sessionId: string) => {
-    deleteSession(sessionId);
-    message.success('会话已删除');
-  };
-
-  const handleSendMessage = async (text: string) => {
-    if (!currentSessionId) {
-      message.warning('请先创建或选择一个会话');
-      return;
-    }
+  const handleSendMessage = async () => {
+    if (!inputText.trim() || !currentSessionId) return;
 
     setLoading(true);
+    const userMessage = {
+      id: uuidv4(),
+      role: 'user' as const,
+      content: inputText,
+      timestamp: new Date(),
+    };
+
+    addMessage(currentSessionId, userMessage);
+    const textToSend = inputText;
+    setInputText('');
 
     try {
-      // 1. 本地过滤
-      const filterResult = await inputFilter.filter(text);
-      if (filterResult.blocked) {
-        message.error({
-          content: filterResult.reason,
-          duration: 3,
-        });
-        setLoading(false);
-        return;
+      if (!websocketService.isConnected()) {
+         // 尝试重连
+         await websocketService.connect(serverUrl!, token!, uuidv4());
+         setWsConnected(true);
       }
-
-      // 2. 添加用户消息
-      const userMessage = {
-        id: uuidv4(),
-        role: 'user' as const,
-        content: text,
-        timestamp: new Date(),
-      };
-      addMessage(currentSessionId, userMessage);
-
-      // 3. 发送到服务器（流式响应）
-      setStreamingText('');
-      await gatewayClient.streamMessage(currentSessionId, text, (chunk) => {
-        setStreamingText((prev) => prev + chunk);
-      });
-
-      // 4. 添加助手回复
-      const assistantMessage = {
-        id: uuidv4(),
-        role: 'assistant' as const,
-        content: streamingText,
-        timestamp: new Date(),
-      };
-      addMessage(currentSessionId, assistantMessage);
+      await websocketService.sendChatMessage(currentSessionId, textToSend);
     } catch (error) {
-      message.error('发送失败: ' + (error as Error).message);
-    } finally {
+      antMessage.error('消息发送失败');
       setLoading(false);
-      setStreamingText('');
     }
   };
 
-  const currentSession = currentSessionId
-    ? sessions.get(currentSessionId)
-    : null;
-
   return (
-    <Layout className="chat-layout">
-      <Sider width={280} className="chat-sider">
-        <SessionList
-          sessions={getAllSessions()}
-          currentSessionId={currentSessionId}
-          onSelectSession={setCurrentSession}
-          onCreateSession={handleCreateSession}
-          onDeleteSession={handleDeleteSession}
-        />
-      </Sider>
-
-      <Layout>
-        <Header className="chat-header">
-          <Space>
-            <Title level={4} style={{ margin: 0 }}>
-              {currentSession?.title || '对话窗口'}
-            </Title>
-            {connected && (
-              <span style={{ color: '#52c41a', fontSize: 12 }}>● 已连接</span>
+    <Layout style={{ height: 'calc(100vh - 112px)', background: '#fff', border: '1px solid #f0f0f0', borderRadius: 8 }}>
+      <Sider width={250} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
+        <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            block 
+            onClick={handleCreateSession}
+          >
+            新建对话
+          </Button>
+        </div>
+        <div style={{ overflowY: 'auto', height: 'calc(100% - 64px)' }}>
+          <List
+            dataSource={sessionList}
+            renderItem={(item) => (
+              <List.Item 
+                style={{ 
+                  padding: '12px 16px', 
+                  cursor: 'pointer',
+                  backgroundColor: item.id === currentSessionId ? '#e6f7ff' : 'transparent',
+                  borderRight: item.id === currentSessionId ? '2px solid #1890ff' : 'none'
+                }}
+                onClick={() => setCurrentSession(item.id)}
+                actions={[
+                    <Button 
+                        type="text" 
+                        size="small" 
+                        icon={<DeleteOutlined />} 
+                        onClick={(e) => { e.stopPropagation(); deleteSession(item.id); }} 
+                        danger
+                    />
+                ]}
+              >
+                <List.Item.Meta
+                  title={<Text ellipsis style={{ width: 140 }}>{item.title}</Text>}
+                />
+              </List.Item>
             )}
-          </Space>
-
-          <Space>
-            <Button
-              type="text"
-              icon={<SettingOutlined />}
-              onClick={() => navigate('/settings')}
-            >
-              设置
-            </Button>
-          </Space>
-        </Header>
-
-        <Content className="chat-content">
-          {currentSession ? (
-            <>
-              <MessageList
-                messages={currentSession.messages}
-                streamingText={streamingText}
-              />
-              <InputBox
-                onSend={handleSendMessage}
-                disabled={!connected}
-                loading={loading}
-              />
-            </>
+          />
+        </div>
+      </Sider>
+      
+      <Content style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* 聊天内容区域 */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+          {!currentSession ? (
+             <div style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Empty description="选择或创建一个新的对话开始" />
+             </div>
           ) : (
-            <div className="chat-placeholder">
-              <Title level={3} type="secondary">
-                选择一个会话或创建新对话
-              </Title>
-              <Button type="primary" size="large" onClick={handleCreateSession}>
-                开始新对话
-              </Button>
-            </div>
+            currentSession.messages.map((msg) => (
+              <div
+                key={msg.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                  marginBottom: 20,
+                }}
+              >
+                <div style={{ 
+                    display: 'flex', 
+                    flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', 
+                    maxWidth: '80%',
+                    gap: 12
+                }}>
+                  <Avatar 
+                    icon={msg.role === 'user' ? <UserOutlined /> : <RobotOutlined />} 
+                    style={{ backgroundColor: msg.role === 'user' ? '#1890ff' : '#52c41a' }} 
+                  />
+                  <div style={{
+                    backgroundColor: msg.role === 'user' ? '#e6f7ff' : '#f6f6f6',
+                    padding: '12px 16px',
+                    borderRadius: 8,
+                    borderTopRightRadius: msg.role === 'user' ? 0 : 8,
+                    borderTopLeftRadius: msg.role === 'user' ? 8 : 0,
+                  }}>
+                    <Text style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</Text>
+                    <div style={{ fontSize: 10, color: '#999', marginTop: 4, textAlign: 'right' }}>
+                       {new Date(msg.timestamp).toLocaleTimeString()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
           )}
-        </Content>
-      </Layout>
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* 输入框区域 */}
+        <div style={{ padding: '16px 24px', borderTop: '1px solid #f0f0f0', backgroundColor: '#fff' }}>
+          <div style={{ position: 'relative' }}>
+             <TextArea
+               value={inputText}
+               onChange={(e) => setInputText(e.target.value)}
+               placeholder="输入消息..."
+               autoSize={{ minRows: 2, maxRows: 6 }}
+               disabled={!currentSession || loading}
+               onKeyDown={(e) => {
+                 if (e.key === 'Enter' && !e.shiftKey) {
+                   e.preventDefault();
+                   handleSendMessage();
+                 }
+               }}
+             />
+             <div style={{ 
+                 position: 'absolute', 
+                 right: 8, 
+                 bottom: 8, 
+                 display: 'flex', 
+                 alignItems: 'center', 
+                 gap: 8 
+             }}>
+                {!wsConnected && <Badge status="error" text="未连接" />}
+                <Button 
+                    type="primary" 
+                    icon={loading ? <LoadingOutlined /> : <SendOutlined />}
+                    onClick={handleSendMessage}
+                    disabled={!currentSession || loading || !inputText.trim()}
+                >
+                    发送
+                </Button>
+             </div>
+          </div>
+        </div>
+      </Content>
     </Layout>
   );
 };
 
-export default ChatPage;
+export default Chat;

@@ -1,18 +1,567 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>正在跳转到新版规则管理...</title>
-    <script>
-        // 立即重定向到新版规则管理页面
-        window.location.replace('rules_full.html');
-    </script>
+    <title>规则管理 - 本地大模型防护系统</title>
+
+    <!-- 苹果风格设计系统 -->
+    <link rel="stylesheet" href="/static/admin/css/apple-main.css?v=20260302">
+    <link rel="stylesheet" href="/static/admin/css/apple-rules.css?v=20260302">
+    <!-- 监控页面基础布局引用 (用于同步侧边栏) -->
+    <link rel="stylesheet" href="/static/admin/css/monitor-modern.css?v=20260302">
+    <link rel="stylesheet" href="/static/admin/css/rule-wizard.css?v=20260302">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 脚本 -->
+    <script src="/static/admin/js/apple-ui.js?v=4" defer></script>
+    <script src="/static/admin/js/rules-v2.js?v=4" defer></script>
+    <script src="/static/admin/js/auth-check.js?v=4"></script>
+
+    <style>
+        /* 补充规则管理特定样式，确保与 monitor-modern 统一 */
+        .dashboard-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .dashboard-card-icon.primary {
+            background: linear-gradient(135deg, var(--primary-color), #5AC8FA);
+        }
+
+        .dashboard-card-icon.success {
+            background: linear-gradient(135deg, var(--success-color), #30D158);
+        }
+
+        .dashboard-card-icon.warning {
+            background: linear-gradient(135deg, var(--warning-color), #FFCC02);
+        }
+
+        .dashboard-card-icon.danger {
+            background: linear-gradient(135deg, var(--danger-color), #FF453A);
+        }
+
+        .rule-card {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .rule-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .rule-card-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            /* Use bg-primary for header differentiation */
+        }
+
+        .rule-card-body {
+            padding: 1.25rem;
+        }
+
+        .toolbar {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .rule-tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        /* 预览卡片样式 */
+        .rule-preview-card {
+            background: var(--bg-card);
+            border: 1px dashed var(--primary-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        /* 通知系统增强 */
+        .notification-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 360px;
+            width: 100%;
+        }
+
+        .notification {
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notification.hide {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .notification-icon {
+            font-size: 1.25rem;
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .notification-title {
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .notification-message {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            margin-left: auto;
+        }
+
+        .wizard-step-content {
+            display: none;
+        }
+
+        .wizard-step-content.active {
+            display: block;
+        }
+    </style>
 </head>
+
 <body>
-    <div style="text-align: center; padding: 50px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-        <h2>🔄 正在跳转到新版规则管理...</h2>
-        <p>如果页面没有自动跳转，请<a href="rules_full.html">点击这里</a></p>
+    <!-- 认证头部 -->
+    <div class="auth-header" style="display:none;">
+        <div id="currentUser"></div>
     </div>
+
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-shield-alt" style="font-size: 24px; color: #007AFF;"></i>
+                    <h2 style="font-size: 16px; font-weight: 600;">LLM Shield</h2>
+                </div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="monitor.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-chart-pie"></i></span>
+                        <span class="sidebar-menu-text">监控概览</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="realtime_monitor.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-heartbeat"></i></span>
+                        <span class="sidebar-menu-text">实时流量</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="events.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-shield-virus"></i></span>
+                        <span class="sidebar-menu-text">安全事件</span>
+                    </a>
+                </li>
+                <div style="height: 1px; background: var(--border-color); margin: 8px 16px;"></div>
+                <li class="sidebar-menu-item">
+                    <a href="rules.html" class="sidebar-menu-link active">
+                        <span class="sidebar-menu-icon"><i class="fas fa-list-check"></i></span>
+                        <span class="sidebar-menu-text">规则管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="model_rules.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-cogs"></i></span>
+                        <span class="sidebar-menu-text">规则配置</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="models.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-layer-group"></i></span>
+                        <span class="sidebar-menu-text">模型管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="auth_management.html" class="sidebar-menu-link">
+                        <span class="sidebar-menu-icon"><i class="fas fa-key"></i></span>
+                        <span class="sidebar-menu-text">授权管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="/static/index.html" class="sidebar-menu-link" target="_blank">
+                        <span class="sidebar-menu-icon"><i class="fas fa-comments"></i></span>
+                        <span class="sidebar-menu-text">聊天测试</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部状态栏 -->
+            <div class="monitor-status-bar">
+                <div style="display: flex; flex-direction: column;">
+                    <h1 style="font-size: 1.5rem; font-weight: 700; margin: 0 0 4px 0;">规则管理</h1>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                        配置和管理 LLM 输入输出过滤规则
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button class="btn-icon" id="theme-toggle" title="切换主题">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="btn btn-secondary" id="refresh-btn" onclick="loadRules()" title="刷新">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                    <button class="btn btn-primary" onclick="openCreateRuleWizard()">
+                        <i class="fas fa-plus"></i> 创建规则
+                    </button>
+                </div>
+            </div>
+
+            <!-- 统计概览 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-value-group">
+                            <span class="stat-label">总规则数</span>
+                            <span class="stat-value" id="total-rules">0</span>
+                        </div>
+                        <div class="stat-icon primary">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card success">
+                    <div class="stat-header">
+                        <div class="stat-value-group">
+                            <span class="stat-label">已启用</span>
+                            <span class="stat-value" id="enabled-rules">0</span>
+                        </div>
+                        <div class="stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card warning">
+                    <div class="stat-header">
+                        <div class="stat-value-group">
+                            <span class="stat-label">高危规则</span>
+                            <span class="stat-value" id="critical-rules">0</span>
+                        </div>
+                        <div class="stat-icon danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card performance">
+                    <div class="stat-header">
+                        <div class="stat-value-group">
+                            <span class="stat-label">规则类型</span>
+                            <span class="stat-value" id="rule-types">0</span>
+                        </div>
+                        <div class="stat-icon warning">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <div class="filter-tabs" id="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">全部</button>
+                    <button class="filter-tab" data-filter="enabled">已启用</button>
+                    <button class="filter-tab" data-filter="disabled">已禁用</button>
+                    <button class="filter-tab" data-filter="critical">严重</button>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div class="search-box" style="position: relative;">
+                        <i class="fas fa-search search-icon"
+                            style="position: absolute; left: 10px; top: 10px; color: var(--text-secondary);"></i>
+                        <input type="text" class="select-modern" placeholder="搜索规则..." id="search-input"
+                            style="padding-left: 32px; width: 240px; cursor: text;">
+                    </div>
+                    <button class="btn btn-secondary" id="batch-mode-btn" onclick="toggleBatchMode()">
+                        <i class="fas fa-check-square"></i> 批量操作
+                    </button>
+                </div>
+            </div>
+
+            <!-- 规则网格 -->
+            <div class="rules-grid content-grid" id="rules-grid">
+                <!-- 规则卡片将动态加载 -->
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <i class="fas fa-circle-notch fa-spin"></i> 正在加载规则...
+                </div>
+            </div>
+
+            <!-- 空状态 -->
+            <div class="empty-state" id="empty-state" style="display: none; text-align: center; padding: 60px;">
+                <div class="empty-state-icon"
+                    style="font-size: 48px; color: var(--text-tertiary); margin-bottom: 16px;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 style="font-size: 20px; font-weight: 600; color: var(--text-primary);">暂无规则</h3>
+                <p style="color: var(--text-secondary);">开始创建您的第一个安全规则</p>
+                <button class="btn btn-primary" onclick="openCreateRuleWizard()">
+                    <i class="fas fa-plus"></i> 创建规则
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 向导和批量操作栏 (复用原有逻辑，结构适配) -->
+    <!-- 批量操作栏 -->
+    <div id="batch-actions"
+        style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--surface-color); padding: 16px 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); display: none; align-items: center; gap: 24px; z-index: 1000; border: 1px solid var(--border-color);">
+        <span style="font-weight: 600; color: var(--text-primary);">已选择 <span id="selected-count">0</span> 个规则</span>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-primary" id="batch-enable">启用</button>
+            <button class="btn btn-secondary" id="batch-disable">禁用</button>
+            <button class="btn btn-danger" id="batch-delete">删除</button>
+            <button class="btn btn-outline" id="batch-cancel">取消</button>
+        </div>
+    </div>
+
+    <!-- 通知容器 -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- 规则创建向导 -->
+    <div id="rule-wizard-container">
+        <div class="wizard-overlay" id="rule-wizard">
+            <div class="wizard-modal">
+                <div class="wizard-header">
+                    <h2 class="wizard-title">
+                        <i class="fas fa-magic"></i>
+                        <span id="wizard-title">创建安全规则</span>
+                    </h2>
+                    <p class="wizard-description">通过智能向导快速创建和配置安全检测规则</p>
+
+                    <div class="wizard-steps">
+                        <div class="wizard-step active" data-step="1">
+                            <div class="wizard-step-number">1</div>
+                            <div class="wizard-step-label">基本信息</div>
+                        </div>
+                        <div class="wizard-step" data-step="2">
+                            <div class="wizard-step-number">2</div>
+                            <div class="wizard-step-label">检测规则</div>
+                        </div>
+                        <div class="wizard-step" data-step="3">
+                            <div class="wizard-step-number">3</div>
+                            <div class="wizard-step-label">展示配置</div>
+                        </div>
+                        <div class="wizard-step" data-step="4">
+                            <div class="wizard-step-number">4</div>
+                            <div class="wizard-step-label">预览确认</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-body">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="wizard-progress" style="width: 25%"></div>
+                    </div>
+
+                    <!-- 步骤1: 基本信息 -->
+                    <div class="wizard-step-content active" data-step="1">
+                        <div class="form-group required">
+                            <label class="form-label">规则名称</label>
+                            <input type="text" class="form-control" id="wizard-rule-name" placeholder="输入规则名称">
+                            <div class="form-help">为您的规则起一个描述性的名称</div>
+                        </div>
+
+                        <div class="form-group required">
+                            <label class="form-label">规则描述</label>
+                            <textarea class="form-control" id="wizard-rule-description" rows="3"
+                                placeholder="描述此规则的作用和检测目标"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group required">
+                                <label class="form-label">检测类型</label>
+                                <select class="form-control" id="wizard-rule-type">
+                                    <option value="prompt_injection">提示注入</option>
+                                    <option value="jailbreak">越狱尝试</option>
+                                    <option value="harmful_content">有害内容</option>
+                                    <option value="sensitive_info">敏感信息</option>
+                                </select>
+                            </div>
+                            <div class="form-group required">
+                                <label class="form-label">严重程度</label>
+                                <select class="form-control" id="wizard-rule-severity">
+                                    <option value="critical">严重 (Critical)</option>
+                                    <option value="high">高 (High)</option>
+                                    <option value="medium">中 (Medium)</option>
+                                    <option value="low">低 (Low)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤2: 检测规则 -->
+                    <div class="wizard-step-content" data-step="2">
+                        <div class="form-group">
+                            <label class="form-label">关键词检测 (每行一个)</label>
+                            <textarea class="form-control" id="wizard-rule-keywords" rows="4"
+                                placeholder="输入要检测的关键词..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">正则表达式 (每行一个)</label>
+                            <textarea class="form-control" id="wizard-rule-patterns" rows="4"
+                                placeholder="输入正则表达式..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 步骤3: 展示配置 -->
+                    <div class="wizard-step-content" data-step="3">
+                        <div class="form-group">
+                            <label class="form-label">优先级 (1-1000)</label>
+                            <input type="number" class="form-control" id="wizard-rule-priority" value="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="wizard-rule-enabled" checked> 立即启用
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 步骤4: 预览确认 -->
+                    <div class="wizard-step-content" data-step="4">
+                        <div id="wizard-preview" class="rule-preview-card">
+                            <!-- 预览内容 -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeRuleWizard()">取消</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-secondary" id="wizard-prev" onclick="changeWizardStep(-1)"
+                            style="display: none;">上一步</button>
+                        <button type="button" class="btn btn-primary" id="wizard-next"
+                            onclick="changeWizardStep(1)">下一步</button>
+                        <button type="button" class="btn btn-success" id="wizard-save" onclick="saveNewRule()"
+                            style="display: none;">保存规则</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 主题切换与认证初始化 - 数据加载和功能逻辑由 rules-v2.js 统一处理
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Theme Init
+            const themeBtn = document.getElementById('theme-toggle');
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+            themeBtn.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                const isDark = document.body.classList.contains('dark-mode');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                themeBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            });
+
+            // Auth - rules-v2.js 的 DOMContentLoaded 监听器也会处理认证，此处只作补充
+            if (typeof authManager !== 'undefined') {
+                await authManager.init({
+                    userElementId: 'currentUser',
+                    onAuthSuccess: () => {
+                        if (typeof loadRules === 'function') loadRules();
+                    }
+                });
+            } else {
+                if (typeof loadRules === 'function') loadRules();
+            }
+        });
+        // NOTE: toggleBatchMode, editRule, saveEditedRule 等函数已在 rules-v2.js 中完整实现
+        // 请勿在此处重复定义，以免覆盖其实现
+    </script>
+
 </body>
+
 </html>

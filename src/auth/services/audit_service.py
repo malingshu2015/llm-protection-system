@@ -1,7 +1,7 @@
 """审计日志服务。"""
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -39,7 +39,7 @@ class AuditService:
             存储路径
         """
         if date is None:
-            date = datetime.utcnow()
+            date = datetime.now(timezone.utc)
 
         filename = f"audit_{date.strftime('%Y%m%d')}.json"
         return self.storage_dir / filename
@@ -282,7 +282,7 @@ class AuditService:
         """
         count = 0
         try:
-            cutoff_date = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+            cutoff_date = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
             # 找出过期的日志文件
             for file_path in self.storage_dir.glob("audit_*.json"):

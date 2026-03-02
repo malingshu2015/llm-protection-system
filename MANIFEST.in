@@ -2,7 +2,8 @@ include LICENSE
 include README.md
 include VERSION
 include CHANGELOG.md
-include requirements.txt
+include requirements/production.txt
+include requirements/*.txt
 recursive-include static *
 recursive-include rules *
 recursive-include docs *.md

@@ -15,8 +15,13 @@ if os.path.exists(VERSION_FILE):
 with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
 
-# Read requirements from requirements.txt
-with open("requirements.txt", "r", encoding="utf-8") as f:
+# Read requirements from requirements/production.txt
+req_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "requirements/production.txt")
+if not os.path.exists(req_path):
+    # fallback for local development if not in subfolder for some reason
+    req_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "requirements.txt")
+
+with open(req_path, "r", encoding="utf-8") as f:
     requirements = [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
 setup(

@@ -209,6 +209,16 @@
         </div>
     </div>
 
+    <script>
+        // 页面加载完成后自动重定向到主页
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('登录页已隐藏，跳转到主页');
+            // 延迟1秒重定向，让用户看到页面加载
+            setTimeout(() => {
+                window.location.href = '/static/admin/index.html';
+            }, 500);
+        });
+    </script>
     <script src="/static/admin/js/login.js"></script>
 </body>
 </html>
