@@ -57,7 +57,7 @@
   },
   "build": {
     "appId": "com.llm.protection.client",
-    "productName": "LLM防护客户端",
+    "productName": "llm-protection-client",
     "asar": true,
     "directories": {
       "output": "release"
