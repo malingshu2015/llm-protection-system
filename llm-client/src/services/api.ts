@@ -27,7 +27,6 @@ export interface ApiError {
 
 class ApiService {
   private client: AxiosInstance;
-  private baseURL: string = '';
 
   constructor() {
     this.client = axios.create({
@@ -51,7 +50,6 @@ class ApiService {
    * 设置服务器地址
    */
   setBaseURL(url: string) {
-    this.baseURL = url;
     this.client.defaults.baseURL = url;
   }
 

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Layout, List, Input, Button, Avatar, Typography, Badge, message as antMessage, Empty } from 'antd';
-import { 
-  SendOutlined, 
-  PlusOutlined, 
-  DeleteOutlined, 
-  UserOutlined, 
+import {
+  SendOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+  UserOutlined,
   RobotOutlined,
   LoadingOutlined
 } from '@ant-design/icons';
@@ -18,7 +18,7 @@ const { TextArea } = Input;
 const { Text } = Typography;
 
 const Chat: React.FC = () => {
-  const { user, token, serverUrl } = useAuthStore();
+  const { token, serverUrl } = useAuthStore();
   const {
     sessions,
     currentSessionId,
@@ -47,14 +47,14 @@ const Chat: React.FC = () => {
     if (!token || !serverUrl) return;
 
     const clientId = uuidv4();
-    
+
     // 简单的去抖动或防止重复连接逻辑可以在这里优化，暂时保持简单
     if (!websocketService.isConnected()) {
-        websocketService.connect(serverUrl, token, clientId)
+      websocketService.connect(serverUrl, token, clientId)
         .then(() => setWsConnected(true))
         .catch(() => antMessage.error('无法连接到聊天服务器'));
     } else {
-        setWsConnected(true);
+      setWsConnected(true);
     }
 
     const handleChatResponse = (data: any) => {
@@ -108,9 +108,9 @@ const Chat: React.FC = () => {
 
     try {
       if (!websocketService.isConnected()) {
-         // 尝试重连
-         await websocketService.connect(serverUrl!, token!, uuidv4());
-         setWsConnected(true);
+        // 尝试重连
+        await websocketService.connect(serverUrl!, token!, uuidv4());
+        setWsConnected(true);
       }
       await websocketService.sendChatMessage(currentSessionId, textToSend);
     } catch (error) {
@@ -123,10 +123,10 @@ const Chat: React.FC = () => {
     <Layout style={{ height: 'calc(100vh - 112px)', background: '#fff', border: '1px solid #f0f0f0', borderRadius: 8 }}>
       <Sider width={250} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
         <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
-            block 
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            block
             onClick={handleCreateSession}
           >
             新建对话
@@ -136,22 +136,22 @@ const Chat: React.FC = () => {
           <List
             dataSource={sessionList}
             renderItem={(item) => (
-              <List.Item 
-                style={{ 
-                  padding: '12px 16px', 
+              <List.Item
+                style={{
+                  padding: '12px 16px',
                   cursor: 'pointer',
                   backgroundColor: item.id === currentSessionId ? '#e6f7ff' : 'transparent',
                   borderRight: item.id === currentSessionId ? '2px solid #1890ff' : 'none'
                 }}
                 onClick={() => setCurrentSession(item.id)}
                 actions={[
-                    <Button 
-                        type="text" 
-                        size="small" 
-                        icon={<DeleteOutlined />} 
-                        onClick={(e) => { e.stopPropagation(); deleteSession(item.id); }} 
-                        danger
-                    />
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    onClick={(e) => { e.stopPropagation(); deleteSession(item.id); }}
+                    danger
+                  />
                 ]}
               >
                 <List.Item.Meta
@@ -162,14 +162,14 @@ const Chat: React.FC = () => {
           />
         </div>
       </Sider>
-      
+
       <Content style={{ display: 'flex', flexDirection: 'column' }}>
         {/* 聊天内容区域 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
           {!currentSession ? (
-             <div style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Empty description="选择或创建一个新的对话开始" />
-             </div>
+            <div style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Empty description="选择或创建一个新的对话开始" />
+            </div>
           ) : (
             currentSession.messages.map((msg) => (
               <div
@@ -180,15 +180,15 @@ const Chat: React.FC = () => {
                   marginBottom: 20,
                 }}
               >
-                <div style={{ 
-                    display: 'flex', 
-                    flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', 
-                    maxWidth: '80%',
-                    gap: 12
+                <div style={{
+                  display: 'flex',
+                  flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
+                  maxWidth: '80%',
+                  gap: 12
                 }}>
-                  <Avatar 
-                    icon={msg.role === 'user' ? <UserOutlined /> : <RobotOutlined />} 
-                    style={{ backgroundColor: msg.role === 'user' ? '#1890ff' : '#52c41a' }} 
+                  <Avatar
+                    icon={msg.role === 'user' ? <UserOutlined /> : <RobotOutlined />}
+                    style={{ backgroundColor: msg.role === 'user' ? '#1890ff' : '#52c41a' }}
                   />
                   <div style={{
                     backgroundColor: msg.role === 'user' ? '#e6f7ff' : '#f6f6f6',
@@ -199,7 +199,7 @@ const Chat: React.FC = () => {
                   }}>
                     <Text style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</Text>
                     <div style={{ fontSize: 10, color: '#999', marginTop: 4, textAlign: 'right' }}>
-                       {new Date(msg.timestamp).toLocaleTimeString()}
+                      {new Date(msg.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
                 </div>
@@ -212,37 +212,37 @@ const Chat: React.FC = () => {
         {/* 输入框区域 */}
         <div style={{ padding: '16px 24px', borderTop: '1px solid #f0f0f0', backgroundColor: '#fff' }}>
           <div style={{ position: 'relative' }}>
-             <TextArea
-               value={inputText}
-               onChange={(e) => setInputText(e.target.value)}
-               placeholder="输入消息..."
-               autoSize={{ minRows: 2, maxRows: 6 }}
-               disabled={!currentSession || loading}
-               onKeyDown={(e) => {
-                 if (e.key === 'Enter' && !e.shiftKey) {
-                   e.preventDefault();
-                   handleSendMessage();
-                 }
-               }}
-             />
-             <div style={{ 
-                 position: 'absolute', 
-                 right: 8, 
-                 bottom: 8, 
-                 display: 'flex', 
-                 alignItems: 'center', 
-                 gap: 8 
-             }}>
-                {!wsConnected && <Badge status="error" text="未连接" />}
-                <Button 
-                    type="primary" 
-                    icon={loading ? <LoadingOutlined /> : <SendOutlined />}
-                    onClick={handleSendMessage}
-                    disabled={!currentSession || loading || !inputText.trim()}
-                >
-                    发送
-                </Button>
-             </div>
+            <TextArea
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="输入消息..."
+              autoSize={{ minRows: 2, maxRows: 6 }}
+              disabled={!currentSession || loading}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+            />
+            <div style={{
+              position: 'absolute',
+              right: 8,
+              bottom: 8,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}>
+              {!wsConnected && <Badge status="error" text="未连接" />}
+              <Button
+                type="primary"
+                icon={loading ? <LoadingOutlined /> : <SendOutlined />}
+                onClick={handleSendMessage}
+                disabled={!currentSession || loading || !inputText.trim()}
+              >
+                发送
+              </Button>
+            </div>
           </div>
         </div>
       </Content>
