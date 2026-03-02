@@ -5,6 +5,11 @@
   "main": "dist-electron/main.js",
   "author": "LLM Protection Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/malingshu2015/llm-protection-system.git",
+    "directory": "llm-client"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
