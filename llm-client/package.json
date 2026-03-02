@@ -1,6 +1,6 @@
 {
   "name": "llm-protection-client",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "LLM 防护系统统一客户端",
   "main": "dist-electron/main.js",
   "author": "LLM Protection Team",
