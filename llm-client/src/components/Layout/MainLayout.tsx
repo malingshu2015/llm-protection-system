@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Layout, Menu, Button, theme, Avatar, Dropdown } from 'antd';
 import {
-  DashboardOutlined,
+  MonitorOutlined,
   MessageOutlined,
-  FileTextOutlined,
-  SettingOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   UserOutlined,
   LogoutOutlined,
-  SafetyCertificateOutlined
+  SafetyCertificateOutlined,
+  SafetyOutlined,
+  ApiOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -21,9 +21,9 @@ const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
-  
+
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgLayout },
   } = theme.useToken();
 
   const handleLogout = () => {
@@ -43,56 +43,72 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider trigger={null} collapsible collapsed={collapsed} theme="light">
-        <div style={{ 
-          height: 64, 
-          margin: 16, 
-          display: 'flex', 
-          alignItems: 'center', 
+    <Layout style={{ minHeight: '100vh', background: colorBgLayout }}>
+      <Sider trigger={null} collapsible collapsed={collapsed} theme="light" style={{ borderRight: '1px solid #f1e4d9', background: '#fff' }}>
+        <div style={{
+          height: 64,
+          margin: 16,
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'flex-start',
           gap: 10,
           overflow: 'hidden',
           whiteSpace: 'nowrap'
         }}>
-           <SafetyCertificateOutlined style={{ fontSize: 24, color: '#1890ff' }} />
-           {!collapsed && (
-             <span style={{ fontSize: 18, fontWeight: 'bold', color: '#001529' }}>
-               LLM Shield
-             </span>
-           )}
+          <SafetyCertificateOutlined style={{ fontSize: 24, color: '#f97316' }} />
+          {!collapsed && (
+            <span style={{ fontSize: 20, fontWeight: '800', color: '#1e293b' }}>
+              CyberShield
+            </span>
+          )}
         </div>
         <Menu
           theme="light"
           mode="inline"
           selectedKeys={[location.pathname]}
-          onClick={({ key }) => navigate(key)}
+          onClick={({ key }) => {
+            // 如果是父菜单key（不以/开头的或不在路由中的），只展开不导航
+            if (key === '/rules-sub') {
+              return; // 让Ant Design Menu自动处理展开/收起
+            }
+            navigate(key);
+          }}
           items={[
             {
               key: '/dashboard',
-              icon: <DashboardOutlined />,
-              label: '概览监控',
+              icon: <MonitorOutlined />,
+              label: '安防指挥中心',
             },
             {
               key: '/chat',
               icon: <MessageOutlined />,
-              label: '安全对话',
+              label: '安全 AI 对话',
             },
             {
-              key: '/logs',
-              icon: <FileTextOutlined />,
-              label: '审计日志',
+              key: '/rules-sub',
+              icon: <SafetyOutlined />,
+              label: '规则管理中心',
+              children: [
+                {
+                  key: '/rules',
+                  label: '模型套餐配置',
+                },
+                {
+                  key: '/rules/policy',
+                  label: '策略引擎配置',
+                },
+              ],
             },
             {
-              key: '/settings',
-              icon: <SettingOutlined />,
-              label: '系统设置',
+              key: '/clients',
+              icon: <ApiOutlined />,
+              label: '客户端配置',
             },
           ]}
         />
       </Sider>
-      <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer, display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 24 }}>
+      <Layout style={{ background: colorBgLayout }}>
+        <Header style={{ padding: 0, background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 24, borderBottom: '1px solid #f1e4d9' }}>
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -104,25 +120,23 @@ const MainLayout: React.FC = () => {
             }}
           />
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-             <span style={{ color: '#52c41a', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#52c41a' }} />
-                系统正常运行中
-             </span>
-             <Dropdown menu={userMenu}>
-                <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1890ff' }} />
-                  <span>{user?.username || '管理员'}</span>
-                </div>
-             </Dropdown>
+            <span style={{ color: '#52c41a', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#52c41a', boxShadow: '0 0 4px #52c41a' }} />
+              系统在线 (8082)
+            </span>
+            <Dropdown menu={userMenu}>
+              <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#f97316' }} />
+                <span style={{ fontWeight: 600 }}>{user?.username || '管理员'}</span>
+              </div>
+            </Dropdown>
           </div>
         </Header>
         <Content
           style={{
-            margin: '24px 16px',
-            padding: 24,
-            minHeight: 280,
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
+            margin: '24px 24px',
+            padding: 0,
+            background: 'transparent',
             overflowY: 'auto'
           }}
         >

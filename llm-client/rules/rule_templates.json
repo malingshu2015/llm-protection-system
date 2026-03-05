@@ -1,0 +1,164 @@
+[
+  {
+    "id": "high_security",
+    "name": "\u9ad8\u5b89\u5168\u7ea7\u522b",
+    "description": "\u9002\u7528\u4e8e\u9ad8\u5b89\u5168\u8981\u6c42\u573a\u666f\u7684\u89c4\u5219\u96c6\uff0c\u542f\u7528\u6240\u6709\u5b89\u5168\u89c4\u5219",
+    "rules": [
+      {
+        "rule_id": "pi-001",
+        "enabled": true,
+        "priority": 10
+      },
+      {
+        "rule_id": "pi-002",
+        "enabled": true,
+        "priority": 11
+      },
+      {
+        "rule_id": "pi-003",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "pi-004",
+        "enabled": true,
+        "priority": 12
+      },
+      {
+        "rule_id": "pi-005",
+        "enabled": true,
+        "priority": 13
+      },
+      {
+        "rule_id": "pi-006",
+        "enabled": true,
+        "priority": 8
+      },
+      {
+        "rule_id": "pi-007",
+        "enabled": true,
+        "priority": 7
+      },
+      {
+        "rule_id": "pi-008",
+        "enabled": true,
+        "priority": 6
+      },
+      {
+        "rule_id": "jb-001",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "jb-002",
+        "enabled": true,
+        "priority": 5
+      },
+      {
+        "rule_id": "jb-003",
+        "enabled": true,
+        "priority": 6
+      },
+      {
+        "rule_id": "jb-004",
+        "enabled": true,
+        "priority": 7
+      },
+      {
+        "rule_id": "jb-005",
+        "enabled": true,
+        "priority": 8
+      },
+      {
+        "rule_id": "jb-006",
+        "enabled": true,
+        "priority": 9
+      },
+      {
+        "rule_id": "jb-007",
+        "enabled": true,
+        "priority": 7
+      },
+      {
+        "rule_id": "jb-008",
+        "enabled": true,
+        "priority": 6
+      },
+      {
+        "rule_id": "si-001",
+        "enabled": true,
+        "priority": 20
+      },
+      {
+        "rule_id": "si-002",
+        "enabled": true,
+        "priority": 21
+      },
+      {
+        "rule_id": "si-003",
+        "enabled": true,
+        "priority": 22
+      },
+      {
+        "rule_id": "hc-001",
+        "enabled": true,
+        "priority": 15
+      },
+      {
+        "rule_id": "hc-002",
+        "enabled": true,
+        "priority": 16
+      },
+      {
+        "rule_id": "hc-003",
+        "enabled": true,
+        "priority": 17
+      },
+      {
+        "rule_id": "hc-004",
+        "enabled": true,
+        "priority": 18
+      },
+      {
+        "rule_id": "hc-005",
+        "enabled": true,
+        "priority": 19
+      },
+      {
+        "rule_id": "hc-006",
+        "enabled": true,
+        "priority": 16
+      },
+      {
+        "rule_id": "hc-007",
+        "enabled": true,
+        "priority": 14
+      },
+      {
+        "rule_id": "hc-008",
+        "enabled": true,
+        "priority": 15
+      },
+      {
+        "rule_id": "hc-009",
+        "enabled": true,
+        "priority": 13
+      },
+      {
+        "rule_id": "hc-010",
+        "enabled": true,
+        "priority": 14
+      },
+      {
+        "rule_id": "comp-001",
+        "enabled": true,
+        "priority": 30
+      },
+      {
+        "rule_id": "comp-002",
+        "enabled": true,
+        "priority": 31
+      }
+    ],
+    "category": "security",
+    "created_at": 

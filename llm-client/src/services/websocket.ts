@@ -87,7 +87,7 @@ class WebSocketService {
   private handleMessage(message: WebSocketMessage) {
     const handlers = this.messageHandlers.get(message.type);
     if (handlers) {
-      handlers.forEach(handler => handler(message.data || message));
+      handlers.forEach(handler => handler(message)); // Backend does not use "data" envelope for top level responses here
     }
 
     // 触发通用消息处理器
@@ -151,10 +151,12 @@ class WebSocketService {
   /**
    * 发送聊天消息
    */
-  async sendChatMessage(sessionId: string, message: string): Promise<void> {
+  async sendChatMessage(sessionId: string, message: string, model?: string, images?: string[]): Promise<void> {
     await this.send('chat:message', {
       sessionId,
       message,
+      model: model || 'llama3.2:latest',  // 默认模型
+      images: images || [],
     });
   }
 

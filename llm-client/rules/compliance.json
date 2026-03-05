@@ -1,0 +1,56 @@
+[
+  {
+    "id": "comp-001",
+    "name": "GDPR Compliance",
+    "description": "Detects potential GDPR compliance issues",
+    "detection_type": "compliance_violation",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:collect|store|process|use)\\s+(?:personal|private|user)\\s+(?:data|information)\\s+without\\s+(?:consent|permission)"
+    ],
+    "keywords": [
+      "GDPR violation",
+      "data protection",
+      "privacy breach",
+      "consent",
+      "data subject rights"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 40,
+    "categories": [
+      "gdpr",
+      "privacy"
+    ],
+    "custom_code": null,
+    "mode": "blocking",
+    "dry_run_hits": 0
+  },
+  {
+    "id": "comp-002",
+    "name": "HIPAA Compliance",
+    "description": "Detects potential HIPAA compliance issues",
+    "detection_type": "compliance_violation",
+    "severity": "high",
+    "patterns": [
+      "(?i)(?:share|disclose|reveal)\\s+(?:patient|medical|health)\\s+(?:data|information|records)\\s+without\\s+(?:authorization|consent)"
+    ],
+    "keywords": [
+      "HIPAA violation",
+      "PHI",
+      "patient data",
+      "medical records",
+      "health information"
+    ],
+    "enabled": true,
+    "block": true,
+    "priority": 35,
+    "categories": [
+      "hipaa",
+      "healthcare"
+    ],
+    "custom_code": null,
+    "mode": "blocking",
+    "dry_run_hits": 0
+  }
+]

@@ -18,6 +18,8 @@ export interface Message {
   tokens?: number;
   filtered?: boolean;
   warnings?: string[];
+  isError?: boolean;
+  images?: string[];  // 添加图片附件字段
 }
 
 export interface SessionMetadata {

@@ -24,10 +24,10 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      isAuthenticated: false,
-      user: null,
-      token: null,
-      serverUrl: null,
+      isAuthenticated: true, // DEV_MODE: mock login
+      user: { id: "dev_1", username: "admin" },
+      token: "mock-token-for-dev",
+      serverUrl: "http://localhost:8082",
 
       login: (token: string, user: User, serverUrl: string) => {
         set({
@@ -56,11 +56,13 @@ export const useAuthStore = create<AuthState>()(
       },
 
       initAuth: () => {
-        // 从持久化存储中恢复认证状态
-        const state = get();
-        if (state.token && state.user) {
-          set({ isAuthenticated: true });
-        }
+        // DEV_MODE: Force login bypass regardless of local storage
+        set({
+          isAuthenticated: true,
+          user: { id: "dev_1", username: "admin" },
+          token: "mock-token-for-dev",
+          serverUrl: "http://localhost:8082",
+        });
       },
     }),
     {

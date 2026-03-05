@@ -1,0 +1,122 @@
+[
+  {
+    "id": "pi-001",
+    "name": "Ignore Previous Instructions",
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "patterns": ["(?i)ignore"],
+    "keywords": ["ignore"],
+    "priority": 10,
+    "categories": ["prompt_injection"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "pi-002",
+    "name": "System Prompt Extraction",
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "patterns": ["(?i)system prompt"],
+    "keywords": ["system prompt"],
+    "priority": 11,
+    "categories": ["prompt_injection"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "pi-003",
+    "name": "DAN Jailbreak",
+    "detection_type": "prompt_injection",
+    "severity": "critical",
+    "patterns": ["(?i)DAN"],
+    "keywords": ["DAN"],
+    "priority": 5,
+    "categories": ["prompt_injection"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "pi-004",
+    "name": "Role Play Attack",
+    "detection_type": "prompt_injection",
+    "severity": "medium",
+    "patterns": ["(?i)pretend"],
+    "keywords": ["pretend"],
+    "priority": 15,
+    "categories": ["prompt_injection"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "pi-005",
+    "name": "Translation Attack",
+    "detection_type": "prompt_injection",
+    "severity": "medium",
+    "patterns": ["(?i)translate"],
+    "keywords": ["translate"],
+    "priority": 12,
+    "categories": ["prompt_injection"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "pi-006",
+    "name": "Character Splitting",
+    "detection_type": "prompt_injection",
+    "severity": "low",
+    "patterns": ["(?i)split character"],
+    "keywords": ["split"],
+    "priority": 20,
+    "categories": ["prompt_injection"],
+    "enabled": false,
+    "block": false
+  },
+  {
+    "id": "pi-007",
+    "name": "Base64 Encoding Attack",
+    "detection_type": "prompt_injection",
+    "severity": "medium",
+    "patterns": ["(?i)base64"],
+    "keywords": ["base64"],
+    "priority": 13,
+    "categories": ["prompt_injection"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "pi-008",
+    "name": "Continuation Attack",
+    "detection_type": "prompt_injection",
+    "severity": "medium",
+    "patterns": ["(?i)<continue>"],
+    "keywords": ["continue"],
+    "priority": 14,
+    "categories": ["prompt_injection"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "pi-009",
+    "name": "JSON Format Attack",
+    "detection_type": "prompt_injection",
+    "severity": "low",
+    "patterns": ["(?i)json format"],
+    "keywords": ["json"],
+    "priority": 18,
+    "categories": ["prompt_injection"],
+    "enabled": false,
+    "block": false
+  },
+  {
+    "id": "pi-010",
+    "name": "Developer Mode Attack",
+    "detection_type": "prompt_injection",
+    "severity": "high",
+    "patterns": ["(?i)developer mode"],
+    "keywords": ["developer"],
+    "priority": 8,
+    "categories": ["prompt_injection"],
+    "enabled": true,
+    "block": true
+  }
+]

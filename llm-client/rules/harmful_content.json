@@ -1,0 +1,122 @@
+[
+  {
+    "id": "hc-001",
+    "name": "Violence Content",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": ["(?i)how to kill"],
+    "keywords": ["kill"],
+    "priority": 8,
+    "categories": ["harmful_content"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "hc-002",
+    "name": "Weapon Creation",
+    "detection_type": "harmful_content",
+    "severity": "critical",
+    "patterns": ["(?i)make a bomb"],
+    "keywords": ["bomb"],
+    "priority": 5,
+    "categories": ["harmful_content"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "hc-003",
+    "name": "Hate Speech",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": ["(?i)hate speech"],
+    "keywords": ["hate"],
+    "priority": 7,
+    "categories": ["harmful_content"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "hc-004",
+    "name": "Self Harm",
+    "detection_type": "harmful_content",
+    "severity": "critical",
+    "patterns": ["(?i)how to suicide"],
+    "keywords": ["suicide"],
+    "priority": 3,
+    "categories": ["harmful_content"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "hc-005",
+    "name": "Illegal Drugs",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": ["(?i)make drugs"],
+    "keywords": ["drugs"],
+    "priority": 6,
+    "categories": ["harmful_content"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "hc-006",
+    "name": "Terrorism Content",
+    "detection_type": "harmful_content",
+    "severity": "critical",
+    "patterns": ["(?i)terrorist attack"],
+    "keywords": ["terrorist"],
+    "priority": 2,
+    "categories": ["harmful_content"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "hc-007",
+    "name": "Child Exploitation",
+    "detection_type": "harmful_content",
+    "severity": "critical",
+    "patterns": ["(?i)child exploitation"],
+    "keywords": ["child"],
+    "priority": 1,
+    "categories": ["harmful_content"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "hc-008",
+    "name": "Harassment",
+    "detection_type": "harmful_content",
+    "severity": "medium",
+    "patterns": ["(?i)cyberbullying"],
+    "keywords": ["harassment"],
+    "priority": 9,
+    "categories": ["harmful_content"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "hc-009",
+    "name": "Torture Methods",
+    "detection_type": "harmful_content",
+    "severity": "critical",
+    "patterns": ["(?i)torture methods"],
+    "keywords": ["torture"],
+    "priority": 4,
+    "categories": ["harmful_content"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "hc-010",
+    "name": "Poison Creation",
+    "detection_type": "harmful_content",
+    "severity": "high",
+    "patterns": ["(?i)make poison"],
+    "keywords": ["poison"],
+    "priority": 6,
+    "categories": ["harmful_content"],
+    "enabled": true,
+    "block": true
+  }
+]

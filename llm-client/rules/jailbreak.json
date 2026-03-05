@@ -1,0 +1,98 @@
+[
+  {
+    "id": "jb-001",
+    "name": "DAN Jailbreak",
+    "detection_type": "jailbreak",
+    "severity": "critical",
+    "patterns": ["(?i)DAN"],
+    "keywords": ["DAN"],
+    "priority": 1,
+    "categories": ["jailbreak"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "jb-002",
+    "name": "Character Roleplay",
+    "detection_type": "jailbreak",
+    "severity": "high",
+    "patterns": ["(?i)uncle bob"],
+    "keywords": ["roleplay"],
+    "priority": 3,
+    "categories": ["jailbreak"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "jb-003",
+    "name": "AIM Unrestricted",
+    "detection_type": "jailbreak",
+    "severity": "critical",
+    "patterns": ["(?i)AIM unrestricted"],
+    "keywords": ["AIM"],
+    "priority": 2,
+    "categories": ["jailbreak"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "jb-004",
+    "name": "FreedomGPT",
+    "detection_type": "jailbreak",
+    "severity": "high",
+    "patterns": ["(?i)FreedomGPT"],
+    "keywords": ["freedom"],
+    "priority": 4,
+    "categories": ["jailbreak"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "jb-005",
+    "name": "Maximum Mode",
+    "detection_type": "jailbreak",
+    "severity": "medium",
+    "patterns": ["(?i)maximum mode"],
+    "keywords": ["maximum"],
+    "priority": 6,
+    "categories": ["jailbreak"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "jb-006",
+    "name": "Evil Mode",
+    "detection_type": "jailbreak",
+    "severity": "high",
+    "patterns": ["(?i)evil mode"],
+    "keywords": ["evil"],
+    "priority": 5,
+    "categories": ["jailbreak"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "jb-007",
+    "name": "Without Rules",
+    "detection_type": "jailbreak",
+    "severity": "critical",
+    "patterns": ["(?i)without rules"],
+    "keywords": ["without rules"],
+    "priority": 1,
+    "categories": ["jailbreak"],
+    "enabled": true,
+    "block": true
+  },
+  {
+    "id": "jb-008",
+    "name": "Above Law",
+    "detection_type": "jailbreak",
+    "severity": "high",
+    "patterns": ["(?i)above law"],
+    "keywords": ["above law"],
+    "priority": 4,
+    "categories": ["jailbreak"],
+    "enabled": true,
+    "block": true
+  }
+]
